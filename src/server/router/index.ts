@@ -80,6 +80,11 @@ export const appRouter = createRouter()
       })
     },
   })
+  .mutation('delete-chambresses', {
+    async resolve({ ctx }) {
+      return await ctx.prisma.chambress.deleteMany()
+    },
+  })
   .mutation('create-chambresses', {
     async resolve({ ctx }) {
       const res = await pipe(

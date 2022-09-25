@@ -6,8 +6,17 @@ import { Chambress, Congress } from '@prisma/client'
 
 const Home: NextPage = () => {
   const chambresses = trpc.useQuery(['get-chambresses'])
-  const mutation = trpc.useMutation(['create-chambresses'], {
-    onSuccess(data, variables, context) {
+  const createMutation = trpc.useMutation(['create-chambresses'], {
+    onSuccess(data) {
+      if (data == null) {
+        return
+      }
+      console.log(data)
+      chambresses.refetch()
+    },
+  })
+  const deleteMutation = trpc.useMutation(['delete-chambresses'], {
+    onSuccess(data) {
       if (data == null) {
         return
       }
@@ -21,15 +30,24 @@ const Home: NextPage = () => {
       <div className="p-2 border-b border-neutral-600">
         <h1>Admin</h1>
       </div>
-      <div className="p-2 flex flex-col gap-2">
+      <div className="p-2 flex flex-row gap-2">
         <button
           className="bg-neutral-600 rounded-md p-2"
-          disabled={mutation.isLoading}
+          disabled={createMutation.isLoading}
           onClick={() => {
-            mutation.mutate()
+            createMutation.mutate()
           }}
         >
           Populate Chambresses
+        </button>
+        <button
+          className="bg-neutral-600 rounded-md p-2"
+          disabled={deleteMutation.isLoading}
+          onClick={() => {
+            deleteMutation.mutate()
+          }}
+        >
+          Delete Chambresses
         </button>
       </div>
       <div className="w-full place-content-center p-2 grid grid-cols-[repeat(auto-fill,200px)] grid-rows-[repeat(auto-fill,100px)] gap-2">
