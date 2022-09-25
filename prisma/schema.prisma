@@ -16,3 +16,16 @@ model Congress {
     startYear String
     endYear   String
 }
+
+model Chambress {
+    id       String  @id @default(cuid())
+    congress Int
+    chamber  Chamber
+
+    @@unique([congress, chamber])
+}
+
+enum Chamber {
+    HOUSE
+    SENATE
+}

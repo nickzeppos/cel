@@ -45,27 +45,6 @@ const fullResponseValidator = z.object({
 type CongressResponse = z.infer<typeof congressResponseValidator>
 type FullResponse = z.infer<typeof fullResponseValidator>
 
-// interface CongressResponse {
-//   endYear: string
-//   name: string
-//   number: number
-//   sessions: [
-//     {
-//       chamber: string
-//       endDate: string
-//       number: number
-//       startDate: string
-//       type: string
-//     }
-//   ]
-//   startYear: string
-// }
-
-// interface FullResponse {
-//   congress: CongressResponse
-//   request: { congress: string; contentType: string; format: string }
-// }
-
 export const apiFetch = async (
   congressNumber: number
 ): Promise<CongressResponse> => {
