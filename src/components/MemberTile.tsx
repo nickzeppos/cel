@@ -1,14 +1,18 @@
 import { Member } from '@prisma/client'
 import Image from 'next/image'
+import React from 'react'
 
 interface Props {
   member: Member
+  t?: string
+  style?: React.CSSProperties
 }
 
-export default function MemberTile({ member }: Props) {
+export default function MemberTile({ member, t, style }: Props) {
   return (
     <div
-      className="flex gap-1 rounded-xl bg-neutral-800 w-[300px] h-[100px]"
+      className="flex gap-1 rounded-xl bg-neutral-800"
+      style={style}
       key={member.bioguideId}
     >
       <div className="grid place-items-center w-[100px] h-[100px] relative flex-shrink-0">
@@ -22,6 +26,7 @@ export default function MemberTile({ member }: Props) {
       </div>
       <div className="p-1 flex-grow flex flex-col overflow-hidden">
         <div className="text-neutral-300 font-semibold truncate overflow-hidden mb-auto">
+          {/* {t ?? ''} */}
           {member.name}
         </div>
         <div className="text-neutral-600 text-sm">

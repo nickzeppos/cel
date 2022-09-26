@@ -199,9 +199,7 @@ export const appRouter = createRouter()
   })
   .query('get-members', {
     async resolve({ ctx }) {
-      return ctx.prisma.member.findMany({
-        take: 500,
-      })
+      return ctx.prisma.member.findMany()
     },
   })
 
