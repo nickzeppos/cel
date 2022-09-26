@@ -11,7 +11,7 @@ export function fetchCongressAPI(
     Object.fromEntries(Object.entries(params).map(([k, v]) => [k, `${v}`])),
   )
   const req = new Request(
-    `${API_BASE_URL}/${route}?${searchParams.toString()}`,
+    `${API_BASE_URL}${route}?${searchParams.toString()}`,
     {
       method: 'get',
       headers: new Headers({
@@ -20,5 +20,6 @@ export function fetchCongressAPI(
       }),
     },
   )
+  console.log(req)
   return fetch(req)
 }
