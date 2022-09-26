@@ -1,6 +1,7 @@
 import { NextPage } from 'next'
 import Image from 'next/image'
 import AdminHeader from '../components/AdminHeader'
+import MemberTile from '../components/MemberTile'
 import { trpc } from '../utils/trpc'
 
 const Member: NextPage = () => {
@@ -15,25 +16,22 @@ const Member: NextPage = () => {
     <div>
       <AdminHeader currentPage="member" />
       <div>
-        <button
-          className="bg-neutral-600 rounded-md p-2"
-          disabled={m.isLoading}
-          onClick={() => {
-            m.mutate()
-          }}
-        >
-          Create Members
-        </button>
-        {(q.data ?? []).map((member) => (
-          <div key={member.bioguideId}>
-            <div>{member.name}</div>
-            <div>
-              {member.imageUrl && (
-                <Image src={member.imageUrl} width={200} height={200} />
-              )}
-            </div>
-          </div>
-        ))}
+        <div className="p-4">
+          <button
+            className="bg-neutral-600 rounded-md p-2"
+            disabled={m.isLoading}
+            onClick={() => {
+              m.mutate()
+            }}
+          >
+            Create Members
+          </button>
+        </div>
+        <div className="place-content-center p-2 grid grid-cols-[repeat(auto-fill,300px)] grid-rows-[repeat(auto-fill)] gap-2">
+          {(q.data ?? []).map((member) => (
+            <MemberTile member={member} key={member.bioguideId} />
+          ))}
+        </div>
       </div>
     </div>
   )

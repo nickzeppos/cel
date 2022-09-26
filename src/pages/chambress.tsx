@@ -28,7 +28,7 @@ const Home: NextPage = () => {
   return (
     <div>
       <AdminHeader currentPage="chambress" />
-      <div className="p-2 flex flex-row gap-2">
+      <div className="p-4 flex flex-row gap-2">
         <button
           className="bg-neutral-600 rounded-md p-2"
           disabled={createMutation.isLoading}
