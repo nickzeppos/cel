@@ -47,7 +47,7 @@ const Member: NextPage = () => {
             Create Members
           </button>
         </div>
-        <div className="border-8 border-neutral-800 m-8 flex-grow relative overflow-hidden">
+        <div className="border border-black m-8 flex-grow relative overflow-hidden">
           <div className="absolute inset-4">
             <AutoSizr>
               {({ width, height }) => {
@@ -75,6 +75,8 @@ const Member: NextPage = () => {
                           member={member}
                           key={member.bioguideId}
                           t={`${rowIndex}:${columnIndex}-${i}`}
+                          isFirstCol={columnIndex === 0}
+                          isFirstRow={rowIndex === 0}
                         />
                       )
                     }}

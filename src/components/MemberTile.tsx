@@ -6,25 +6,36 @@ interface Props {
   member: Member
   t?: string
   style?: React.CSSProperties
+  isFirstCol?: boolean
+  isFirstRow?: boolean
 }
 
-export default function MemberTile({ member, t, style }: Props) {
+export default function MemberTile({
+  member,
+  t,
+  style,
+  isFirstCol = false,
+  isFirstRow = false,
+}: Props) {
   return (
     <div
-      className="flex gap-1 rounded-xl bg-neutral-800"
+      className={`flex bg-neutral-800 border-black border-r border-b ${
+        isFirstRow ? 'border-t' : ''
+      } ${isFirstCol ? 'border-l' : ''}`}
       style={style}
       key={member.bioguideId}
     >
-      <div className="grid place-items-center w-[100px] h-[100px] relative flex-shrink-0">
+      <div className="w-[98px] h-[98px] relative flex-shrink-0 overflow-hidden">
         {member.imageUrl && (
           <Image
             src={member.imageUrl}
-            className="object-cover object-center rounded-l-xl"
-            layout={'fill'}
+            className="object-cover object-center"
+            width={98}
+            height={98}
           />
         )}
       </div>
-      <div className="p-1 flex-grow flex flex-col overflow-hidden">
+      <div className="px-2 py-1 flex-grow flex flex-col overflow-hidden border-l border-black">
         <div className="text-neutral-300 font-semibold truncate overflow-hidden mb-auto">
           {/* {t ?? ''} */}
           {member.name}
