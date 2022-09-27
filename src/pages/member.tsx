@@ -8,6 +8,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { member } from 'fp-ts/lib/ReadonlyMap'
 import AutoSizr from 'react-virtualized-auto-sizer'
 import { useBoundingclientrect } from 'rooks'
+import Button from '../components/Button'
 
 const Member: NextPage = () => {
   const q = trpc.useQuery(['get-members'])
@@ -16,6 +17,9 @@ const Member: NextPage = () => {
       console.log(data)
     },
   })
+  const m2 = trpc.useMutation(['download-member-photos'])
+  const m3 = trpc.useMutation(['square-image'])
+  const m4 = trpc.useMutation(['pack-image'])
   // const numCols = useMemo(() => {
   //   if (rect == null) return 0
   //   return Math.floor(rect.width / 300)
@@ -37,15 +41,34 @@ const Member: NextPage = () => {
       <AdminHeader currentPage="member" />
       <div className="flex-grow border-b border-blue-400 flex flex-col">
         <div className="p-4">
-          <button
-            className="bg-neutral-600 rounded-md p-2"
+          <Button
+            label="Create Members"
             disabled={m.isLoading}
             onClick={() => {
               m.mutate()
             }}
-          >
-            Create Members
-          </button>
+          />
+          <Button
+            label="Download Images"
+            disabled={m2.isLoading}
+            onClick={() => {
+              m2.mutate()
+            }}
+          />
+          <Button
+            label="Square Image"
+            disabled={m3.isLoading}
+            onClick={() => {
+              m3.mutate()
+            }}
+          />
+          <Button
+            label="Pack Image"
+            disabled={m4.isLoading}
+            onClick={() => {
+              m4.mutate()
+            }}
+          />
         </div>
         <div className="border border-black m-8 flex-grow relative overflow-hidden">
           <div className="absolute inset-4">

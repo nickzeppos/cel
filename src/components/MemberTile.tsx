@@ -27,12 +27,13 @@ export default function MemberTile({
     >
       <div className="w-[98px] h-[98px] relative flex-shrink-0 overflow-hidden">
         {member.imageUrl && (
-          <Image
-            src={member.imageUrl}
-            className="object-cover object-center"
-            width={98}
-            height={98}
-          />
+          <div className="bg-neutral-700 w-full h-full"></div>
+          // <Image
+          //   src={member.imageUrl}
+          //   className="object-cover object-center"
+          //   width={98}
+          //   height={98}
+          // />
         )}
       </div>
       <div className="px-2 py-1 flex-grow flex flex-col overflow-hidden border-l border-black">

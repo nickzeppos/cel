@@ -44,6 +44,9 @@ model Member {
   servedHouseEnd    Int?
   servedSenateStart Int?
   servedSenateEnd   Int?
+
+  spriteRow Int?
+  spriteCol Int?
 }
 
 // @Schema()
