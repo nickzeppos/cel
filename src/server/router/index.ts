@@ -396,6 +396,14 @@ export const appRouter = createRouter()
       console.log(`failed: ${b}`)
     },
   })
+  .mutation('queue-job', {
+    async resolve({ ctx }) {
+      console.log('queue job')
+      ctx.testQueue.add('paint', { color: 'red' })
+      const n = await ctx.testQueue.getJobCounts()
+      console.log(n)
+    },
+  })
 
 // export type definition of API
 export type AppRouter = typeof appRouter

@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+  cel-web:
+    container_name: cel-web
+    build: .
+    environment:
+      - DB_URL
+      - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_BASE_URL
+    volumes:
+      - .:/app
+    command: yarn dev
+    ports:
+      - 3000:3000
+      - 49153:49153
+    expose:
+      - 3000
+    depends_on:
+      - cel-cache
+  cel-cache:
+    container_name: cel-cache
+    image: redis:7.0.4-alpine
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    volumes:
+      - cel-redis-data:/data
+
+volumes:
+  cel-redis-data:

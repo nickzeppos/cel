@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-type Pages = 'chambress' | 'member'
+type Pages = 'chambress' | 'member' | 'jobs'
 interface Props {
   currentPage?: Pages
 }
@@ -18,6 +18,7 @@ export default function AdminHeader({ currentPage }: Props) {
           label="Chambress"
         />
         <HeaderLink page="member" currentPage={currentPage} label="Member" />
+        <HeaderLink page="jobs" currentPage={currentPage} label="Jobs" />
       </div>
     </div>
   )
