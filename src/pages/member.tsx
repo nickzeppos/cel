@@ -85,6 +85,7 @@ const Member: NextPage = () => {
                     rowCount={numRows}
                     rowHeight={100}
                     height={height}
+                    overscanRowCount={10}
                   >
                     {({ rowIndex, columnIndex, style }) => {
                       const i = rowIndex * numCols + columnIndex
