@@ -1,13 +1,9 @@
 import { NextPage } from 'next'
-import Image from 'next/image'
 import AdminHeader from '../components/AdminHeader'
 import MemberTile from '../components/MemberTile'
 import { trpc } from '../utils/trpc'
-import { FixedSizeGrid as Grid, GridChildComponentProps } from 'react-window'
-import { useCallback, useMemo, useRef } from 'react'
-import { member } from 'fp-ts/lib/ReadonlyMap'
+import { FixedSizeGrid as Grid } from 'react-window'
 import AutoSizr from 'react-virtualized-auto-sizer'
-import { useBoundingclientrect } from 'rooks'
 import Button from '../components/Button'
 
 const Member: NextPage = () => {
@@ -20,26 +16,12 @@ const Member: NextPage = () => {
   const m2 = trpc.useMutation(['download-member-photos'])
   const m3 = trpc.useMutation(['square-image'])
   const m4 = trpc.useMutation(['pack-image'])
-  // const numCols = useMemo(() => {
-  //   if (rect == null) return 0
-  //   return Math.floor(rect.width / 300)
-  // }, [rect])
-  // const Cell = useCallback(
-  //   ({ rowIndex, columnIndex, isScrolling }: GridChildComponentProps) => {
-  //     const member = members[rowIndex * numCols + columnIndex]
-  //     if (member == null || isScrolling) {
-  //       return <div>...</div>
-  //     }
-  //     return <MemberTile member={member} key={member.bioguideId} />
-  //   },
-  //   [q.data, rect],
-  // )
 
   const members = q.data ?? []
   return (
     <div className="absolute inset-0 flex flex-col">
       <AdminHeader currentPage="member" />
-      <div className="flex-grow border-b border-blue-400 flex flex-col">
+      <div className="flex-grow flex flex-col">
         <div className="p-4">
           <Button
             label="Create Members"
@@ -70,8 +52,8 @@ const Member: NextPage = () => {
             }}
           />
         </div>
-        <div className="border border-black m-8 flex-grow relative overflow-hidden">
-          <div className="absolute inset-4">
+        <div className="flex-grow relative overflow-hidden">
+          <div className="absolute inset-0">
             <AutoSizr>
               {({ width, height }) => {
                 const numCols = Math.floor(width / 300)

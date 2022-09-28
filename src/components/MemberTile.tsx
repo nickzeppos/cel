@@ -1,10 +1,8 @@
 import { Member } from '@prisma/client'
-import Image from 'next/image'
 import React from 'react'
 
 interface Props {
   member: Member
-  t?: string
   style?: React.CSSProperties
   isFirstCol?: boolean
   isFirstRow?: boolean
@@ -12,7 +10,6 @@ interface Props {
 
 export default function MemberTile({
   member,
-  t,
   style,
   isFirstCol = false,
   isFirstRow = false,
@@ -40,7 +37,6 @@ export default function MemberTile({
       </div>
       <div className="px-2 py-1 flex-grow flex flex-col overflow-hidden border-l border-black">
         <div className="text-neutral-300 font-semibold truncate overflow-hidden mb-auto">
-          {/* {t ?? ''} */}
           {member.name}
         </div>
         <div className="text-neutral-600 text-sm">

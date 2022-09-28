@@ -5,8 +5,8 @@ import { createRouter } from './context'
 import superjson from 'superjson'
 import { z } from 'zod'
 import { apiFetch } from '../patterns/fetching'
-import fetch, { Headers, Request } from 'node-fetch'
-import { Chamber, Member, Prisma } from '@prisma/client'
+import fetch from 'node-fetch'
+import { Member, Prisma } from '@prisma/client'
 import { pipe } from 'fp-ts/lib/function'
 import * as E from 'fp-ts/lib/Either'
 import * as TE from 'fp-ts/lib/TaskEither'
@@ -17,7 +17,7 @@ import {
   CongressAPIError,
   congressToChambress,
 } from '../chambress'
-import { errorIdentity, ETry, TETry } from '../../utils/fp'
+import { ETry, TETry } from '../../utils/fp'
 import { fetchCongressAPI } from '../congressAPI'
 
 const MEMBER_IMAGES_DIR = './public/member-images'
@@ -206,7 +206,11 @@ export const appRouter = createRouter()
   })
   .query('get-members', {
     async resolve({ ctx }) {
-      return ctx.prisma.member.findMany()
+      return ctx.prisma.member.findMany({
+        orderBy: {
+          bioguideId: 'asc',
+        },
+      })
     },
   })
   .mutation('download-member-photos', {
@@ -304,25 +308,9 @@ export const appRouter = createRouter()
       console.log(imageFiles.length)
 
       for (let f of imageFiles) {
-        // const f = imageFiles[0]
         const filepath = `${MEMBER_IMAGES_DIR}/${f}`
         const outpath = `${SQUARE_IMAGES_DIR}/${f}`
         if (fs.existsSync(outpath)) continue
-        // if (f) {
-        //   const match = /([^\.]+)\.jpg/.exec(f)
-        //   if (match != null) {
-        //     const bioguideId = match[1]
-        //     console.log(bioguideId)
-        //     const m = await ctx.prisma.member.findUnique({
-        //       where: {
-        //         bioguideId,
-        //       },
-        //     })
-        //     if (m != null) {
-        //       console.log(m)
-        //     }
-        //   }
-        // }
         const i = await sharp(filepath)
           .resize(IMAGE_SIZE, IMAGE_SIZE, { fit: 'cover' })
           .toBuffer()
@@ -463,5 +451,7 @@ function transformMember({
     servedHouseEnd,
     servedSenateStart,
     servedSenateEnd,
+    spriteCol: null,
+    spriteRow: null,
   })
 }
