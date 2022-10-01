@@ -42,3 +42,4 @@ yarn-error.log*
 
 # intermediate byproducts of image processing
 /public/square-images
+/.workers

@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "pmigrate": "prisma db push",
     "fix-sharp": "yarn add --libc=musl sharp",
-    "w": "tsc-watch src/server/worker.ts --outdir ./"
+    "d": "docker-compose up",
+    "w": "tsc-watch ./src/server/workers/*.ts --outdir ./.workers"
   },
   "dependencies": {
     "@prisma/client": "^4.3.1",

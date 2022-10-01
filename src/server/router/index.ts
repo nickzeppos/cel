@@ -404,6 +404,18 @@ export const appRouter = createRouter()
       console.log(n)
     },
   })
+  .mutation('pause-queue', {
+    async resolve({ ctx }) {
+      await ctx.testQueue.pause()
+      return true
+    },
+  })
+  .mutation('resume-queue', {
+    async resolve({ ctx }) {
+      await ctx.testQueue.resume()
+      return true
+    },
+  })
 
 // export type definition of API
 export type AppRouter = typeof appRouter
