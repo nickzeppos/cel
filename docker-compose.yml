@@ -12,9 +12,8 @@ services:
     command: yarn dev
     ports:
       - 3000:3000
+      - 3030:3030
       - 49153:49153
-    expose:
-      - 3000
     depends_on:
       - cel-cache
   cel-cache:

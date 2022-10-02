@@ -1,22 +1,34 @@
 // src/pages/_app.tsx
-import { httpBatchLink } from "@trpc/client/links/httpBatchLink"
-import { loggerLink } from "@trpc/client/links/loggerLink"
-import { withTRPC } from "@trpc/next"
-import type { AppType } from "next/dist/shared/lib/utils"
-import superjson from "superjson"
-import type { AppRouter } from "../server/router"
-import "../styles/globals.css"
+import { httpBatchLink } from '@trpc/client/links/httpBatchLink'
+import { loggerLink } from '@trpc/client/links/loggerLink'
+import { withTRPC } from '@trpc/next'
+import type { AppType, NextPageContext } from 'next/dist/shared/lib/utils'
+import superjson from 'superjson'
+import type { AppRouter } from '../server/router'
+import '../styles/globals.css'
+import { createWSClient, wsLink } from '@trpc/client/links/wsLink'
+import dynamic from 'next/dynamic'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return <Component {...pageProps} />
 }
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") return "" // browser should use relative url
+  if (typeof window !== 'undefined') return '' // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}` // SSR should use vercel url
-  return `"https://api.congress.gov/v3/congress/116?api_key=QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ"${
-    process.env.PORT ?? 3000
-  }` // dev SSR should use localhost
+  return `https://cel-web:${process.env.PORT ?? 3000}` // dev SSR should use localhost
+}
+
+function getEndingLinks(ctx: NextPageContext | undefined) {
+  const links = [httpBatchLink({ url: `${getBaseUrl()}/api/trpc` })]
+  if (typeof window !== 'undefined') {
+    console.log('🌷 not doing SSR')
+    const client = createWSClient({
+      url: `ws://localhost:3030`,
+    })
+    links.push(wsLink<AppRouter>({ client }))
+  }
+  return links
 }
 
 export default withTRPC<AppRouter>({
@@ -31,10 +43,10 @@ export default withTRPC<AppRouter>({
       links: [
         loggerLink({
           enabled: (opts) =>
-            process.env.NODE_ENV === "development" ||
-            (opts.direction === "down" && opts.result instanceof Error),
+            process.env.NODE_ENV === 'development' ||
+            (opts.direction === 'down' && opts.result instanceof Error),
         }),
-        httpBatchLink({ url }),
+        ...getEndingLinks(ctx),
       ],
       url,
       transformer: superjson,

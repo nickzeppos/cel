@@ -37,7 +37,7 @@
     "rooks": "^7.4.0",
     "sharp": "^0.31.0",
     "superjson": "^1.10.0",
-    "tailwindcss-classnames": "^3.0.6",
+    "ws": "^8.9.0",
     "zod": "^3.18.0"
   },
   "devDependencies": {
@@ -48,14 +48,19 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1",
     "@types/react-window": "^1.8.5",
     "@types/sharp": "^0.31.0",
+    "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "autoprefixer": "^10.4.12",
     "eslint": "8.22.0",
     "eslint-config-next": "12.3.1",
+    "nodemon": "^2.0.20",
     "postcss": "^8.4.16",
+    "prettier": "^2.7.1",
+    "prettier-plugin-tailwindcss": "^0.1.13",
     "prisma": "4.3.1",
     "tailwindcss": "^3.1.8",
+    "ts-node": "^10.9.1",
     "tsc-watch": "^5.0.3",
     "typescript": "4.7.4"
   },

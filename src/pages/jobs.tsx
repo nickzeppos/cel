@@ -61,6 +61,11 @@ const Jobs: NextPage = () => {
       queueState.refetch()
     },
   })
+  const onQueueJobSubscription = trpc.useSubscription(['on-queue-job'], {
+    onNext(data) {
+      console.log(`🎆 ${data.id}`)
+    },
+  })
   const isPaused = queueState.data?.isPaused ?? false
   const name = queueState.data?.name ?? ''
   const jobbies = queueState.data?.jobs ?? []
@@ -72,50 +77,51 @@ const Jobs: NextPage = () => {
     !isPaused,
     false,
   )
+
   return (
     <div>
       <AdminHeader currentPage="jobs" />
       <div
-        className={`m-4 border-4 rounded-t-xl ${
+        className={`m-4 rounded-t-xl border-4 ${
           isPaused ? 'border-red-400/60' : 'border-green-400/60'
         }`}
       >
         <div className="flex items-center gap-2 p-4 pb-0">
           <PlusCircleIconSolid
-            className="h-8 w-8 text-white cursor-pointer"
+            className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
               m.mutate()
             }}
           />
           {isPaused ? (
             <PlayCircleIconSolid
-              className="h-8 w-8 text-white cursor-pointer"
+              className="h-8 w-8 cursor-pointer text-white"
               onClick={() => {
                 m3.mutate()
               }}
             />
           ) : (
             <PauseCircleIconSolid
-              className="h-8 w-8 text-white cursor-pointer"
+              className="h-8 w-8 cursor-pointer text-white"
               onClick={() => {
                 m2.mutate()
               }}
             />
           )}
           <ArrowPathIcon
-            className="h-8 w-8 text-white cursor-pointer"
+            className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
               queueState.refetch()
             }}
           />
 
           <TrashIconSolid
-            className="h-8 w-8 text-white cursor-pointer"
+            className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
               m4.mutate()
             }}
           />
-          <div className="font-bold text-xl">
+          <div className="text-xl font-bold">
             {name} (
             {
               jobbies.filter(
@@ -142,12 +148,12 @@ const Jobs: NextPage = () => {
               leaveFrom="opacity-100 scale-75"
               leaveTo="opacity-0 scale-150"
             >
-              <div className="w-4 h-4 rounded-full bg-red-400" />
+              <div className="h-4 w-4 rounded-full bg-red-400" />
             </Transition>
           </div>
         </div>
-        <div className={`relative overflow-x-scroll flex`}>
-          <div className="flex gap-4 flex-grow p-4">
+        <div className={`relative flex overflow-x-scroll`}>
+          <div className="flex flex-grow gap-4 p-4">
             {jobbies.map((j, i) => {
               const stateColor = (() => {
                 switch (j.state) {
@@ -164,11 +170,11 @@ const Jobs: NextPage = () => {
               return (
                 <div
                   key={j.id ?? i}
-                  className={`w-[200px] shadow-md hover:shadow-neutral-600/70 border border-neutral-600 rounded-lg divide-y divide-neutral-700 flex flex-col ${
+                  className={`flex w-[200px] flex-col divide-y divide-neutral-700 rounded-lg border border-neutral-600 shadow-md hover:shadow-neutral-600/70 ${
                     isPaused ? 'opacity-40' : ''
-                  } hover:opacity-100 hover:border-neutral-400`}
+                  } hover:border-neutral-400 hover:opacity-100`}
                 >
-                  <div className="p-2 flex justify-center items-center gap-2">
+                  <div className="flex items-center justify-center gap-2 p-2">
                     <div className="font-bold text-neutral-300">
                       {j.id ?? ''}
                     </div>
@@ -178,7 +184,7 @@ const Jobs: NextPage = () => {
                       {j.state}
                     </div>
                     <TrashIcon
-                      className="ml-auto w-5 h-5 cursor-pointer select-none"
+                      className="ml-auto h-5 w-5 cursor-pointer select-none"
                       onClick={() => {
                         if (j.id != null) {
                           removeJobMutation.mutate({ id: j.id })
@@ -187,18 +193,18 @@ const Jobs: NextPage = () => {
                     />
                   </div>
                   <div className="flex flex-col p-2 text-neutral-500">
-                    <div className="flex gap-2 items-center">
-                      <PlusCircleIcon className="w-6 h-6" />
+                    <div className="flex items-center gap-2">
+                      <PlusCircleIcon className="h-6 w-6" />
                       {formatRelative(j.timestamp, new Date())}
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <PlayCircleIcon className="w-6 h-6" />
+                    <div className="flex items-center gap-2">
+                      <PlayCircleIcon className="h-6 w-6" />
                       {j.processedOn
                         ? formatRelative(j.processedOn, new Date())
                         : '-'}
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <StopCircleIcon className="w-6 h-6" />
+                    <div className="flex items-center gap-2">
+                      <StopCircleIcon className="h-6 w-6" />
                       {j.finishedOn
                         ? formatRelative(j.finishedOn, new Date())
                         : '-'}
@@ -226,9 +232,9 @@ const Jobs: NextPage = () => {
                       <div>{j.failedReason}</div>
                     ) : null}
                     {j.state === 'active' && (
-                      <div className="w-full h-full grid place-items-center">
+                      <div className="grid h-full w-full place-items-center">
                         <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          className="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
