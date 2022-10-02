@@ -11,9 +11,12 @@
     "pmigrate": "prisma db push",
     "fix-sharp": "yarn add --libc=musl sharp",
     "d": "docker-compose up",
-    "w": "tsc-watch ./src/server/workers/*.ts --outdir ./.workers"
+    "w": "tsc-watch ./src/server/workers/*.ts --outdir ./.workers",
+    "tw-types": "tailwindcss-classnames -i ./tailwind.config.cjs -o ./tw.ts"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.3",
+    "@heroicons/react": "^2.0.11",
     "@prisma/client": "^4.3.1",
     "@trpc/client": "^9.27.2",
     "@trpc/next": "^9.27.2",
@@ -21,6 +24,7 @@
     "@trpc/server": "^9.27.2",
     "bull": "^4.9.0",
     "bullmq": "^2.0.1",
+    "date-fns": "^2.29.3",
     "fp-ts": "^2.12.3",
     "next": "12.3.1",
     "node-fetch": "^3.2.10",
@@ -33,6 +37,7 @@
     "rooks": "^7.4.0",
     "sharp": "^0.31.0",
     "superjson": "^1.10.0",
+    "tailwindcss-classnames": "^3.0.6",
     "zod": "^3.18.0"
   },
   "devDependencies": {

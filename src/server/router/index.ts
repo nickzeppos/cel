@@ -19,6 +19,7 @@ import {
 } from '../chambress'
 import { ETry, TETry } from '../../utils/fp'
 import { fetchCongressAPI } from '../congressAPI'
+import { TestJob } from '../workers/testWorker'
 
 const MEMBER_IMAGES_DIR = './public/member-images'
 const SQUARE_IMAGES_DIR = './public/square-images'
@@ -399,21 +400,68 @@ export const appRouter = createRouter()
   .mutation('queue-job', {
     async resolve({ ctx }) {
       console.log('queue job')
-      ctx.testQueue.add('paint', { color: 'red' })
-      const n = await ctx.testQueue.getJobCounts()
+      ctx.queue.testQueue.add('test-job', { color: 'red', count: 3 })
+      const n = await ctx.queue.testQueue.getJobCounts()
       console.log(n)
     },
   })
   .mutation('pause-queue', {
     async resolve({ ctx }) {
-      await ctx.testQueue.pause()
+      await ctx.queue.testQueue.pause()
       return true
     },
   })
   .mutation('resume-queue', {
     async resolve({ ctx }) {
-      await ctx.testQueue.resume()
+      await ctx.queue.testQueue.resume()
       return true
+    },
+  })
+  .mutation('clean-queue', {
+    async resolve({ ctx }) {
+      await ctx.queue.testQueue.clean(1000, 100)
+      return true
+    },
+  })
+  .query('queue-state', {
+    async resolve({ ctx }) {
+      const q = ctx.queue.testQueue
+      const isPaused = await q.isPaused()
+      const rawJobs = await q.getJobs()
+      const jobs = await Promise.all(
+        rawJobs.map(async (j) => {
+          const state = await j.getState()
+          j.processedOn
+          return {
+            state,
+            id: j.id,
+            name: j.name,
+            returnvalue: j.returnvalue,
+            progress: j.progress,
+            failedReason: j.failedReason,
+            delay: j.delay,
+            data: j.data,
+            timestamp: j.timestamp,
+            finishedOn: j.finishedOn,
+            processedOn: j.processedOn,
+          }
+        }),
+      ).then((js) => js.sort((a, b) => a.timestamp - b.timestamp))
+      const name = q.name
+
+      return {
+        name,
+        isPaused,
+        jobs,
+      }
+    },
+  })
+  .mutation('remove-job', {
+    input: z.object({ id: z.string() }),
+    async resolve({ ctx, input }) {
+      const j = await ctx.queue.testQueue.getJob(input.id)
+      j?.remove()
+      return
     },
   })
 

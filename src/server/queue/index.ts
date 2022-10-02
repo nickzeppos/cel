@@ -1,4 +1,10 @@
 import { Queue, Worker, QueueEvents } from 'bullmq'
+import {
+  TestJob,
+  TestJobData,
+  TestJobName,
+  TestJobResponse,
+} from '../workers/testWorker'
 
 const connection = {
   host: 'cel-cache',
@@ -28,11 +34,14 @@ function cleanup() {
 }
 
 function setup() {
-  globalThis.testQueue = new Queue('test-queue', {
-    connection,
-  })
+  globalThis.testQueue = new Queue<TestJobData, TestJobResponse, TestJobName>(
+    'test-queue',
+    {
+      connection,
+    },
+  )
     .on('cleaned', () => {
-      console.log('cleaned')
+      console.log('[TEST QUEUE] CLEANED!')
     })
     .on('paused', () => {
       console.log('[TEST QUEUE] PAUSED!')
@@ -46,6 +55,7 @@ function setup() {
     `${workersDir}/testWorker.js`,
     {
       connection,
+      concurrency: 1,
     },
   )
 
@@ -61,5 +71,5 @@ function setup() {
 }
 
 export const queue = {
-  testQueue: globalThis.testQueue,
+  testQueue: globalThis.testQueue as NonNullable<typeof globalThis.testQueue>,
 }
