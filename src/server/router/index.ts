@@ -19,7 +19,6 @@ import {
 } from '../chambress'
 import { ETry, TETry } from '../../utils/fp'
 import { fetchCongressAPI } from '../congressAPI'
-import { TestJob } from '../workers/testWorker'
 import * as trpc from '@trpc/server'
 import EventEmitter from 'events'
 
@@ -87,6 +86,7 @@ const allMemberResponseValidator = z.object({
 })
 type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
+console.log('🐳 create router')
 export const appRouter = createRouter()
   .transformer(superjson)
   .query('get-all-cong', {

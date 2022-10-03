@@ -1,7 +1,7 @@
 // src/server/router/context.ts
 import * as trpc from '@trpc/server'
 import * as trpcNext from '@trpc/server/adapters/next'
-import { NodeHTTPCreateContextFnOptions } from '@trpc/server/dist/declarations/src/adapters/node-http'
+import { NodeHTTPCreateContextFnOptions } from '@trpc/server/adapters/node-http'
 import { IncomingMessage } from 'http'
 import { prisma } from '../db/client'
 import { queue } from '../queue'

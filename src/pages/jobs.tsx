@@ -61,7 +61,7 @@ const Jobs: NextPage = () => {
       queueState.refetch()
     },
   })
-  const onQueueJobSubscription = trpc.useSubscription(['on-queue-job'], {
+  trpc.useSubscription(['on-queue-job'], {
     onNext(data) {
       console.log(`🎆 ${data.id}`)
     },
@@ -69,14 +69,14 @@ const Jobs: NextPage = () => {
   const isPaused = queueState.data?.isPaused ?? false
   const name = queueState.data?.name ?? ''
   const jobbies = queueState.data?.jobs ?? []
-  useIntervalWhen(
-    () => {
-      queueState.refetch()
-    },
-    5000,
-    !isPaused,
-    false,
-  )
+  // useIntervalWhen(
+  //   () => {
+  //     queueState.refetch()
+  //   },
+  //   5000,
+  //   !isPaused,
+  //   false,
+  // )
 
   return (
     <div>
@@ -245,7 +245,7 @@ const Jobs: NextPage = () => {
                             cy="12"
                             r="10"
                             stroke="currentColor"
-                            stroke-width="4"
+                            strokeWidth="4"
                           ></circle>
                           <path
                             className="opacity-75"

@@ -6,7 +6,9 @@
     "target": "ES2019",
     "lib": ["ES2019", "DOM"],
     "isolatedModules": false,
-    "noEmit": false
+    "noEmit": false,
+    "strict": false
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js"]
+  // "exclude": ["**/*.mjs"]
 }

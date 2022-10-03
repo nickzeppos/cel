@@ -12,8 +12,39 @@ services:
     command: yarn dev
     ports:
       - 3000:3000
-      - 3030:3030
       - 49153:49153
+    depends_on:
+      - cel-cache
+  cel-ws:
+    container_name: cel-ws
+    build:
+      context: .
+      dockerfile: ws.Dockerfile
+    environment:
+      - DB_URL
+      - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_BASE_URL
+    volumes:
+      - .:/app
+    command: yarn nodemon --watch src --ext .ts,.tsx,js,jsx --signal SIGTERM --exec "yarn tsx --tsconfig /app/tsconfig.ws.json /app/src/server/ws/index.ts"
+    ports:
+      - 3030:3030
+    expose:
+      - 3030
+    depends_on:
+      - cel-cache
+  cel-workers:
+    container_name: cel-workers
+    build:
+      context: .
+      dockerfile: w.Dockerfile
+    environment:
+      - DB_URL
+      - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_BASE_URL
+    volumes:
+      - .:/app
+    command: yarn nodemon --watch src/workers --ext .ts --signal SIGTERM --exec "tsc --project /app/tsconfig.w.json && node /app/.workers/index.js"
     depends_on:
       - cel-cache
   cel-cache:

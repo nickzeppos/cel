@@ -4,8 +4,8 @@ import { appRouter } from '../../../server/router'
 import { createContext } from '../../../server/router/context'
 
 // export API handler
+console.log('🐫 create next api handler with createContext')
 export default createNextApiHandler({
   router: appRouter,
   createContext,
-  batching: { enabled: true },
 })

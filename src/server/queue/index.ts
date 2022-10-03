@@ -1,16 +1,10 @@
-import { Queue, Worker, QueueEvents } from 'bullmq'
-import {
-  TestJob,
-  TestJobData,
-  TestJobName,
-  TestJobResponse,
-} from '../workers/testWorker'
+import { Queue, QueueEvents } from 'bullmq'
+import { TestJobData, TestJobName, TestJobResponse } from '../../workers/types'
 
 const connection = {
   host: 'cel-cache',
   port: 6379,
 }
-const workersDir = `${__dirname}/../../../../../.workers`
 
 cleanup()
 setup()
@@ -20,11 +14,6 @@ function cleanup() {
     console.log('cleanup testQueue')
     globalThis.testQueue.close()
     globalThis.testQueue = undefined
-  }
-  if (globalThis.testWorker != null) {
-    console.log('cleanup testWorker')
-    globalThis.testWorker.close()
-    globalThis.testWorker = undefined
   }
   if (globalThis.queueEvents != null) {
     console.log('cleanup queueEvents')
@@ -49,15 +38,6 @@ function setup() {
     .on('resumed', () => {
       console.log('[TEST QUEUE] RESUMED!')
     })
-
-  globalThis.testWorker = new Worker(
-    'test-queue',
-    `${workersDir}/testWorker.js`,
-    {
-      connection,
-      concurrency: 1,
-    },
-  )
 
   globalThis.queueEvents = new QueueEvents('test-queue', {
     connection,

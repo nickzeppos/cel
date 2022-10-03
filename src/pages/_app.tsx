@@ -7,7 +7,6 @@ import superjson from 'superjson'
 import type { AppRouter } from '../server/router'
 import '../styles/globals.css'
 import { createWSClient, wsLink } from '@trpc/client/links/wsLink'
-import dynamic from 'next/dynamic'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return <Component {...pageProps} />
@@ -16,19 +15,18 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') return '' // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}` // SSR should use vercel url
-  return `https://cel-web:${process.env.PORT ?? 3000}` // dev SSR should use localhost
+  return `http://cel-web:${process.env.PORT ?? 3000}` // dev SSR should use localhost
 }
 
-function getEndingLinks(ctx: NextPageContext | undefined) {
-  const links = [httpBatchLink({ url: `${getBaseUrl()}/api/trpc` })]
+function getEndingLink(ctx: NextPageContext | undefined) {
   if (typeof window !== 'undefined') {
     console.log('🌷 not doing SSR')
     const client = createWSClient({
       url: `ws://localhost:3030`,
     })
-    links.push(wsLink<AppRouter>({ client }))
+    return wsLink<AppRouter>({ client })
   }
-  return links
+  return httpBatchLink({ url: `${getBaseUrl()}/api/trpc` })
 }
 
 export default withTRPC<AppRouter>({
@@ -46,7 +44,7 @@ export default withTRPC<AppRouter>({
             process.env.NODE_ENV === 'development' ||
             (opts.direction === 'down' && opts.result instanceof Error),
         }),
-        ...getEndingLinks(ctx),
+        getEndingLink(ctx),
       ],
       url,
       transformer: superjson,
@@ -56,17 +54,17 @@ export default withTRPC<AppRouter>({
       // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
 
       // To use SSR properly you need to forward the client's headers to the server
-      // headers: () => {
-      //   if (ctx?.req) {
-      //     const headers = ctx?.req?.headers;
-      //     delete headers?.connection;
-      //     return {
-      //       ...headers,
-      //       "x-ssr": "1",
-      //     };
-      //   }
-      //   return {};
-      // }
+      headers: () => {
+        if (ctx?.req) {
+          const headers = ctx?.req?.headers
+          delete headers?.connection
+          return {
+            ...headers,
+            'x-ssr': '1',
+          }
+        }
+        return {}
+      },
     }
   },
   /**
