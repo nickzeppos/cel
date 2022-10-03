@@ -21,6 +21,7 @@ import { ETry, TETry } from '../../utils/fp'
 import { fetchCongressAPI } from '../congressAPI'
 import * as trpc from '@trpc/server'
 import EventEmitter from 'events'
+import { QueueEventsListener } from 'bullmq'
 
 const ee = new EventEmitter()
 
@@ -481,10 +482,44 @@ export const appRouter = createRouter()
         }
 
         console.log('🎆setting up the subscription')
+
+        const onCompleted: QueueEventsListener['completed'] = (job) => {
+          console.log(
+            `🎒 JOB COMPLETE ${job.jobId} ${job.returnvalue} ${job.prev}`,
+          )
+          emit.data({ id: job.jobId })
+        }
+        const onAdded: QueueEventsListener['added'] = (job) => {
+          console.log(`🎒 JOB ADDED ${job.jobId} ${job.name}`)
+          emit.data({ id: job.jobId })
+        }
+        const onRemoved: QueueEventsListener['removed'] = (job) => {
+          console.log(`🎒 JOB REMOVED ${job.jobId} ${job.prev}`)
+          emit.data({ id: job.jobId })
+        }
+        const onCleaned: QueueEventsListener['cleaned'] = (n) => {
+          console.log(`🎒 JOBS CLEANED ${n}`)
+          emit.data({ id: '*' })
+        }
+        const onFailed: QueueEventsListener['failed'] = (job) => {
+          console.log(`🎒 JOB FAILED ${job.jobId}`)
+          emit.data({ id: job.jobId })
+        }
+
+        ctx.queue.queueEvents.on('completed', onCompleted)
+        ctx.queue.queueEvents.on('added', onAdded)
+        ctx.queue.queueEvents.on('removed', onRemoved)
+        ctx.queue.queueEvents.on('cleaned', onCleaned)
+        ctx.queue.queueEvents.on('failed', onFailed)
         ee.on('queueJob', onQueueJob)
         return () => {
           console.log('🎆someone unsubscribed')
           ee.off('queueJob', onQueueJob)
+          ctx.queue.queueEvents.off('completed', onCompleted)
+          ctx.queue.queueEvents.off('added', onAdded)
+          ctx.queue.queueEvents.off('removed', onRemoved)
+          ctx.queue.queueEvents.on('cleaned', onCleaned)
+          ctx.queue.queueEvents.on('failed', onFailed)
         }
       })
     },

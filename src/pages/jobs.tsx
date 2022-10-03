@@ -3,7 +3,7 @@ import AdminHeader from '../components/AdminHeader'
 import Button from '../components/Button'
 import { trpc } from '../utils/trpc'
 import { formatDuration, formatRelative } from 'date-fns'
-import { useIntervalWhen } from 'rooks'
+import { useDebounce, useIntervalWhen } from 'rooks'
 import {
   TrashIcon,
   PlayCircleIcon,
@@ -23,6 +23,7 @@ import React, { useRef, useState } from 'react'
 const Jobs: NextPage = () => {
   const [didFetch, setDidFetch] = useState(false)
   const fetchTimeoutRef = useRef<number | null>(null)
+
   const queueState = trpc.useQuery(['queue-state'], {
     onSuccess() {
       if (fetchTimeoutRef.current != null) {
@@ -36,47 +37,24 @@ const Jobs: NextPage = () => {
     },
     refetchOnWindowFocus: false,
   })
-  const m = trpc.useMutation(['queue-job'], {
-    onSuccess() {
-      queueState.refetch()
-    },
+  const debouncedRefetch = useDebounce(queueState.refetch, 500, {
+    leading: true,
+    trailing: true,
   })
-  const m2 = trpc.useMutation(['pause-queue'], {
-    onSuccess() {
-      queueState.refetch()
-    },
-  })
-  const m3 = trpc.useMutation(['resume-queue'], {
-    onSuccess() {
-      queueState.refetch()
-    },
-  })
-  const m4 = trpc.useMutation(['clean-queue'], {
-    onSuccess() {
-      queueState.refetch()
-    },
-  })
-  const removeJobMutation = trpc.useMutation(['remove-job'], {
-    onSuccess() {
-      queueState.refetch()
-    },
-  })
+  const m = trpc.useMutation(['queue-job'])
+  const m2 = trpc.useMutation(['pause-queue'])
+  const m3 = trpc.useMutation(['resume-queue'])
+  const m4 = trpc.useMutation(['clean-queue'])
+  const removeJobMutation = trpc.useMutation(['remove-job'])
   trpc.useSubscription(['on-queue-job'], {
     onNext(data) {
       console.log(`🎆 ${data.id}`)
+      debouncedRefetch()
     },
   })
   const isPaused = queueState.data?.isPaused ?? false
   const name = queueState.data?.name ?? ''
   const jobbies = queueState.data?.jobs ?? []
-  // useIntervalWhen(
-  //   () => {
-  //     queueState.refetch()
-  //   },
-  //   5000,
-  //   !isPaused,
-  //   false,
-  // )
 
   return (
     <div>
