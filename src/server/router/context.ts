@@ -1,8 +1,11 @@
 // src/server/router/context.ts
 import * as trpc from '@trpc/server'
 import * as trpcNext from '@trpc/server/adapters/next'
+import { NodeHTTPCreateContextFnOptions } from '@trpc/server/adapters/node-http'
+import { IncomingMessage } from 'http'
 import { prisma } from '../db/client'
 import { queue } from '../queue'
+import ws from 'ws'
 
 /**
  * Replace this with an object if you want to pass things to createContextInner
@@ -13,10 +16,15 @@ type CreateContextOptions = Record<string, never>
  * - testing, where we dont have to Mock Next.js' req/res
  * - trpc's `createSSGHelpers` where we don't have req/res
  **/
-export const createContextInner = async (opts: CreateContextOptions) => {
+export const createContextInner = async (
+  opts:
+    | trpcNext.CreateNextContextOptions
+    | NodeHTTPCreateContextFnOptions<IncomingMessage, ws>,
+) => {
   return {
     prisma,
     queue,
+    ...opts,
   }
 }
 
@@ -25,9 +33,12 @@ export const createContextInner = async (opts: CreateContextOptions) => {
  * @link https://trpc.io/docs/context
  **/
 export const createContext = async (
-  opts: trpcNext.CreateNextContextOptions,
+  opts:
+    | trpcNext.CreateNextContextOptions
+    | NodeHTTPCreateContextFnOptions<IncomingMessage, ws>,
 ) => {
-  return await createContextInner({})
+  console.log('🌄 createContext')
+  return await createContextInner(opts)
 }
 
 type Context = trpc.inferAsyncReturnType<typeof createContext>

@@ -19,7 +19,10 @@ import {
 } from '../chambress'
 import { ETry, TETry } from '../../utils/fp'
 import { fetchCongressAPI } from '../congressAPI'
-import { TestJob } from '../workers/testWorker'
+import * as trpc from '@trpc/server'
+import EventEmitter from 'events'
+
+const ee = new EventEmitter()
 
 const MEMBER_IMAGES_DIR = './public/member-images'
 const SQUARE_IMAGES_DIR = './public/square-images'
@@ -83,6 +86,7 @@ const allMemberResponseValidator = z.object({
 })
 type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
+console.log('🐳 create router')
 export const appRouter = createRouter()
   .transformer(superjson)
   .query('get-all-cong', {
@@ -400,9 +404,12 @@ export const appRouter = createRouter()
   .mutation('queue-job', {
     async resolve({ ctx }) {
       console.log('queue job')
-      ctx.queue.testQueue.add('test-job', { color: 'red', count: 3 })
-      const n = await ctx.queue.testQueue.getJobCounts()
-      console.log(n)
+      const j = await ctx.queue.testQueue.add('test-job', {
+        color: 'red',
+        count: 3,
+      })
+      ee.emit('queueJob', j)
+      return j
     },
   })
   .mutation('pause-queue', {
@@ -462,6 +469,24 @@ export const appRouter = createRouter()
       const j = await ctx.queue.testQueue.getJob(input.id)
       j?.remove()
       return
+    },
+  })
+  .subscription('on-queue-job', {
+    resolve({ ctx }) {
+      console.log('🎆I think someone is subscribing...')
+
+      return new trpc.Subscription<{ id: string }>((emit) => {
+        const onQueueJob = (data: { id: string }) => {
+          emit.data(data)
+        }
+
+        console.log('🎆setting up the subscription')
+        ee.on('queueJob', onQueueJob)
+        return () => {
+          console.log('🎆someone unsubscribed')
+          ee.off('queueJob', onQueueJob)
+        }
+      })
     },
   })
 

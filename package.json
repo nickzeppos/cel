@@ -9,19 +9,17 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "pmigrate": "prisma db push",
-    "fix-sharp": "yarn add --libc=musl sharp",
-    "d": "docker-compose up",
-    "w": "tsc-watch ./src/server/workers/*.ts --outdir ./.workers",
-    "tw-types": "tailwindcss-classnames -i ./tailwind.config.cjs -o ./tw.ts"
+    "fix-sharp": "npm_config_libc=musl yarn rebuild sharp",
+    "d": "docker-compose up"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^2.0.11",
     "@prisma/client": "^4.3.1",
-    "@trpc/client": "^9.27.2",
-    "@trpc/next": "^9.27.2",
-    "@trpc/react": "^9.27.2",
-    "@trpc/server": "^9.27.2",
+    "@trpc/client": "^9.27.4",
+    "@trpc/next": "^9.27.4",
+    "@trpc/react": "^9.27.4",
+    "@trpc/server": "^9.27.4",
     "bull": "^4.9.0",
     "bullmq": "^2.0.1",
     "date-fns": "^2.29.3",
@@ -35,9 +33,10 @@
     "react-window": "^1.8.7",
     "redis": "^4.3.1",
     "rooks": "^7.4.0",
-    "sharp": "^0.31.0",
+    "sharp": "^0.31.1",
     "superjson": "^1.10.0",
-    "tailwindcss-classnames": "^3.0.6",
+    "tsx": "^3.9.0",
+    "ws": "^8.9.0",
     "zod": "^3.18.0"
   },
   "devDependencies": {
@@ -48,12 +47,16 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1",
     "@types/react-window": "^1.8.5",
     "@types/sharp": "^0.31.0",
+    "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "autoprefixer": "^10.4.12",
     "eslint": "8.22.0",
     "eslint-config-next": "12.3.1",
+    "nodemon": "^2.0.20",
     "postcss": "^8.4.16",
+    "prettier": "^2.7.1",
+    "prettier-plugin-tailwindcss": "^0.1.13",
     "prisma": "4.3.1",
     "tailwindcss": "^3.1.8",
     "tsc-watch": "^5.0.3",
@@ -64,6 +67,7 @@
   },
   "packageManager": "yarn@3.2.3",
   "resolutions": {
-    ".prisma": "link:node-modules/.prisma"
+    ".prisma": "link:node-modules/.prisma",
+    "@types/react": "^18.0.21"
   }
 }
