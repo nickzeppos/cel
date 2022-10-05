@@ -1,58 +1,58 @@
-import { NextPage } from 'next'
 import AdminHeader from '../components/AdminHeader'
+import Button from '../components/Button'
 import MemberTile from '../components/MemberTile'
 import { trpc } from '../utils/trpc'
-import { FixedSizeGrid as Grid } from 'react-window'
+import { NextPage } from 'next'
 import AutoSizr from 'react-virtualized-auto-sizer'
-import Button from '../components/Button'
+import { FixedSizeGrid as Grid } from 'react-window'
 
 const Member: NextPage = () => {
-  const q = trpc.useQuery(['get-members'])
-  const m = trpc.useMutation(['create-members'], {
+  const membersQuery = trpc.useQuery(['member.get-all'])
+  const createMembers = trpc.useMutation(['member.create-all'], {
     onSuccess: (data) => {
       console.log(data)
     },
   })
-  const m2 = trpc.useMutation(['download-member-photos'])
-  const m3 = trpc.useMutation(['square-image'])
-  const m4 = trpc.useMutation(['pack-image'])
+  const downloadPhotos = trpc.useMutation(['member.download-missing-photos'])
+  const squareImage = trpc.useMutation(['member.square-image'])
+  const packImage = trpc.useMutation(['member.pack-image'])
 
-  const members = q.data ?? []
+  const members = membersQuery.data ?? []
   return (
     <div className="absolute inset-0 flex flex-col">
       <AdminHeader currentPage="member" />
-      <div className="flex-grow flex flex-col">
+      <div className="flex flex-grow flex-col">
         <div className="p-4">
           <Button
             label="Create Members"
-            disabled={m.isLoading}
+            disabled={createMembers.isLoading}
             onClick={() => {
-              m.mutate()
+              createMembers.mutate()
             }}
           />
           <Button
             label="Download Images"
-            disabled={m2.isLoading}
+            disabled={downloadPhotos.isLoading}
             onClick={() => {
-              m2.mutate()
+              downloadPhotos.mutate()
             }}
           />
           <Button
             label="Square Image"
-            disabled={m3.isLoading}
+            disabled={squareImage.isLoading}
             onClick={() => {
-              m3.mutate()
+              squareImage.mutate()
             }}
           />
           <Button
             label="Pack Image"
-            disabled={m4.isLoading}
+            disabled={packImage.isLoading}
             onClick={() => {
-              m4.mutate()
+              packImage.mutate()
             }}
           />
         </div>
-        <div className="flex-grow relative overflow-hidden">
+        <div className="relative flex-grow overflow-hidden">
           <div className="absolute inset-0">
             <AutoSizr>
               {({ width, height }) => {

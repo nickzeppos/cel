@@ -37,7 +37,6 @@ export const createContext = async (
     | trpcNext.CreateNextContextOptions
     | NodeHTTPCreateContextFnOptions<IncomingMessage, ws>,
 ) => {
-  console.log('🌄 createContext')
   return await createContextInner(opts)
 }
 

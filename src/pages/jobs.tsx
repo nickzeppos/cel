@@ -1,30 +1,31 @@
-import { NextPage } from 'next'
 import AdminHeader from '../components/AdminHeader'
-import Button from '../components/Button'
 import { trpc } from '../utils/trpc'
-import { formatDuration, formatRelative } from 'date-fns'
-import { useDebounce, useIntervalWhen } from 'rooks'
+import { Transition } from '@headlessui/react'
 import {
-  TrashIcon,
   PlayCircleIcon,
-  StopCircleIcon,
   PlusCircleIcon,
+  StopCircleIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline'
 import {
-  TrashIcon as TrashIconSolid,
-  PlusCircleIcon as PlusCircleIconSolid,
-  PlayCircleIcon as PlayCircleIconSolid,
-  PauseCircleIcon as PauseCircleIconSolid,
   ArrowPathIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  PauseCircleIcon as PauseCircleIconSolid,
+  PlayCircleIcon as PlayCircleIconSolid,
+  PlusCircleIcon as PlusCircleIconSolid,
+  TrashIcon as TrashIconSolid,
 } from '@heroicons/react/24/solid'
-import { Transition } from '@headlessui/react'
+import { formatRelative } from 'date-fns'
+import { NextPage } from 'next'
 import React, { useRef, useState } from 'react'
+import { useDebounce } from 'rooks'
 
 const Jobs: NextPage = () => {
   const [didFetch, setDidFetch] = useState(false)
   const fetchTimeoutRef = useRef<number | null>(null)
 
-  const queueState = trpc.useQuery(['queue-state'], {
+  const queueState = trpc.useQuery(['test-queue.state'], {
     onSuccess() {
       if (fetchTimeoutRef.current != null) {
         window.clearInterval(fetchTimeoutRef.current)
@@ -37,18 +38,18 @@ const Jobs: NextPage = () => {
     },
     refetchOnWindowFocus: false,
   })
-  const debouncedRefetch = useDebounce(queueState.refetch, 500, {
+  const debouncedRefetch = useDebounce(queueState.refetch, 100, {
     leading: true,
     trailing: true,
+    maxWait: 500,
   })
-  const m = trpc.useMutation(['queue-job'])
-  const m2 = trpc.useMutation(['pause-queue'])
-  const m3 = trpc.useMutation(['resume-queue'])
-  const m4 = trpc.useMutation(['clean-queue'])
-  const removeJobMutation = trpc.useMutation(['remove-job'])
-  trpc.useSubscription(['on-queue-job'], {
+  const pauseQueue = trpc.useMutation(['test-queue.pause'])
+  const resumeQueue = trpc.useMutation(['test-queue.resume'])
+  const addJob = trpc.useMutation(['test-queue.add-job'])
+  const removeJob = trpc.useMutation(['test-queue.remove-job'])
+  const cleanQueue = trpc.useMutation(['test-queue.clean'])
+  trpc.useSubscription(['test-queue.on-change'], {
     onNext(data) {
-      console.log(`🎆 ${data.id}`)
       debouncedRefetch()
     },
   })
@@ -68,21 +69,21 @@ const Jobs: NextPage = () => {
           <PlusCircleIconSolid
             className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
-              m.mutate()
+              addJob.mutate()
             }}
           />
           {isPaused ? (
             <PlayCircleIconSolid
               className="h-8 w-8 cursor-pointer text-white"
               onClick={() => {
-                m3.mutate()
+                resumeQueue.mutate()
               }}
             />
           ) : (
             <PauseCircleIconSolid
               className="h-8 w-8 cursor-pointer text-white"
               onClick={() => {
-                m2.mutate()
+                pauseQueue.mutate()
               }}
             />
           )}
@@ -96,7 +97,7 @@ const Jobs: NextPage = () => {
           <TrashIconSolid
             className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
-              m4.mutate()
+              cleanQueue.mutate()
             }}
           />
           <div className="text-xl font-bold">
@@ -148,7 +149,7 @@ const Jobs: NextPage = () => {
               return (
                 <div
                   key={j.id ?? i}
-                  className={`flex w-[200px] flex-col divide-y divide-neutral-700 rounded-lg border border-neutral-600 shadow-md hover:shadow-neutral-600/70 ${
+                  className={`flex w-[220px] flex-col divide-y divide-neutral-700 rounded-lg border border-neutral-600 shadow-md hover:shadow-neutral-600/70 ${
                     isPaused ? 'opacity-40' : ''
                   } hover:border-neutral-400 hover:opacity-100`}
                 >
@@ -165,7 +166,7 @@ const Jobs: NextPage = () => {
                       className="ml-auto h-5 w-5 cursor-pointer select-none"
                       onClick={() => {
                         if (j.id != null) {
-                          removeJobMutation.mutate({ id: j.id })
+                          removeJob.mutate({ id: j.id })
                         }
                       }}
                     />
@@ -204,10 +205,16 @@ const Jobs: NextPage = () => {
                   </div>
                   <div className="flex-grow p-2">
                     {j.returnvalue != null ? (
-                      <div>{j.returnvalue?.message}</div>
+                      <div>
+                        <CheckCircleIcon className="mr-1 inline-block h-5 w-5 text-green-400" />
+                        {j.returnvalue?.message}
+                      </div>
                     ) : null}
                     {j.failedReason != null ? (
-                      <div>{j.failedReason}</div>
+                      <div>
+                        <ExclamationTriangleIcon className="mr-1 inline-block h-5 w-5 text-red-400" />
+                        {j.failedReason}
+                      </div>
                     ) : null}
                     {j.state === 'active' && (
                       <div className="grid h-full w-full place-items-center">

@@ -1,12 +1,12 @@
 // src/pages/_app.tsx
+import type { AppRouter } from '../server/router'
+import '../styles/globals.css'
 import { httpBatchLink } from '@trpc/client/links/httpBatchLink'
 import { loggerLink } from '@trpc/client/links/loggerLink'
+import { createWSClient, wsLink } from '@trpc/client/links/wsLink'
 import { withTRPC } from '@trpc/next'
 import type { AppType, NextPageContext } from 'next/dist/shared/lib/utils'
 import superjson from 'superjson'
-import type { AppRouter } from '../server/router'
-import '../styles/globals.css'
-import { createWSClient, wsLink } from '@trpc/client/links/wsLink'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return <Component {...pageProps} />
@@ -20,10 +20,7 @@ const getBaseUrl = () => {
 
 function getEndingLink(ctx: NextPageContext | undefined) {
   if (typeof window !== 'undefined') {
-    console.log('🌷 not doing SSR')
-    const client = createWSClient({
-      url: `ws://localhost:3030`,
-    })
+    const client = createWSClient({ url: `ws://localhost:3030` })
     return wsLink<AppRouter>({ client })
   }
   return httpBatchLink({ url: `${getBaseUrl()}/api/trpc` })

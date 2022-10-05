@@ -1,6 +1,6 @@
-import { Lazy } from 'fp-ts/lib/function'
-import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
+import * as TE from 'fp-ts/lib/TaskEither'
+import { Lazy } from 'fp-ts/lib/function'
 
 export function errorIdentity(err: unknown): Error {
   return err instanceof Error ? err : new Error(`${err}`)

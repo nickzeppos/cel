@@ -1,12 +1,12 @@
-import { NextPage } from 'next'
-import { trpc } from '../utils/trpc'
-import React from 'react'
-import { Chambress } from '@prisma/client'
 import AdminHeader from '../components/AdminHeader'
+import { trpc } from '../utils/trpc'
+import { Chambress } from '@prisma/client'
+import { NextPage } from 'next'
+import React from 'react'
 
 const Home: NextPage = () => {
-  const chambresses = trpc.useQuery(['get-chambresses'])
-  const createMutation = trpc.useMutation(['create-chambresses'], {
+  const chambresses = trpc.useQuery(['chambress.get-all'])
+  const createMutation = trpc.useMutation(['chambress.create-all'], {
     onSuccess(data) {
       if (data == null) {
         return
@@ -15,7 +15,7 @@ const Home: NextPage = () => {
       chambresses.refetch()
     },
   })
-  const deleteMutation = trpc.useMutation(['delete-chambresses'], {
+  const deleteMutation = trpc.useMutation(['chambress.delete-all'], {
     onSuccess(data) {
       if (data == null) {
         return

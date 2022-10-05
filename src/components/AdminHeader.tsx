@@ -7,9 +7,9 @@ interface Props {
 
 export default function AdminHeader({ currentPage }: Props) {
   return (
-    <div className="flex gap-8 py-2 px-4 border-b border-neutral-700 items-center">
+    <div className="flex items-center gap-8 border-b border-neutral-700 py-2 px-4">
       <Link href="/">
-        <a className="font-bold text-xl">CEL Admin</a>
+        <a className="text-xl font-bold">CEL Admin</a>
       </Link>
       <div className="flex gap-4">
         <HeaderLink
@@ -30,15 +30,10 @@ interface HeaderLinkProps {
   label: string
 }
 function HeaderLink({ page, currentPage, label }: HeaderLinkProps) {
+  const textClasses = page === currentPage ? 'text-cyan-400' : 'text-white'
   return (
     <Link href={`/${page}`}>
-      <a
-        className={`font-bold ${
-          page === currentPage ? 'text-cyan-400' : 'text-white'
-        }`}
-      >
-        {label}
-      </a>
+      <a className={`font-bold ${textClasses}`}>{label}</a>
     </Link>
   )
 }

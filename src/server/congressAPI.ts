@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''
 
 export function fetchCongressAPI(
   route: string,
-  params: Record<string, string | number>,
+  params: Record<string, string | number> = {},
 ): Promise<Response> {
   const searchParams = new URLSearchParams(
     Object.fromEntries(Object.entries(params).map(([k, v]) => [k, `${v}`])),
@@ -20,6 +20,5 @@ export function fetchCongressAPI(
       }),
     },
   )
-  console.log(req)
   return fetch(req)
 }

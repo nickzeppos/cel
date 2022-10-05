@@ -9,7 +9,7 @@ const connection = {
 cleanup()
 setup()
 
-function cleanup() {
+export function cleanup() {
   if (globalThis.testQueue != null) {
     console.log('🧹 cleanup testQueue')
     globalThis.testQueue.close()
@@ -31,13 +31,13 @@ function setup() {
     },
   )
     .on('cleaned', () => {
-      console.log('[TEST QUEUE] CLEANED!')
+      console.log('🚂 CLEANED')
     })
     .on('paused', () => {
-      console.log('[TEST QUEUE] PAUSED!')
+      console.log('🚂 PAUSED')
     })
     .on('resumed', () => {
-      console.log('[TEST QUEUE] RESUMED!')
+      console.log('🚂 RESUMED')
     })
 
   globalThis.queueEvents = new QueueEvents('test-queue', {

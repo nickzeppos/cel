@@ -1,6 +1,6 @@
+import AdminHeader from '../components/AdminHeader'
 import { NextPage } from 'next'
 import Link from 'next/link'
-import AdminHeader from '../components/AdminHeader'
 
 const Home: NextPage = () => {
   return (

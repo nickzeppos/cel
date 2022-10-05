@@ -1,5 +1,5 @@
+import { TestJobData, TestJobName, TestJobResponse } from './types'
 import { Job } from 'bullmq'
-import { TestJobData, TestJobResponse, TestJobName } from './types'
 
 export default async function (
   job: Job<TestJobData, TestJobResponse, TestJobName>,
