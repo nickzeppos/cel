@@ -348,3 +348,15 @@ export const memberRouter = createRouter()
       console.log(`failed: ${b}`)
     },
   })
+  .mutation('populate', {
+    input: z.object({
+      bioguideID: z.string(),
+    }),
+    async resolve({ ctx, input: { bioguideID } }) {
+      const [r1, r2, r3] = await Promise.all([
+        fetchCongressAPI(`/member/${bioguideID}`),
+        fetchCongressAPI(`/member/${bioguideID}/sponsored-legislation`),
+        fetchCongressAPI(`/member/${bioguideID}/cosponsored-legislation`),
+      ])
+    },
+  })
