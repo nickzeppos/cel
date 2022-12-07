@@ -9,7 +9,7 @@ export type TestJobName = 'test-job'
 
 export interface BillJobData {
   congress: number
-  chamber: string
+  billType: string
   billNum: number
 }
 

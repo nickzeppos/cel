@@ -15,6 +15,6 @@ export default async function (
     throw new Error('something bad happened')
   }
   const t = Date.now() - t0
-  const message = `Pondered bill ${job.data.billNum} in the ${job.data.congress} ${job.data.chamber} for ${t}ms`
+  const message = `Pondered bill ${job.data.billNum} in the ${job.data.congress} ${job.data.billType} for ${t}ms`
   return { message }
 }

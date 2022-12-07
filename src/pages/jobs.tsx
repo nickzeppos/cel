@@ -23,7 +23,7 @@ import { useDebounce } from 'rooks'
 
 const Jobs: NextPage = () => {
   const [congress, setCongress] = useState<number>(117)
-  const [chamber, setChamber] = useState<string>('house')
+  const [billType, setBillType] = useState<string>('house')
   const [billNum, setBillNum] = useState<number>(1)
 
   const [didFetchTestQueueState, setDidFetchTestQueueState] = useState(false)
@@ -313,13 +313,13 @@ const Jobs: NextPage = () => {
             onChange={(e) => setCongress(parseInt(e.target.value))}
           />
 
-          <label className="ml-2">chamber</label>
+          <label className="ml-2">billType</label>
           <input
-            id="chamber"
+            id="billType"
             type="text"
-            placeholder={`${chamber}`}
+            placeholder={`${billType}`}
             className="bg-neutral-900 text-neutral-100 border-b-2 rounded"
-            onChange={(e) => setChamber(e.target.value)}
+            onChange={(e) => setBillType(e.target.value)}
           />
           <label className="ml-2">billNum</label>
           <input
@@ -333,7 +333,7 @@ const Jobs: NextPage = () => {
           <PlusCircleIconSolid
             className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
-              addBillJob.mutate({ billNum, congress, chamber })
+              addBillJob.mutate({ billNum, congress, billType })
             }}
           />
           {isBillQueuePaused ? (
@@ -462,9 +462,9 @@ const Jobs: NextPage = () => {
                     </div>
                     <div className="flex gap-2">
                       <span className="w-[60px] font-bold text-neutral-500">
-                        chamber
+                        billType
                       </span>
-                      <div>{j.data.chamber}</div>
+                      <div>{j.data.billType}</div>
                     </div>
                     <div className="flex gap-2">
                       <span className="w-[60px] font-bold text-neutral-500">
