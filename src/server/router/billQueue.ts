@@ -1,100 +1,112 @@
-import { fetchCongressAPI } from '../congressAPI'
 import { createRouter } from './context'
 import * as trpc from '@trpc/server'
 import { QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
 const billResponseValidator = z.object({
-  actions: z.object({
-    count: z.number(),
-    url: z.string(),
-  }),
-  amendments: z.object({
-    count: z.number(),
-    url: z.string(),
-  }),
-  cboCostEstimates: z
-    .array(
-      z.object({
-        pubDate: z.string(),
-        title: z.string(),
+  bill: z.object({
+    actions: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    amendments: z
+      .object({
+        count: z.number(),
         url: z.string(),
-      }),
-    )
-    .nullable(),
-  committeeReports: z.array(
-    z.object({
-      citation: z.string(),
+      })
+      .optional(),
+    cboCostEstimates: z
+      .array(
+        z.object({
+          pubDate: z.string(),
+          title: z.string(),
+          url: z.string(),
+        }),
+      )
+      .optional(),
+    committeeReports: z
+      .array(
+        z.object({
+          citation: z.string(),
+          url: z.string(),
+        }),
+      )
+      .optional(),
+    committees: z.object({
+      count: z.number(),
       url: z.string(),
     }),
-  ),
-  committees: z.object({
-    count: z.number(),
-    url: z.string(),
-  }),
-  congress: z.number(),
-  constitutionalAuthorityStatementText: z.string(),
-  cosponsors: z.object({
-    count: z.number(),
-    countIncludingWithdrawnCosponsors: z.number(),
-    url: z.string(),
-  }),
-  introducedDate: z.string(),
-  latestAction: z.object({
-    date: z.string(),
-    text: z.string(),
-  }),
-  laws: z
-    .array(
+    congress: z.number(),
+    constitutionalAuthorityStatementText: z.string(),
+    cosponsors: z.object({
+      count: z.number(),
+      countIncludingWithdrawnCosponsors: z.number(),
+      url: z.string(),
+    }),
+    introducedDate: z.string(),
+    latestAction: z.object({
+      actionDate: z.string(),
+      text: z.string(),
+    }),
+    laws: z
+      .array(
+        z.object({
+          number: z.string(),
+          type: z.string(),
+        }),
+      )
+      .optional(),
+    number: z.string(),
+    originChamber: z.string(),
+    policyArea: z.object({
+      name: z.string(),
+    }),
+    relatedBills: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    sponsors: z.array(
       z.object({
-        number: z.string(),
-        type: z.string(),
+        bioguideId: z.string(),
+        fullName: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+        middleName: z.string().optional(),
+        isByRequest: z.string(),
+        url: z.string(),
+        party: z.string(),
+        state: z.string(),
+        district: z.number(),
       }),
-    )
-    .nullable(),
-  number: z.string(),
-  originChamber: z.string(),
-  policyArea: z.object({
-    name: z.string(),
-  }),
-  relatedBills: z.object({
-    count: z.number(),
-    url: z.string(),
-  }),
-  sponsors: z.array(
-    z.object({
-      bioguideId: z.string(),
-      fullName: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-      middleName: z.string(),
-      isByRequest: z.string(),
+    ),
+    subjects: z.object({
+      count: z.number(),
       url: z.string(),
-      party: z.string(),
-      state: z.string(),
-      district: z.string(),
     }),
-  ),
-  subjects: z.object({
-    count: z.number(),
-    url: z.string(),
+    summaries: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    textVersions: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    title: z.string(),
+    titles: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    type: z.string(),
+    updateDate: z.string(),
+    updateDateIncludingText: z.string(),
   }),
-  summaries: z.object({
-    count: z.number(),
-    url: z.string(),
+  request: z.object({
+    billNumber: z.string(),
+    billType: z.string(),
+    congress: z.string(),
+    contentType: z.string(),
+    format: z.string(),
   }),
-  textVersions: z.object({
-    count: z.number(),
-    url: z.string(),
-  }),
-  title: z.string(),
-  titles: z.object({
-    count: z.number(),
-    url: z.string(),
-  }),
-  type: z.string(),
-  updateDate: z.string(),
-  updateDateIncludingText: z.string(),
 })
 
 export const billQueueRouter = createRouter()
