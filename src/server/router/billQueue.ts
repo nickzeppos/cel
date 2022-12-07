@@ -3,36 +3,42 @@ import * as trpc from '@trpc/server'
 import { QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
-export const testQueueRouter = createRouter()
+export const billQueueRouter = createRouter()
   .mutation('add-job', {
-    async resolve({ ctx }) {
-      return await ctx.queue.testQueue.add('test-job', {
-        color: 'red',
-        count: 3,
+    input: z.object({
+      congress: z.number(),
+      chamber: z.string(),
+      billNum: z.number(),
+    }),
+    async resolve({ input, ctx }) {
+      return await ctx.queue.billQueue.add('bill-job', {
+        congress: input.congress,
+        chamber: input.chamber,
+        billNum: input.billNum,
       })
     },
   })
   .mutation('pause', {
     async resolve({ ctx }) {
-      await ctx.queue.testQueue.pause()
+      await ctx.queue.billQueue.pause()
       return true
     },
   })
   .mutation('resume', {
     async resolve({ ctx }) {
-      await ctx.queue.testQueue.resume()
+      await ctx.queue.billQueue.resume()
       return true
     },
   })
   .mutation('clean', {
     async resolve({ ctx }) {
-      await ctx.queue.testQueue.clean(1000, 100)
+      await ctx.queue.billQueue.clean(1000, 100)
       return true
     },
   })
   .query('state', {
     async resolve({ ctx }) {
-      const q = ctx.queue.testQueue
+      const q = ctx.queue.billQueue
       const isPaused = await q.isPaused()
       const rawJobs = await q.getJobs()
       const jobs = await Promise.all(
@@ -66,7 +72,7 @@ export const testQueueRouter = createRouter()
   .mutation('remove-job', {
     input: z.object({ id: z.string() }),
     async resolve({ ctx, input }) {
-      const j = await ctx.queue.testQueue.getJob(input.id)
+      const j = await ctx.queue.billQueue.getJob(input.id)
       j?.remove()
       return
     },
@@ -93,21 +99,21 @@ export const testQueueRouter = createRouter()
           emit.data({ id: '*' })
         }
 
-        ctx.queue.testQueueEvents.on('completed', onCompleted)
-        ctx.queue.testQueueEvents.on('added', onAdded)
-        ctx.queue.testQueueEvents.on('removed', onRemoved)
-        ctx.queue.testQueueEvents.on('cleaned', onCleaned)
-        ctx.queue.testQueueEvents.on('failed', onFailed)
-        ctx.queue.testQueue.on('paused', onChanged)
-        ctx.queue.testQueue.on('resumed', onChanged)
+        ctx.queue.billQueueEvents.on('completed', onCompleted)
+        ctx.queue.billQueueEvents.on('added', onAdded)
+        ctx.queue.billQueueEvents.on('removed', onRemoved)
+        ctx.queue.billQueueEvents.on('cleaned', onCleaned)
+        ctx.queue.billQueueEvents.on('failed', onFailed)
+        ctx.queue.billQueue.on('paused', onChanged)
+        ctx.queue.billQueue.on('resumed', onChanged)
         return () => {
-          ctx.queue.testQueueEvents.off('completed', onCompleted)
-          ctx.queue.testQueueEvents.off('added', onAdded)
-          ctx.queue.testQueueEvents.off('removed', onRemoved)
-          ctx.queue.testQueueEvents.on('cleaned', onCleaned)
-          ctx.queue.testQueueEvents.on('failed', onFailed)
-          ctx.queue.testQueue.off('paused', onChanged)
-          ctx.queue.testQueue.off('resumed', onChanged)
+          ctx.queue.billQueueEvents.off('completed', onCompleted)
+          ctx.queue.billQueueEvents.off('added', onAdded)
+          ctx.queue.billQueueEvents.off('removed', onRemoved)
+          ctx.queue.billQueueEvents.on('cleaned', onCleaned)
+          ctx.queue.billQueueEvents.on('failed', onFailed)
+          ctx.queue.billQueue.off('paused', onChanged)
+          ctx.queue.billQueue.off('resumed', onChanged)
         }
       })
     },

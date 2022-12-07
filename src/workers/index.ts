@@ -25,3 +25,22 @@ testWorker
   .on('paused', () => {
     console.log(`🐜 PAUSED`)
   })
+
+const billWorker = new Worker('bill-queue', `${__dirname}/billWorker.js`, {
+  connection,
+  concurrency: 1,
+})
+
+billWorker
+  .on('active', (j) => {
+    console.log(`🐜 ACTIVE`, j.data, j.id)
+  })
+  .on('completed', () => {
+    console.log(`🐜 COMPLETE`)
+  })
+  .on('failed', () => {
+    console.log(`🐜 FAIL`)
+  })
+  .on('paused', () => {
+    console.log(`🐜 PAUSED`)
+  })

@@ -1,4 +1,5 @@
 // src/server/router/index.ts
+import { billQueueRouter } from './billQueue'
 import { chambressRouter } from './chambress'
 import { congressRouter } from './congress'
 import { createRouter } from './context'
@@ -13,6 +14,7 @@ export const appRouter = createRouter()
   .merge('chambress.', chambressRouter)
   .merge('congress.', congressRouter)
   .merge('test-queue.', testQueueRouter)
+  .merge('bill-queue.', billQueueRouter)
 
 // export type definition of API
 export type AppRouter = typeof appRouter
