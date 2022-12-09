@@ -1,4 +1,4 @@
-import fetch, { Request, Response } from 'node-fetch'
+import fetch, { Headers, Request, Response } from 'node-fetch'
 
 const API_KEY = process.env.CONGRESS_GOV_API_KEY ?? ''
 const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''
