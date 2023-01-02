@@ -1,5 +1,6 @@
 import { Chamber } from '@prisma/client'
 import { Option, none, some } from 'fp-ts/lib/Option'
+import { Response } from 'node-fetch'
 import { z } from 'zod'
 
 export const ChamberDisplay = z.enum(['House of Representatives', 'Senate'])
