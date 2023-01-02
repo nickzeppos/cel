@@ -95,25 +95,61 @@ function transformMember({
     }
   }
 
-  if (Math.max(servedHouseEnd ?? 0, servedSenateEnd ?? 0) < 1973)
-    return option.none
+  // if (Math.max(servedHouseEnd ?? 0, servedSenateEnd ?? 0) < 1973)
+  //   return option.none
 
-  return option.some({
-    bioguideId,
-    name,
-    party,
-    state,
-    district,
-    url,
-    imageUrl,
-    attribution,
-    servedHouseStart,
-    servedHouseEnd,
-    servedSenateStart,
-    servedSenateEnd,
-    spriteCol: null,
-    spriteRow: null,
-  })
+  // The way this is written, it doesn't actually grab people currently serving,
+  // if they haven't served in another chamber-- a member whose values come out as
+  // { servedHouseStart: 1984, servedHouseEnd: null, servedSenateStart: null, servedSenateEnd: null }
+  // evaluates here to True, and so we return option.none. This isn't desirable, since the above
+  // values represent a person who has served in the House since 1984 and is still, currently, serving.
+
+  // What we actually want is to check for a few things.
+  // If either end is null but the corresponding start is not null, that represents a currently serving member
+  if (
+    (servedHouseEnd === null && servedHouseStart !== null) ||
+    (servedSenateEnd === null && servedSenateStart !== null)
+  ) {
+    return option.some({
+      bioguideId,
+      name,
+      party,
+      state,
+      district,
+      url,
+      imageUrl,
+      attribution,
+      servedHouseStart,
+      servedHouseEnd,
+      servedSenateStart,
+      servedSenateEnd,
+      spriteCol: null,
+      spriteRow: null,
+    })
+  }
+  // If either end is both not null and greater than 1973, that represents a previously serving member
+  // who has a term that is at least as recent as the 93rd congress. Here we can use our old condition.
+  if (Math.max(servedHouseEnd ?? 0, servedSenateEnd ?? 0) > 1973) {
+    return option.some({
+      bioguideId,
+      name,
+      party,
+      state,
+      district,
+      url,
+      imageUrl,
+      attribution,
+      servedHouseStart,
+      servedHouseEnd,
+      servedSenateStart,
+      servedSenateEnd,
+      spriteCol: null,
+      spriteRow: null,
+    })
+  }
+
+  // if none of those are true, we dont want to return anything
+  return option.none
 }
 
 export const memberRouter = createRouter()
