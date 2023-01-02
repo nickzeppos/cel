@@ -53,10 +53,11 @@ model Member {
 }
 
 model Bill {
-  id      String   @id @default(cuid())
-  billNum Int
-  title   String
-  actions String[]
+  id               String            @id @default(cuid())
+  billNum          Int
+  title            String
+  actions          String[]
+  committeeActions CommitteeAction[]
 
   chambressId String
   sponsorId   String
@@ -65,6 +66,23 @@ model Bill {
   chambress Chambress @relation(fields: [chambressId], references: [id])
 
   @@unique([chambressId, billNum])
+}
+
+model CommitteeAction {
+  id           String  @id @default(cuid())
+  committeeId  String
+  hasAic       Boolean
+  reportedFrom Boolean
+
+  committee Committee @relation(fields: [committeeId], references: [id])
+  Bill      Bill?     @relation(fields: [billId], references: [id])
+  billId    String?
+}
+
+model Committee {
+  id              String            @id @default(cuid())
+  name            String
+  CommitteeAction CommitteeAction[]
 }
 
 // @Schema()
