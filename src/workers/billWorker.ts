@@ -3,6 +3,7 @@ import { fetchCongressAPI } from './congressAPI'
 import { BillJobData, BillJobName, BillJobResponse } from './types'
 import {
   billActionsResponseValidator,
+  billCommitteesResponseValidator,
   billResponseValidator,
 } from './validators'
 import { Job } from 'bullmq'
@@ -18,13 +19,19 @@ export default async function (
   const json = await res.json()
 
   const { bill } = billResponseValidator.parse(json)
-  console.log('bill arrived')
   const actionsRes = await fetchCongressAPI(`${route}/actions`, {
-    format: json,
+    format: 'json',
   })
 
   const actionsJson = await actionsRes.json()
   const { actions } = billActionsResponseValidator.parse(actionsJson)
+
+  const committeesRes = await fetchCongressAPI(`${route}/committees`, {
+    format: 'json',
+  })
+
+  const committeesJson = await committeesRes.json()
+  const { committees } = billCommitteesResponseValidator.parse(committeesJson)
 
   const chambressId = await prisma.chambress.findUniqueOrThrow({
     where: {

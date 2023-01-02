@@ -1,0 +1,41 @@
+/Approved for full committee consideration with amendments favorably/g
+/Approved for full committee consideration with an amendment favorably/g
+/Approved for full committee consideration with an amendment in the nature of a substitute favorably/g
+/Approved for full committee consideration without amendment favorably/g
+/Approved for reporting without amendment favorably/g
+/Committee consideration and Mark Up Session held/g
+/Committee on .* incorporated provisions of related measures S..* in reported measure/g
+/Committee on .* incorporated provisions of related measures .* in reported measure/g
+/Committee on .* ordered to be reported an original measure/g
+/Committee on .* ordered to be reported on an original measure in lieu of S..*/g
+/Committee on .* reported an original measure/g
+/Committee on .* received executive comment from .*/g
+/Committee on .* requested executive comment from .*/g
+/Executive Comment Requested from .*/g
+/Hearings concluded/g
+/Hearings held/g
+/Hearings held at .*/g
+/Hearings held in .*/g
+/Hearings held prior to introduction and\/or referral/g
+/Hearings held. With printed Hearing/g
+/Hearings printed/g
+/Joint hearings held/g
+/Measure with amendments to full committee/g
+/Measure without amendments to full committee/g
+/Ordered to be reported in lieu of .* with an amendment in the nature of a substitute favorably/g
+/Ordered to be reported with an amendment favorably/g
+/Ordered to be reported with amendments favorably/g
+/Ordered to be reported with amendments without recommendation/g
+/Ordered to be reported with an amendment in the nature of a substitute favorably/g
+/Ordered to be reported without amendment favorably/g
+/Ordered to be reported without amendment without recommendation/g
+/Ordered, That if and when reported, the bill be referred to the Committee on .* for not to exceed .* days/g
+/Ordered, that when reported the bill be referred to the Committee on .* for a period not to exceed .* calendar days, excluding .* or more days during which the Senate is not in Session/g
+/Ordered, that when reported, the bill be referred to the Committee on .* for a period not to exceed .* calendar days/g
+/Provisions of measure incorporated into measure H.R. .* ordered to be reported/g
+/Reconsidered its action of .*, and approved for full committee consideration with an amendment/g
+/S.AMDT. .* Referred to Committee on .*/g
+/Subcommittee on .* discharged/g
+/With printed hearing/g
+/Senate Committee on .* discharged by Unanimous Consent/g
+/Ordered favorably reported an original bill \(S. .*\) in lieu of this measure/g

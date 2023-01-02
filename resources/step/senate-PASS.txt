@@ -1,0 +1,23 @@
+/Introduced in the Senate, read twice, considered, read the third time, and passed with an amendment by Voice Vote/g
+/Introduced in the Senate, read twice, considered, read the third time, and passed without amendment by Unanimous Consent/g
+/Introduced in the senate, read twice, considered, read the third time, and passed without amendment by Voice Vote/g
+/Introduced in the Senate, read twice, considered, read the third time, and passed without amendment by Voice Vote/g
+/Measure passed Senate/g
+/Measure passed Senate, amended/g
+/Passed Senate with amendments and an amendment to the Title by Voice Vote/g
+/Passed Senate with amendments and an amendment to the Title by Yea-Nay Vote/g
+/Passed Senate with amendments by Unanimous Consent/g
+/Passed Senate with amendments by Voice Vote/g
+/Passed Senate with amendments by Yea-Nay/g
+/Passed Senate with amendments by Yea-Nay Vote/g
+/Passed Senate with an amendment and an amendment to the Title by Unanimous Consent/g
+/Passed Senate with an amendment and an amendment to the Title by Voice Vote/g
+/Passed Senate with an amendment and an amendment to the Title by Yea-Nay Vote/g
+/Passed Senate with an amendment by Unanimous Consent/g
+/Passed Senate with an amendment by Voice Vote/g
+/Passed Senate with an amendment by Yea-Nay Vote/g
+/Passed Senate without amendment by Unanimous Consent/g
+/Passed Senate without amendment by Voice Vote/g
+/Passed Senate without amendment by Yea-Nay Vote./g
+/Passed Senate, under the order of .*, having achieved 60 votes in the affirmative, with an amendment by Yea-Nay Vote/g
+/Passed Senate/g

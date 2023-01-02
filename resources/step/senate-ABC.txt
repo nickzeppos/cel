@@ -1,0 +1,162 @@
+/^Approved for full committee consideration without amendment favorably/g
+/^By Senator .* from Committee on .* filed written report/g
+/By Senator .* from Committee .* filed written report under authority of the order of the Senate/g
+/By Senator .* from Select Committee .* filed written report/g
+/Call of calendar in Senate/g
+/Cloture invoked in Senate by Yea-Nay Vote/g
+/Cloture motion on the bill presented in Senate/g
+/Cloture motion on the committee substitute amendment presented in Senate/g
+/Cloture motion on the motion to proceed presented in Senate/g
+/Cloture motion on the motion to proceed presented in Senate/g
+/Cloture motion on the motion to proceed in consideration presented in Senate/g
+/Cloture motion on the motion to proceed to the bill withdrawn by unanimous consent in Senate/g
+/Cloture motion on the motion to proceed to the consideration of the bill presented in Senate/g
+/Cloture motion on the motion to proceed to the measure presented in the Senate/g
+/Cloture motion on the motion to proceed to the measure withdrawn by unanimous consent in Senate/g
+/Cloture motion on .* presented in Senate/g
+/Cloture motion presented in Senate/g
+/Cloture motion withdrawn by unanimous consent in Senate/g
+/Cloture not invoked in Senate by Yea-Nay Vote/g
+/Cloture on the bill invoked in Senate by Yea-Nay Vote/g
+/Cloture on the committee substitute amendment invoked in Senate by Yea-Nay Vote/g
+/Cloture on the motion to proceed invoked in Senate by Yea-Nay Vote/g
+/Cloture on the motion to proceed to consideration not invoked in Senate by Yea-Nay Vote/g
+/Cloture on the motion to proceed to the measure invoked in Senate by Yea-Nay Vote/g
+/Cloture on the motion to proceed to the measure not invoked in Senate by Yea-Nay Vote/g
+/Committee on .* reported an original measure/g
+/Committee substitute, as amended, agreed to by Voice Vote/g
+/Considered by Senate/g
+/Forth cloture motion on the motion to proceed to consideration presented in Senate/g
+/Measure called up by unanimous consent in Senate/g
+/Measure considered in Senate/g
+/Measure laid before Senate/g
+/Measure laid before Senate by motion/g
+/Measure laid before Senate by unanimous consent/g
+/Motion by Senator .* to commit to Senate Committee on the .* with instruction made in Senate/g
+/Motion by Senator .* to commit to Senate Committee on the .* with instructions rejected in Senate by Yea-Nay Vote/g
+/Motion to commit to the Committee on .* rejected/g
+/Motion to Proceed considered in Senate/g
+/Motion to proceed considered in Senate/g
+/Motion to proceed considered in Senate by Unanimous Consent/g
+/Motion to proceed ruled out of order by the chair/g
+/Motion to proceed to consideration of measure agreed to in Senate by Unanimous Consent/g
+/Motion to proceed to consideration of measure agreed to in Senate by Voice Vote/g
+/Motion to proceed to consideration of measure agreed to in Senate by Yea-Nay Vote/g
+/Motion to proceed to consideration of measure considered in Senate/g
+/Motion to proceed to consideration of measure made in Senate/g
+/Motion to proceed to consideration of measure withdrawn in Senate/g
+/Motion to proceed to measure considered in Senate/g
+/Motion to recommit to Senate Committee on .* with instructions to report back forthwith an amendment \(SP .*\) made in Senate/g
+/Motion to table first committee amendment agreed to in Senate by Yea-Nay Vote/g
+/Motion to table the Committee amendment beginning on .* agreed to in the Senate by Yea-Nay Vote/g
+/Motion to table the Committee amendment beginning on .* rejected in Senate by Yea-Nay vote/g
+/Motion to table the Committee amendment on .* agreed to in Senate by Yea-Nay Vote/g
+/Motion to table the Committee amendment on .* agreed to by Yea-Nay Vote/g
+/Motion to table the Committee amendment on .* was agreed to by Yea-Nay Vote/g
+/Motion to table the Committee amendment on .* was agreed to in the Senate by Yea-Nay Vote/g
+/Motion to table the point of order agreed to in Senate by Yea-Nay Vote/g
+/Original measure reported to Senate by Senator .*/g
+/Original measure reported to Senate by Senator .*/g
+/Point of order raised against pending amendments en bloc/g
+/Point of order raised that SP .* is unconstitutional/g
+/Reported by Senator .* for Senator .* with amendments/g
+/Reported by Senator .* under authority of the order of the Senate of .* legislative day .* with an amendment in the nature of a substitute/g
+/Reported by Senator .* under authority of the order of the Senate of .* with an amendment in the nature of a substitute/g
+/Reported by Senator .* under authority of the order of the Senate of .* without amendment/g
+/Reported by Senator .* under the authority of the order of the Senate of .* without amendment/g
+/Reported by Senator .* under the authority of the order of the Senate of .* with amendments/g
+/Reported by Senator .* with amendments/g
+/Reported by Senator .* with amendments and an amendment to the title/g
+/Reported by Senator .* with an amendment/g
+/Reported by Senator .* with an amendment in the nature of a substitute/g
+/Reported by Senator .* with an amendment in the nature of a substitute and an amendment to the title/g
+/Reported by Senator .* without amendment/g
+/Reported jointly to Senate from the Committee on the .* with amendment/g
+/Reported jointly to Senate from the Select Committee on .* with amendment/g
+/Reported to Senate by Senator .* favorably with amendments/g
+/Reported to Senate by Senator .* favorably with an amendment in the nature of a substitute and an amendment to the title/g
+/Reported to Senate by Senator .* favorably with amendment/g
+/Reported to Senate by Senator .* for Senator .* favorably with an amendment in the nature of a substitute/g
+/Reported to Senate by Senator .* under the authority of the order of .* favorably with amendments/g
+/Reported to Senate by Senator .* under the authority of the order of .* favorably with an amendment in the nature of a substitute/g
+/Reported to Senate by Senator .* under the authority of the order of .* favorably without amendment/g
+/Reported to Senate by Senator .* under the authority of the order of .* with amendments/g
+/Reported to Senate by Senator .* under the authority of the order of .* with an amendment in the nature of a substitute/g
+/Reported to Senate by Senator .* under the authority of the order of .* without amendment/g
+/Reported to Senate by Senator .* under the authority of the order of .* without recommendation with amendments/g
+/Reported to Senate by Senator .* with amendments/g
+/Reported to Senate by Senator .* with an amendment/g
+/Reported to Senate by Senator .* with amendments and an amendment to the title/g
+/Reported to Senate by Senator .* without amendment/g
+/Reported to Senate by Senator .* with an amendment in the nature of a substitute/g
+/Reported to Senate by Senator .* with an amendment in the nature of a substitute and an amendment to the title/g
+/Reported to Senate by Senator .* without amendment/g
+/Reported to Senate by Senator .* without recommendation with amendments/g
+/Reported to Senate by Senator .* for Senator .* favorably with an amendment/g
+/Reported to Senate from the Committee on .* with amendment/g
+/Reported to Senate from the Committee on .*/g
+/S.AMDT .* Amendment SP .* \(as amended\) agreed to in Senate by Voice Vote/g
+/S.AMDT .* Motion to table agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Amendment agreed to in Senate by Voice Vote/g
+/S.AMDT .* Amendment agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Amendment not agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Amendment SP .* agreed to in Senate by Voice Vote/g
+/S.AMDT .* Amendment SP .* agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Amendment SP .* not agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Motion to table rejected in Senate by Yea-Nay Vote/g
+/S.AMDT .* Motion to table SP .* agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Motion to table SP .* rejected in Senate by Yea-Nay Vote/g
+/S.AMDT .* Motion to table the motion to reconsider the vote by which SP .* was tabled agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Motion to table the point of order agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* Proposed amendment SP .* withdrawn in Senate/g
+/S.AMDT .* Proposed amendments SP .* withdrawn in Senate/g
+/S.AMDT .* Proposed by Senator .* for Senator .*/g
+/S.AMDT .* SP .* agreed to in Senate by Yea-Nay Vote/g
+/S.AMDT .* SP .* fell when SP .* tabled/g
+/S.AMDT .* SP .* not agreed to in Senate by Voice Vote/g
+/S.AMDT .* SP .* ruled out of order by the chair/g
+/S.AMDT .* Amendment SA .* proposed by Senator .*/g
+/S.AMDT .* Proposed by Senator .*/g
+/S.UP.AMDT .* Amendment agreed to in Senate by Voice Vote/g
+/S.UP.AMDT .* Amendment SU .* agreed to in Senate by Voice Vote/g
+/S.UP.AMDT .* Ordered to be printed. SP .*/g
+/S.UP.AMDT .* Proposed by Senator .*/g
+/S.UP.AMDT .* Proposed by Senator .* for Senator .*/g
+/Second cloture motion on the bill presented in Senate/g
+/Second cloture motion on the motion to proceed not invoked in Senate by Yea-Nay Vote/g
+/Second cloture motion on the motion to proceed presented in Senate/g
+/Second cloture motion on .* presented in Senate/g
+/Second cloture motion presented in Senate/g
+/Senate agreed by unanimous consent that the Committee on .* have until .* to report/g
+/Senate Committee on .* discharged/g
+/Senate committee on .* discharged/g
+/Senate Committee on .* discharged by Unanimous Consent/g
+/Senate Committee on .* discharged by Voice Vote/g
+/Star print ordered on report.*/g
+/Star print ordered on the reported bill/g
+/Star Print ordered S. .*/g
+/The bill was amended by unanimous consent/g
+/The committee amendment was modified by Unanimous Consent/g
+/The committee amendments agreed to by Unanimous Consent/g
+/The committee reported amendment is agreed to by Unanimous Consent and considered as original text/g
+/The Committee reported amendment was agreed to by Unanimous Consent/g
+/The committee reported amendment was withdrawn by Unanimous Consent/g
+/The committee reported amendments are agreed to by Unanimous Consent and considered as original text/g
+/The committee reported substitute was withdrawn by Unanimous Consent/g
+/The committee substitute agreed to by Unanimous Consent/g
+/The committee substitute as amended agreed to /g
+/The committee substitute as amended agreed to by Unanimous Consent/g
+/The committee substitute as amended agreed to by Voice Vote/g
+/The committee substitute as amended modified agreed to by Voice Vote/g
+/The committee substitute as modified, as amended agreed to by Voice Vote/g
+/The committee substitute was modified/g
+/The committee substitute was withdrawn by Unanimous Consent/g
+/The first and second cloture motions on .* were vitiated by Unanimous Consent/g
+/The reported Committee amendment was modified at the direction of the Committee/g
+/The reported .* amendments were withdrawn in Senate/g
+/The second and third cloture votes were vitiated by Unanimous Consent/g
+/Third cloture motion on the bill presented in Senate/g
+/Third cloture motion not he motion to proceed to consideration presented in Senate/g
+/With written report No./g
+/Indefinitely postponed by Senate by Voice Vote/g
+/Indefinitely postponed by Senate by Unanimous Consent/g

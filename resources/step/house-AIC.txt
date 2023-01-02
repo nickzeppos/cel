@@ -1,0 +1,9 @@
+/Committee Hearings Held./g
+/Field Hearings Held/g
+/Committee Consideration and Mark-up Session Held./g
+/Reported(( to House)? \(Amended\))? by the Committee/g
+/Ordered to be Reported/g
+/reported to house from the committee/ig
+/Subcommittee Hearings Held./g
+/Subcommittee Consideration and Mark-up Session Held./g
+/Forwarded by Subcommittee to Full Committee/g
