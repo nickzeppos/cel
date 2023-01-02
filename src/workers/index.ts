@@ -38,8 +38,9 @@ billWorker
   .on('completed', () => {
     console.log(`🐜 COMPLETE`)
   })
-  .on('failed', () => {
+  .on('failed', (job, error) => {
     console.log(`🐜 FAIL`)
+    console.log(error)
   })
   .on('paused', () => {
     console.log(`🐜 PAUSED`)
