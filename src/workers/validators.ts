@@ -1,12 +1,41 @@
 import { z } from 'zod'
 
-const requestValidator = z.object({
-  billNumber: z.string(),
-  billType: z.string(),
-  congress: z.string(),
+const fullChamberNameValidator = z.enum(['House of Representatives', 'Senate'])
+
+const shortChamberNameValidator = z.enum(['House', 'Senate'])
+
+const requestResponseValidator = z.object({
+  congress: z.string().optional(),
   contentType: z.string(),
   format: z.string(),
 })
+
+const paginationResponseValidator = z.object({
+  count: z.number(),
+  next: z.string().url().optional(),
+  prev: z.string().url().optional(),
+})
+
+const congressResponseValidator = z.object({
+  congresses: z.array(
+    z.object({
+      endYear: z.string(),
+      startYear: z.string(),
+      name: z.string(), // ###th | ###rd Congress
+      sessions: z.array(
+        z.object({
+          chamber: fullChamberNameValidator,
+          endDate: z.string().nullable(),
+          number: z.number().int(),
+          startDate: z.string(),
+        }),
+      ),
+    }),
+  ),
+  pagination: paginationResponseValidator,
+  request: requestResponseValidator,
+})
+
 export const billResponseValidator = z.object({
   bill: z.object({
     actions: z.object({
@@ -36,17 +65,21 @@ export const billResponseValidator = z.object({
         }),
       )
       .optional(),
-    committees: z.object({
-      count: z.number(),
-      url: z.string(),
-    }),
+    committees: z
+      .object({
+        count: z.number(),
+        url: z.string(),
+      })
+      .optional(),
     congress: z.number(),
-    constitutionalAuthorityStatementText: z.string(),
-    cosponsors: z.object({
-      count: z.number(),
-      countIncludingWithdrawnCosponsors: z.number(),
-      url: z.string(),
-    }),
+    constitutionalAuthorityStatementText: z.string().optional(),
+    cosponsors: z
+      .object({
+        count: z.number(),
+        countIncludingWithdrawnCosponsors: z.number(),
+        url: z.string(),
+      })
+      .optional(),
     introducedDate: z.string(),
     latestAction: z.object({
       actionDate: z.string(),
@@ -61,42 +94,52 @@ export const billResponseValidator = z.object({
       )
       .optional(),
     number: z.string(),
-    originChamber: z.string(),
-    policyArea: z.object({
-      name: z.string(),
-    }),
+    originChamber: shortChamberNameValidator,
+    policyArea: z
+      .object({
+        name: z.string(),
+      })
+      .optional(),
     relatedBills: z
       .object({
         count: z.number(),
         url: z.string(),
       })
       .optional(),
-    sponsors: z.array(
-      z.object({
-        bioguideId: z.string(),
-        fullName: z.string(),
-        firstName: z.string(),
-        lastName: z.string(),
-        middleName: z.string().optional(),
-        isByRequest: z.string(),
+    sponsors: z
+      .array(
+        z.object({
+          bioguideId: z.string(),
+          fullName: z.string(),
+          firstName: z.string(),
+          lastName: z.string(),
+          middleName: z.string().optional(),
+          isByRequest: z.string(),
+          url: z.string(),
+          party: z.string(),
+          state: z.string(),
+          district: z.number().optional(),
+        }),
+      )
+      .length(1),
+    subjects: z
+      .object({
+        count: z.number(),
         url: z.string(),
-        party: z.string(),
-        state: z.string(),
-        district: z.number(),
-      }),
-    ),
-    subjects: z.object({
-      count: z.number(),
-      url: z.string(),
-    }),
-    summaries: z.object({
-      count: z.number(),
-      url: z.string(),
-    }),
-    textVersions: z.object({
-      count: z.number(),
-      url: z.string(),
-    }),
+      })
+      .optional(),
+    summaries: z
+      .object({
+        count: z.number(),
+        url: z.string(),
+      })
+      .optional(),
+    textVersions: z
+      .object({
+        count: z.number(),
+        url: z.string(),
+      })
+      .optional(),
     title: z.string(),
     titles: z.object({
       count: z.number(),
@@ -106,7 +149,9 @@ export const billResponseValidator = z.object({
     updateDate: z.string(),
     updateDateIncludingText: z.string(),
   }),
-  request: requestValidator,
+  error: z.string().optional(),
+  pagination: paginationResponseValidator.optional(),
+  request: requestResponseValidator,
 })
 
 export const billActionsResponseValidator = z.object({
@@ -114,12 +159,18 @@ export const billActionsResponseValidator = z.object({
     z.object({
       actionCode: z.string().optional(),
       actionDate: z.string(),
-      acionTime: z.string().optional(),
-      calendarNumber: z
-        .object({
-          calendar: z.string(),
-          number: z.string().optional(),
-        })
+      actionTime: z.string().optional(),
+      recordedVotes: z
+        .array(
+          z.object({
+            chamber: shortChamberNameValidator,
+            congress: z.number(),
+            date: z.string(),
+            rollNumber: z.number(),
+            sessionNumber: z.number(),
+            url: z.string().url(),
+          }),
+        )
         .optional(),
       committees: z
         .array(
@@ -130,28 +181,46 @@ export const billActionsResponseValidator = z.object({
           }),
         )
         .optional(),
-      recordedVotes: z
-        .array(
-          z.object({
-            chamber: z.string(),
-            congress: z.number(),
-            date: z.string(),
-            rollNumber: z.number(),
-            sessionNumber: z.number(),
-            url: z.string(),
-          }),
-        )
-        .optional(),
       sourceSystem: z.object({
         code: z.number().optional(),
-        name: z.string().optional(),
+        name: z.string(),
       }),
       text: z.string(),
       type: z.string(),
     }),
   ),
-  pagination: z.object({
-    count: z.number(),
-  }),
-  request: requestValidator,
+  error: z.string().optional(),
+  pagination: paginationResponseValidator.optional(),
+  request: requestResponseValidator,
+})
+
+const committeeActivitiesValidator = z.object({
+  date: z.string(), // TODO: support dateString
+  name: z.string(),
+})
+
+export const billCommitteesResponseValidator = z.object({
+  committees: z.array(
+    z.object({
+      activities: z.array(committeeActivitiesValidator).optional(),
+      chamber: shortChamberNameValidator,
+      name: z.string(),
+      subcommittees: z
+        .array(
+          z.object({
+            activities: z.array(committeeActivitiesValidator),
+            name: z.string(),
+            systemCode: z.string(),
+            url: z.string().url(),
+          }),
+        )
+        .optional(),
+      systemCode: z.string(),
+      type: z.string(), // TODO: enummable, i.e. Standing, Select. Just not sure of extent of vals
+      url: z.string().url(),
+    }),
+  ),
+  error: z.string().optional(),
+  pagination: paginationResponseValidator.optional(),
+  request: requestResponseValidator,
 })
