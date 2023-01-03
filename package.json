@@ -9,6 +9,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "pmigrate": "prisma db push",
+    "pstudio": "npx prisma studio",
     "fix-sharp": "npm_config_libc=musl yarn rebuild sharp",
     "d": "docker-compose up"
   },
@@ -22,6 +23,7 @@
     "@trpc/server": "^9.27.4",
     "bull": "^4.9.0",
     "bullmq": "^2.0.1",
+    "csv-parse": "^5.3.3",
     "date-fns": "^2.29.3",
     "fp-ts": "^2.12.3",
     "next": "12.3.1",
