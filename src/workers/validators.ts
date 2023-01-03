@@ -1,9 +1,17 @@
 import { z } from 'zod'
 
-const fullChamberNameValidator = z.enum(['House of Representatives', 'Senate'])
+export const fullChamberNameValidator = z.enum([
+  'House of Representatives',
+  'Senate',
+])
 
-const shortChamberNameValidator = z.enum(['House', 'Senate'])
-
+export const shortChamberNameValidator = z.enum(['House', 'Senate'])
+export const billTypeValidator = z.enum(['hr', 's'])
+export const billJobDataValidator = z.object({
+  congress: z.number().min(93),
+  billType: billTypeValidator,
+  billNum: z.number(),
+})
 const requestResponseValidator = z.object({
   congress: z.string().optional(),
   contentType: z.string(),

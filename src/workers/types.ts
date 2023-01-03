@@ -1,3 +1,10 @@
+import {
+  billJobDataValidator,
+  billTypeValidator,
+  shortChamberNameValidator,
+} from './validators'
+import { Step } from '@prisma/client'
+// import { Step } from '@prisma/client'
 import { z } from 'zod'
 
 export interface TestJobData {
@@ -9,22 +16,54 @@ export interface TestJobResponse {
 }
 export type TestJobName = 'test-job'
 
-// export interface BillJobData {
-//   congress: number
-//   billType: string
-//   billNum: number
-// }
-
-export const billJobDataValidator = z.object({
-  congress: z.number().min(93),
-  billType: z.enum(['hr', 's']),
-  billNum: z.number(),
-})
+export type BillType = z.infer<typeof billTypeValidator>
 
 export type BillJobData = z.infer<typeof billJobDataValidator>
+
+export type ChamberShortName = z.infer<typeof shortChamberNameValidator>
+
+export type ChamberShortNameLowercase = Lowercase<ChamberShortName>
 
 export interface BillJobResponse {
   message: string
 }
 
 export type BillJobName = 'bill-job'
+
+const RESOURCE_ROOT = 'resources'
+export const IMPORTANT_LIST_PATH = `${RESOURCE_ROOT}/important`
+export const RANKING_PHRASES_PATH = `${RESOURCE_ROOT}/ranking`
+export const COMMITTEE_FILTERS_PATH = `${RESOURCE_ROOT}/committee`
+export const STEP_REGEXES_PATH = `${RESOURCE_ROOT}/step`
+
+// export enum Importance {
+//   Commemorative,
+//   Significant,
+//   SubstantiveAndSignificant,
+// }
+
+export enum NumericStep {
+  BILL,
+  AIC,
+  ABC,
+  PASS,
+  LAW,
+}
+
+export type StepRegexDictionary = Map<NumericStep, RegExp[]>
+export interface RankingPhraseRow {
+  phrase: string
+  exception: string
+}
+
+export interface RankingPhrases {
+  up: string[]
+  down: string[]
+}
+
+export interface BillResources {
+  rankingPhrases: RankingPhrases
+  importantList: number[]
+  stepRegexes: StepRegexDictionary
+  committeeFilters: string[]
+}
