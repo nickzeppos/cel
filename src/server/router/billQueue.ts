@@ -1,4 +1,4 @@
-import { billJobDataValidator } from '../../workers/types'
+import { billJobDataValidator } from '../../workers/validators'
 import { createRouter } from './context'
 import * as trpc from '@trpc/server'
 import { QueueEventsListener } from 'bullmq'
