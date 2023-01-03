@@ -10,7 +10,7 @@ import {
 } from './types'
 import { StepRegexDictionary } from './types'
 import { Importance } from '@prisma/client'
-import { parse } from 'csv-parse/lib/sync'
+import { parse } from 'csv-parse/sync'
 import { readFile } from 'fs/promises'
 
 // 4 groups of functions:
@@ -129,7 +129,7 @@ export async function getRegexesForStep(
   chamber: ChamberShortNameLowercase,
   step: NumericStep,
 ): Promise<RegExp[]> {
-  const path = `${STEP_REGEXES_PATH}/${chamber}-${step}.txt`
+  const path = `${STEP_REGEXES_PATH}/${chamber}-${NumericStep[step]}.txt`
   const data = await readFile(path, 'utf-8')
   return parseStepRegexFile(data)
 }
