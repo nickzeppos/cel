@@ -1,11 +1,13 @@
 import { prisma } from '../server/db/client'
 import { fetchCongressAPI } from './congressAPI'
 import { BillJobData, BillJobName, BillJobResponse } from './types'
+import { computeImportance, computeStepData } from './utils'
 import {
   billActionsResponseValidator,
   billCommitteesResponseValidator,
   billResponseValidator,
 } from './validators'
+import { Step } from '@prisma/client'
 import { Job } from 'bullmq'
 
 export default async function (
@@ -52,6 +54,21 @@ export default async function (
     select: { bioguideId: true },
   })
 
+  const chamberShortNameLowercase = billType === 'hr' ? 'house' : 'senate'
+
+  const importance = await computeImportance(
+    bill.title,
+    chamberShortNameLowercase,
+    congress,
+    billNum,
+  )
+  const { terminalStep, hasAIC } = await computeStepData(
+    actions.map((a) => a.text),
+    chamberShortNameLowercase,
+  )
+
+  const terminalStepAsPrismaEum = terminalStep as any as Step
+
   const billRecord = await prisma.bill.create({
     data: {
       billNum: billNum,
@@ -59,6 +76,9 @@ export default async function (
       chambressId: chambressId.id,
       sponsorId: sponsorId.bioguideId,
       actions: actions.map((a) => a.text),
+      hasAIC: hasAIC,
+      importance: importance,
+      terminalStep: terminalStepAsPrismaEum,
     },
   })
 
