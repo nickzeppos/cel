@@ -57,6 +57,9 @@ model Bill {
   billNum          Int
   title            String
   actions          String[]
+  hasAIC           Boolean
+  terminalStep     Step
+  importance       Importance
   committeeActions CommitteeAction[]
 
   chambressId String
@@ -68,15 +71,30 @@ model Bill {
   @@unique([chambressId, billNum])
 }
 
+enum Importance {
+  Commemorative
+  Significant
+  SubstantiveAndSignificant
+}
+
+enum Step {
+  BILL
+  AIC
+  ABC
+  PASS
+  LAW
+}
+
 model CommitteeAction {
   id           String  @id @default(cuid())
-  committeeId  String
   hasAic       Boolean
   reportedFrom Boolean
 
+  committeeId String
+  billId      String
+
   committee Committee @relation(fields: [committeeId], references: [id])
-  Bill      Bill?     @relation(fields: [billId], references: [id])
-  billId    String?
+  Bill      Bill      @relation(fields: [billId], references: [id])
 }
 
 model Committee {
@@ -84,29 +102,3 @@ model Committee {
   name            String
   CommitteeAction CommitteeAction[]
 }
-
-// @Schema()
-// export class Person extends Document {
-//   @Prop()
-//   bioguide: string
-//   @Prop()
-//   firstName: string
-//   @Prop()
-//   lastName: string
-//   @Prop()
-//   fullName: string
-// }
-
-// @Schema()
-// export class Term extends Document {
-// @Prop(raw({ type: SchemaTypes.ObjectId, ref: 'person' }))
-// person: ObjectId
-// @Prop()
-// party: string
-// @Prop()
-// state: string
-// @Prop()
-// district: number
-// @Prop(raw({ type: SchemaTypes.ObjectId, ref: 'chambress' }))
-// chambress: string
-// }
