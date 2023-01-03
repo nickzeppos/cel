@@ -1,6 +1,6 @@
 import { prisma } from '../server/db/client'
 import { fetchCongressAPI } from './congressAPI'
-import { BillJobData, BillJobName, BillJobResponse } from './types'
+import { BillJobData, BillJobName, BillJobResponse, NumericStep } from './types'
 import { computeImportance, computeStepData } from './utils'
 import {
   billActionsResponseValidator,
@@ -67,12 +67,16 @@ export default async function (
     chamberShortNameLowercase,
   )
 
-  // I dont like this way of doing it, but I have to go from the numeric enum we use in our app to
-  // the string enum prisma seems to use (seemingly exclusively and by default). We need numeric enum
-  // for Step in our app because we rely on both it being a number, and on its underyling numeric
-  // ordinality for comparisons when calculating terminalStep (i.e., numeric enum enables step > step,
-  // step--, etc.). Alternative that comes to mind is a lookup table, but this is easier first pass.
-  const terminalStepAsPrismaEum = terminalStep as any as Step
+  const numericStepToPrismaStep: { [key: number]: string } = {
+    [NumericStep.BILL]: 'BILL',
+    [NumericStep.AIC]: 'AIC',
+    [NumericStep.ABC]: 'ABC',
+    [NumericStep.PASS]: 'PASS',
+    [NumericStep.LAW]: 'LAW',
+  }
+  const terminalStepAsPrismaEum = numericStepToPrismaStep[
+    terminalStep
+  ] as any as Step
 
   const billRecord = await prisma.bill.create({
     data: {
