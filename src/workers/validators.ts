@@ -202,7 +202,7 @@ export const billActionsResponseValidator = z.object({
   request: requestResponseValidator,
 })
 
-const committeeActivitiesValidator = z.object({
+export const committeeActivitiesValidator = z.object({
   date: z.string(), // TODO: support dateString
   name: z.string(),
 })
@@ -210,7 +210,7 @@ const committeeActivitiesValidator = z.object({
 export const billCommitteesResponseValidator = z.object({
   committees: z.array(
     z.object({
-      activities: z.array(committeeActivitiesValidator).optional(),
+      activities: z.array(committeeActivitiesValidator),
       chamber: shortChamberNameValidator,
       name: z.string(),
       subcommittees: z
