@@ -125,41 +125,28 @@ export default async function (
       ),
     ) // filter activities on committeeActivitiesFilter
 
-  const filteredCommitteesSet = new Set(filteredCommittees.map((a) => a.name))
-
-  //create map we're going to populate
-  // const committeeActionRecords: Partial<CommitteeAction>[] = []
-  // const committeeRecords: Committee[] = []
   //  for each unique committee in the rows filtered from the committee page
-  for (const committee of filteredCommitteesSet) {
+  for (const committee of filteredCommittees) {
     //  create a committee doc
     const committeeRecord = await prisma.committee.create({
       data: {
-        name: committee,
+        name: committee.name,
       },
     })
     // committeeRecords.push(committeeRecord)
 
     // get the committee specific activities
-    const committeeActivities = filteredCommittees
-      .filter((c) => c.name === committee)[0]
-      .activities.map((a) => a.name)
+    const committeeActivities = committee.activities.map((a) => a.name)
 
     // get the ingredients for this committee
     const billCommitteeData = getBillCommitteeData(
       chamberShortNameLowercase,
-      committee,
+      committee.name,
       committeeActivities,
       actions.map((a) => a.text),
       hasAIC,
       AICRegexList,
     )
-
-    // const billCommitteeIngredient = {
-    //   committeeId: committeeRecord.id,
-    //   hasAIC: billCommitteeData.hasAIC,
-    //   reportedFrom: billCommitteeData.reportedFrom,
-    // }
 
     await prisma.committeeAction.create({
       data: {
@@ -173,9 +160,6 @@ export default async function (
         },
       },
     })
-
-    // Push into initial array
-    // committeeActionRecords.push(committeeActionRecord)
   }
 
   const t = Date.now() - t0
