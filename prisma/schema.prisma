@@ -94,7 +94,7 @@ model CommitteeAction {
   billId      String
 
   committee Committee @relation(fields: [committeeId], references: [id])
-  Bill      Bill      @relation(fields: [billId], references: [id])
+  bill      Bill      @relation(fields: [billId], references: [id])
 }
 
 model Committee {

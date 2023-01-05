@@ -1,6 +1,8 @@
 import {
+  BillCommitteeData,
   COMMITTEE_FILTERS_PATH,
   ChamberShortNameLowercase,
+  CommitteeActivies,
   IMPORTANT_LIST_PATH,
   NumericStep,
   RANKING_PHRASES_PATH,
@@ -41,6 +43,59 @@ export async function computeImportance(
 }
 
 // calculators
+
+export const getBillCommitteeData = (
+  chamber: ChamberShortNameLowercase,
+  committee: string,
+  committeeActivities: string[],
+  actions: string[],
+  billHasAIC: boolean,
+  AICRegexList: RegExp[],
+): BillCommitteeData => {
+  const hasAIC =
+    billHasAIC && committeeDidAIC(chamber, committee, actions, AICRegexList)
+  const reportedFrom = committeeReportedFrom(committeeActivities)
+  return { hasAIC, reportedFrom }
+}
+
+export const committeeDidAIC = (
+  chamber: ChamberShortNameLowercase,
+  committee: string,
+  actions: string[],
+  AICRegexList: RegExp[],
+): boolean => {
+  const committeeActions = filterActionsByCommittee(committee, actions, chamber)
+  let hasAIC = false
+  for (let i = 0; i < committeeActions.length; i++) {
+    const committeAction = committeeActions[i]
+    for (let j = 0; j < AICRegexList.length; j++) {
+      const regex = AICRegexList[j]
+      if (committeAction.match(regex)) {
+        hasAIC = true
+        return hasAIC
+      }
+    }
+  }
+  return hasAIC
+}
+
+export const filterActionsByCommittee = (
+  committee: string,
+  actions: string[],
+  chamber: ChamberShortNameLowercase,
+): string[] => {
+  return actions.filter((x) => x.includes(chamber))
+}
+
+export const committeeReportedFrom = (
+  committeeActivities: string[],
+): boolean => {
+  const committeeReportedActivities = committeeActivities.map((s) =>
+    /report/g.test(s.toLowerCase()),
+  )
+  return committeeReportedActivities.some((a) => a) ? true : false
+}
+
 function calculateStepData(
   actions: string[],
   stepRegexes: StepRegexDictionary,

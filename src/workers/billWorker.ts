@@ -1,13 +1,25 @@
 import { prisma } from '../server/db/client'
 import { fetchCongressAPI } from './congressAPI'
-import { BillJobData, BillJobName, BillJobResponse, NumericStep } from './types'
-import { computeImportance, computeStepData } from './utils'
+import {
+  BillJobData,
+  BillJobName,
+  BillJobResponse,
+  CommitteeActivies,
+  NumericStep,
+} from './types'
+import {
+  computeImportance,
+  computeStepData,
+  getBillCommitteeData,
+  getCommitteeFilters,
+  getRegexesForStep,
+} from './utils'
 import {
   billActionsResponseValidator,
   billCommitteesResponseValidator,
   billResponseValidator,
 } from './validators'
-import { Step } from '@prisma/client'
+import { Committee, CommitteeAction, Step } from '@prisma/client'
 import { Job } from 'bullmq'
 
 export default async function (
@@ -82,14 +94,89 @@ export default async function (
     data: {
       billNum: billNum,
       title: bill.title,
-      chambressId: chambressId.id,
-      sponsorId: sponsorId.bioguideId,
       actions: actions.map((a) => a.text),
       hasAIC: hasAIC,
       importance: importance,
       terminalStep: terminalStepAsPrismaEum,
+      chambress: {
+        connect: { id: chambressId.id },
+      },
+      sponsor: {
+        connect: { bioguideId: sponsorId.bioguideId },
+      },
     },
   })
+
+  const committeeFilters = await getCommitteeFilters(chamberShortNameLowercase)
+  const AICRegexList = await getRegexesForStep(
+    chamberShortNameLowercase,
+    NumericStep.AIC,
+  )
+
+  const filteredCommittees = committees
+    .filter(
+      (committee) =>
+        committee.chamber.toLowerCase() === chamberShortNameLowercase,
+    ) // filter on chamber
+    .filter((committee) => !!committee.activities)
+    .filter((committee) =>
+      committee.activities.filter((activity) =>
+        committeeFilters.includes(activity.name),
+      ),
+    ) // filter activities on committeeActivitiesFilter
+
+  const filteredCommitteesSet = new Set(filteredCommittees.map((a) => a.name))
+
+  //create map we're going to populate
+  // const committeeActionRecords: Partial<CommitteeAction>[] = []
+  // const committeeRecords: Committee[] = []
+  //  for each unique committee in the rows filtered from the committee page
+  for (const committee of filteredCommitteesSet) {
+    //  create a committee doc
+    const committeeRecord = await prisma.committee.create({
+      data: {
+        name: committee,
+      },
+    })
+    // committeeRecords.push(committeeRecord)
+
+    // get the committee specific activities
+    const committeeActivities = filteredCommittees
+      .filter((c) => c.name === committee)[0]
+      .activities.map((a) => a.name)
+
+    // get the ingredients for this committee
+    const billCommitteeData = getBillCommitteeData(
+      chamberShortNameLowercase,
+      committee,
+      committeeActivities,
+      actions.map((a) => a.text),
+      hasAIC,
+      AICRegexList,
+    )
+
+    // const billCommitteeIngredient = {
+    //   committeeId: committeeRecord.id,
+    //   hasAIC: billCommitteeData.hasAIC,
+    //   reportedFrom: billCommitteeData.reportedFrom,
+    // }
+
+    await prisma.committeeAction.create({
+      data: {
+        hasAic: billCommitteeData.hasAIC,
+        reportedFrom: billCommitteeData.reportedFrom,
+        committee: {
+          connect: { id: committeeRecord.id },
+        },
+        bill: {
+          connect: { id: billRecord.id },
+        },
+      },
+    })
+
+    // Push into initial array
+    // committeeActionRecords.push(committeeActionRecord)
+  }
 
   const t = Date.now() - t0
   const message = `Received ${congress}-${billType}-${billNum}. Created billRecord ${

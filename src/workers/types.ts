@@ -1,10 +1,9 @@
 import {
   billJobDataValidator,
   billTypeValidator,
+  committeeActivitiesValidator,
   shortChamberNameValidator,
 } from './validators'
-import { Step } from '@prisma/client'
-// import { Step } from '@prisma/client'
 import { z } from 'zod'
 
 export interface TestJobData {
@@ -24,8 +23,15 @@ export type ChamberShortName = z.infer<typeof shortChamberNameValidator>
 
 export type ChamberShortNameLowercase = Lowercase<ChamberShortName>
 
+export type CommitteeActivies = z.infer<typeof committeeActivitiesValidator>
+
 export interface BillJobResponse {
   message: string
+}
+
+export interface BillCommitteeData {
+  hasAIC: boolean
+  reportedFrom: boolean
 }
 
 export type BillJobName = 'bill-job'
@@ -35,12 +41,6 @@ export const IMPORTANT_LIST_PATH = `${RESOURCE_ROOT}/important`
 export const RANKING_PHRASES_PATH = `${RESOURCE_ROOT}/ranking`
 export const COMMITTEE_FILTERS_PATH = `${RESOURCE_ROOT}/committee`
 export const STEP_REGEXES_PATH = `${RESOURCE_ROOT}/step`
-
-// export enum Importance {
-//   Commemorative,
-//   Significant,
-//   SubstantiveAndSignificant,
-// }
 
 export enum NumericStep {
   BILL,
