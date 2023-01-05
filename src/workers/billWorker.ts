@@ -100,7 +100,13 @@ export default async function (
     terminalStep
   ] as any as Step
 
-  const billRecord = await prisma.bill.create({
+  const billRecord = await prisma.bill.update({
+    where: {
+      chambressId_billNum: {
+        billNum: billNum,
+        chambressId: chambressId.id,
+      },
+    },
     data: {
       billNum: billNum,
       title: bill.title,
