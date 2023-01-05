@@ -102,3 +102,14 @@ model Committee {
   name            String
   CommitteeAction CommitteeAction[]
 }
+
+model Issue {
+  id     String      @id @default(cuid())
+  name   String
+  source IssueSource
+}
+
+enum IssueSource {
+  LEP
+  API
+}
