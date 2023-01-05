@@ -19,7 +19,7 @@ import {
   billCommitteesResponseValidator,
   billResponseValidator,
 } from './validators'
-import { Committee, CommitteeAction, Step } from '@prisma/client'
+import { Committee, CommitteeAction, Issue, Step } from '@prisma/client'
 import { Job } from 'bullmq'
 
 export default async function (
@@ -66,6 +66,16 @@ export default async function (
     select: { bioguideId: true },
   })
 
+  let issueRecord: Issue | undefined
+  if (bill.policyArea) {
+    issueRecord = await prisma.issue.create({
+      data: {
+        name: bill.policyArea.name,
+        source: 'LEP',
+      },
+    })
+  }
+
   const chamberShortNameLowercase = billType === 'hr' ? 'house' : 'senate'
 
   const importance = await computeImportance(
@@ -104,6 +114,7 @@ export default async function (
       sponsor: {
         connect: { bioguideId: sponsorId.bioguideId },
       },
+      issues: issueRecord ? { connect: { id: issueRecord.id } } : undefined,
     },
   })
 

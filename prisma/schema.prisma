@@ -61,6 +61,7 @@ model Bill {
   terminalStep     Step
   importance       Importance
   committeeActions CommitteeAction[]
+  issues           Issue[]
 
   chambressId String
   sponsorId   String
@@ -107,6 +108,10 @@ model Issue {
   id     String      @id @default(cuid())
   name   String
   source IssueSource
+
+  billId String?
+
+  Bill Bill? @relation(fields: [billId], references: [id])
 }
 
 enum IssueSource {
