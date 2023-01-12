@@ -1,6 +1,9 @@
 import { fetchCongressAPI } from '../../workers/congressAPI'
+import { ChamberShortName } from '../../workers/types'
+import { shortChamberNameValidator } from '../../workers/validators'
+import { ChamberDisplay, ChamberToEnum } from '../chambress'
 import { createRouter } from './context'
-import { Member, Prisma } from '@prisma/client'
+import { Chamber, Member, Prisma, Term } from '@prisma/client'
 import { option } from 'fp-ts'
 import * as A from 'fp-ts/lib/Array'
 import { pipe } from 'fp-ts/lib/function'
@@ -59,6 +62,95 @@ const allMemberResponseValidator = z.object({
   }),
 })
 type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
+
+const termResponseValidator = z.object({
+  member: z.object({
+    addressInformation: z
+      .object({
+        city: z.string(),
+        district: z.string(),
+        officeAddress: z.string(),
+        officeTelephone: z.object({
+          phoneNumber: z.string(),
+        }),
+        zipCode: z.number(),
+      })
+      .optional(),
+    birthYear: z.string(),
+    cosponsoredLegislation: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    currentMember: z.boolean(),
+    deathYear: z.string().nullable(),
+    depiction: z.object({
+      attribution: z.string(),
+      imageUrl: z.string(),
+    }),
+    directOrderName: z.string(),
+    district: z.number().nullable(),
+    firstName: z.string(),
+    honorificName: z.string().nullable(),
+    identifiers: z.object({
+      bioguideId: z.string(),
+    }),
+    invertedOrderName: z.string(),
+    lastName: z.string(),
+    leadership: z.array(
+      z.object({
+        congress: z.number(),
+        current: z.boolean(),
+        type: z.string(),
+      }),
+    ),
+    middleName: z.string().nullable(),
+    nickName: z.string().nullable(),
+    officialWebSiteUrl: z.string().optional(),
+    party: z.string(),
+    partyHistory: z.array(
+      z.object({
+        endYear: z.union([z.number(), z.string().nullable()]),
+        partyCode: z.string(),
+        partyName: z.string(),
+        startYear: z.number(),
+      }),
+    ),
+    sponsoredLegislation: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    state: z.string(),
+    suffixName: z.string().nullable(),
+    terms: z.array(
+      z.object({
+        chamber: ChamberDisplay,
+        congress: z.number(),
+        memberType: z.string(),
+        stateCode: z.string(),
+        stateName: z.string(),
+        district: z.number().optional(),
+        termBeginYear: z.number(),
+        termEndYear: z.number().nullable(),
+      }),
+    ),
+    updateDate: z.string(),
+  }),
+  pagination: z
+    .object({
+      count: z.number().int(),
+      next: z.string().url().nullish(),
+    })
+    .optional(),
+  request: z.object({
+    contentType: z.string(),
+    format: z.string(),
+  }),
+})
+
+export const ShortChamberToEnum: Record<ChamberShortName, Chamber> = {
+  ['House']: Chamber.HOUSE,
+  ['Senate']: Chamber.SENATE,
+}
 
 function rangeIncludes1973(start: number | null, end: number | null): boolean {
   return start != null && (end == null || end >= 1973)
@@ -353,6 +445,63 @@ export const memberRouter = createRouter()
       console.log(`time: ${dt}`)
       console.log(`succeeded: ${a}`)
       console.log(`failed: ${b}`)
+    },
+  })
+  .mutation('create-terms', {
+    async resolve({ ctx }) {
+      const members = await ctx.prisma.member.findMany({
+        select: {
+          bioguideId: true,
+        },
+      })
+
+      for (const { bioguideId } of members) {
+        const res = await fetchCongressAPI(`/member/${bioguideId}`)
+        if (res.status === 429) {
+          const retryHeader = res.headers.get('Retry-After')
+          console.log(`!!! RATE LIMITED !!!`)
+          console.log(retryHeader)
+          console.log(res)
+        }
+
+        const json = await res.json()
+        const termResponse = termResponseValidator.parse(json)
+        const { terms, partyHistory } = termResponse.member
+
+        const transformedTerms = await Promise.all(
+          terms.map(async (term) => {
+            const chambressId = await ctx.prisma.chambress.findFirstOrThrow({
+              where: {
+                congress: term.congress,
+                chamber: ChamberToEnum[term.chamber],
+              },
+              select: {
+                id: true,
+              },
+            })
+            let party = 'Unknown'
+            partyHistory.forEach((ph) => {
+              if (
+                term.termBeginYear >= ph.startYear &&
+                (term.termEndYear === null || term.termEndYear <= ph.endYear)
+              ) {
+                party = ph.partyName
+              }
+            })
+
+            return {
+              party,
+              state: term.stateName,
+              district: term.district || null,
+              chambressId: chambressId.id,
+              memberId: bioguideId,
+            }
+          }),
+        )
+        await ctx.prisma.term.createMany({
+          data: transformedTerms,
+        })
+      }
     },
   })
   .mutation('populate', {
