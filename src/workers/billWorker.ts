@@ -62,10 +62,17 @@ export default async function (
 
   let issueRecord: Issue | undefined
   if (bill.policyArea) {
-    issueRecord = await prisma.issue.create({
-      data: {
+    issueRecord = await prisma.issue.upsert({
+      create: {
         name: bill.policyArea.name,
-        source: 'LEP',
+        source: 'API',
+      },
+      update: {},
+      where: {
+        name_source: {
+          name: bill.policyArea.name,
+          source: 'API',
+        },
       },
     })
   }

@@ -109,9 +109,9 @@ model Issue {
   name   String
   source IssueSource
 
-  billId String?
+  bills Bill[]
 
-  Bill Bill? @relation(fields: [billId], references: [id])
+  @@unique([name, source])
 }
 
 enum IssueSource {
