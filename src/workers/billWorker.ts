@@ -1,12 +1,6 @@
 import { prisma } from '../server/db/client'
 import { fetchCongressAPI } from './congressAPI'
-import {
-  BillJobData,
-  BillJobName,
-  BillJobResponse,
-  CommitteeActivies,
-  NumericStep,
-} from './types'
+import { BillJobData, BillJobName, BillJobResponse, NumericStep } from './types'
 import {
   computeImportance,
   computeStepData,
@@ -100,14 +94,14 @@ export default async function (
     terminalStep
   ] as any as Step
 
-  const billRecord = await prisma.bill.update({
+  const billRecord = await prisma.bill.upsert({
     where: {
       chambressId_billNum: {
         billNum: billNum,
         chambressId: chambressId.id,
       },
     },
-    data: {
+    create: {
       billNum: billNum,
       title: bill.title,
       actions: actions.map((a) => a.text),
@@ -122,6 +116,7 @@ export default async function (
       },
       issues: issueRecord ? { connect: { id: issueRecord.id } } : undefined,
     },
+    update: {},
   })
 
   const committeeFilters = await getCommitteeFilters(chamberShortNameLowercase)
