@@ -23,6 +23,7 @@ model Chambress {
   congress Int
   chamber  Chamber
   Bill     Bill[]
+  Term     Term[]
 
   @@unique([congress, chamber])
 }
@@ -50,6 +51,20 @@ model Member {
   spriteRow Int?
   spriteCol Int?
   Bill      Bill[]
+  Term      Term[]
+}
+
+model Term {
+  id       String @id @default(cuid())
+  party    String
+  state    String
+  district Int?
+
+  chambressId String
+  memberId    String
+
+  chambress Chambress @relation(fields: [chambressId], references: [id])
+  member    Member    @relation(fields: [memberId], references: [bioguideId])
 }
 
 model Bill {
