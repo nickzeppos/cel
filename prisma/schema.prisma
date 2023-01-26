@@ -65,6 +65,8 @@ model Term {
 
   chambress Chambress @relation(fields: [chambressId], references: [id])
   member    Member    @relation(fields: [memberId], references: [bioguideId])
+
+  @@unique([chambressId, memberId])
 }
 
 model Bill {
