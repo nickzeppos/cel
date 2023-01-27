@@ -45,3 +45,23 @@ billWorker
   .on('paused', () => {
     console.log(`🐜 PAUSED`)
   })
+
+const termWorker = new Worker('term-queue', `${__dirname}/termWorker.js`, {
+  connection,
+  concurrency: 1,
+})
+
+termWorker
+  .on('active', (j) => {
+    console.log(`🐜 ACTIVE`, j.data, j.id)
+  })
+  .on('completed', () => {
+    console.log(`🐜 COMPLETE`)
+  })
+  .on('failed', (job, error) => {
+    console.log(`🐜 FAIL`)
+    console.log(error)
+  })
+  .on('paused', () => {
+    console.log(`🐜 PAUSED`)
+  })

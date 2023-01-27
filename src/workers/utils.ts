@@ -3,6 +3,7 @@ import {
   COMMITTEE_FILTERS_PATH,
   ChamberShortNameLowercase,
   CommitteeActivies,
+  FullChamberName,
   IMPORTANT_LIST_PATH,
   NumericStep,
   RANKING_PHRASES_PATH,
@@ -11,7 +12,7 @@ import {
   STEP_REGEXES_PATH,
 } from './types'
 import { StepRegexDictionary } from './types'
-import { Importance } from '@prisma/client'
+import { Chamber, Importance } from '@prisma/client'
 import { parse } from 'csv-parse/sync'
 import { readFile } from 'fs/promises'
 
@@ -222,4 +223,9 @@ function parseRankingPhraseRows(data: RankingPhraseRow[]): RankingPhrases {
 // appears at the end of senate-AIC.txt:29
 function parseStepRegexFile(data: string): RegExp[] {
   return data.split('\n').map((s) => new RegExp(s.trim().slice(1, -2), 'g'))
+}
+
+export const ChamberToEnum: Record<FullChamberName, Chamber> = {
+  'House of Representatives': Chamber.HOUSE,
+  Senate: Chamber.SENATE,
 }

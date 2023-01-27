@@ -1,3 +1,4 @@
+import { Chamber } from '@prisma/client'
 import { z } from 'zod'
 
 export const fullChamberNameValidator = z.enum([
@@ -11,6 +12,9 @@ export const billJobDataValidator = z.object({
   congress: z.number().min(93),
   billType: billTypeValidator,
   billNum: z.number(),
+})
+export const termJobDataValidator = z.object({
+  bioguide: z.string(),
 })
 const requestResponseValidator = z.object({
   congress: z.string().optional(),
@@ -231,4 +235,88 @@ export const billCommitteesResponseValidator = z.object({
   error: z.string().optional(),
   pagination: paginationResponseValidator.optional(),
   request: requestResponseValidator,
+})
+
+export const partyHistoryValidator = z.object({
+  endYear: z.union([z.number(), z.string().nullable()]), // API suxxx
+  partyCode: z.string(),
+  partyName: z.string(),
+  startYear: z.number(),
+})
+
+export const termResponseValidator = z.object({
+  chamber: fullChamberNameValidator,
+  congress: z.number(),
+  memberType: z.string(),
+  stateCode: z.string(),
+  stateName: z.string(),
+  district: z.number().optional(),
+  termBeginYear: z.number(),
+  termEndYear: z.number().nullable(),
+})
+
+export const memberResponseValidator = z.object({
+  member: z.object({
+    addressInformation: z
+      .object({
+        city: z.string(),
+        district: z.string(),
+        officeAddress: z.string(),
+        officeTelephone: z.object({
+          phoneNumber: z.string(),
+        }),
+        zipCode: z.number(),
+      })
+      .optional(),
+    birthYear: z.string(),
+    cosponsoredLegislation: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    currentMember: z.boolean(),
+    deathYear: z.string().nullable(),
+    depiction: z.object({
+      attribution: z.string(),
+      imageUrl: z.string(),
+    }),
+    directOrderName: z.string(),
+    district: z.number().nullable(),
+    firstName: z.string(),
+    honorificName: z.string().nullable(),
+    identifiers: z.object({
+      bioguideId: z.string(),
+    }),
+    invertedOrderName: z.string(),
+    lastName: z.string(),
+    leadership: z.array(
+      z.object({
+        congress: z.number(),
+        current: z.boolean(),
+        type: z.string(),
+      }),
+    ),
+    middleName: z.string().nullable(),
+    nickName: z.string().nullable(),
+    officialWebSiteUrl: z.string().optional(),
+    party: z.string(),
+    partyHistory: z.array(partyHistoryValidator),
+    sponsoredLegislation: z.object({
+      count: z.number(),
+      url: z.string(),
+    }),
+    state: z.string(),
+    suffixName: z.string().nullable(),
+    terms: z.array(termResponseValidator),
+    updateDate: z.string(),
+  }),
+  pagination: z
+    .object({
+      count: z.number().int(),
+      next: z.string().url().nullish(),
+    })
+    .optional(),
+  request: z.object({
+    contentType: z.string(),
+    format: z.string(),
+  }),
 })
