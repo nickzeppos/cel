@@ -13,11 +13,6 @@ const Member: NextPage = () => {
       console.log(data)
     },
   })
-  const createTerms = trpc.useMutation(['member.create-terms'], {
-    onSuccess: (data) => {
-      console.log(data)
-    },
-  })
   const downloadPhotos = trpc.useMutation(['member.download-missing-photos'])
   const squareImage = trpc.useMutation(['member.square-image'])
   const packImage = trpc.useMutation(['member.pack-image'])
@@ -33,14 +28,6 @@ const Member: NextPage = () => {
             disabled={createMembers.isLoading}
             onClick={() => {
               createMembers.mutate()
-            }}
-            className="p-2 mr-2 bg-neutral-600 rounded"
-          />
-          <Button
-            label="Create Terms"
-            disabled={createTerms.isLoading}
-            onClick={() => {
-              createTerms.mutate()
             }}
             className="p-2 mr-2 bg-neutral-600 rounded"
           />
