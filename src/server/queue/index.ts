@@ -2,6 +2,9 @@ import {
   BillJobData,
   BillJobName,
   BillJobResponse,
+  TermJobData,
+  TermJobName,
+  TermJobResponse,
   TestJobData,
   TestJobName,
   TestJobResponse,
@@ -37,6 +40,11 @@ export function cleanup() {
     globalThis.billQueueEvents.close()
     globalThis.billQueueEvents = undefined
   }
+  if (globalThis.termQueueEvents != null) {
+    console.log('🧹 cleanup termQueueEvents')
+    globalThis.termQueueEvents.close()
+    globalThis.termQueueEvents = undefined
+  }
 }
 
 function setup() {
@@ -59,6 +67,21 @@ function setup() {
   console.log('🔼 setup bill queue')
   globalThis.billQueue = new Queue<BillJobData, BillJobResponse, BillJobName>(
     'bill-queue',
+    {
+      connection,
+    },
+  )
+    .on('cleaned', () => {
+      console.log('🚂 CLEANED')
+    })
+    .on('paused', () => {
+      console.log('🚂 PAUSED')
+    })
+    .on('resumed', () => {
+      console.log('🚂 RESUMED')
+    })
+  globalThis.termQueue = new Queue<TermJobData, TermJobResponse, TermJobName>(
+    'term-queue',
     {
       connection,
     },
@@ -116,15 +139,41 @@ function setup() {
     .on('failed', (job) => {
       console.log(`🚂 JOB FAILED ${job.jobId}`)
     })
+
+  globalThis.termQueueEvents = new QueueEvents('term-queue', {
+    connection,
+  })
+    .on('completed', (job) => {
+      console.log(`🚂 JOB COMPLETE ${job.jobId} ${job.returnvalue} ${job.prev}`)
+    })
+    .on('progress', (job) => {
+      console.log(`🚂 JOB PROGRESS ${job.jobId} ${job.data}`)
+    })
+    .on('added', (job) => {
+      console.log(`🚂 JOB ADDED ${job.jobId} ${job.name}`)
+    })
+    .on('removed', (job) => {
+      console.log(`🚂 JOB REMOVED ${job.jobId} ${job.prev}`)
+    })
+    .on('cleaned', (n) => {
+      console.log(`🚂 JOBS CLEANED ${n}`)
+    })
+    .on('failed', (job) => {
+      console.log(`🚂 JOB FAILED ${job.jobId}`)
+    })
 }
 
 export const queue = {
   testQueue: globalThis.testQueue as NonNullable<typeof globalThis.testQueue>,
   billQueue: globalThis.billQueue as NonNullable<typeof globalThis.billQueue>,
+  termQueue: globalThis.termQueue as NonNullable<typeof globalThis.termQueue>,
   testQueueEvents: globalThis.testQueueEvents as NonNullable<
     typeof globalThis.testQueueEvents
   >,
   billQueueEvents: globalThis.billQueueEvents as NonNullable<
     typeof globalThis.billQueueEvents
+  >,
+  termQueueEvents: globalThis.termQueueEvents as NonNullable<
+    typeof globalThis.termQueueEvents
   >,
 }
