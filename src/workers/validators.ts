@@ -276,7 +276,7 @@ export const memberResponseValidator = z.object({
     currentMember: z.boolean(),
     deathYear: z.string().nullable(),
     depiction: z.object({
-      attribution: z.string(),
+      attribution: z.string().nullable(),
       imageUrl: z.string(),
     }),
     directOrderName: z.string(),

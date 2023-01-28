@@ -10,7 +10,7 @@ import { pipe } from 'fp-ts/lib/function'
 import * as fs from 'fs'
 import fetch from 'node-fetch'
 import sharp from 'sharp'
-import { z } from 'zod'
+import { string, z } from 'zod'
 
 const MEMBER_IMAGES_DIR = './public/member-images'
 const SQUARE_IMAGES_DIR = './public/square-images'
@@ -177,6 +177,35 @@ export const memberRouter = createRouter()
           bioguideId: 'asc',
         },
       })
+    },
+  })
+  .query('get-terms-for-member', {
+    input: z.object({ bioguideId: z.string() }),
+    async resolve({ ctx, input }) {
+      const { bioguideId } = input
+      return await ctx.prisma.term.findMany({
+        where: {
+          memberId: bioguideId,
+        },
+      })
+    },
+  })
+  .mutation('create-all-terms', {
+    async resolve({ ctx }) {
+      const members = await ctx.prisma.member.findMany({
+        where: {
+          Term: {
+            none: {},
+          },
+        },
+        orderBy: {
+          bioguideId: 'asc',
+        },
+      })
+      for (const member of members) {
+        const { bioguideId } = member
+        await ctx.queue.termQueue.add('term-job', { bioguide: bioguideId })
+      }
     },
   })
   .mutation('download-missing-photos', {

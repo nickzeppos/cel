@@ -29,7 +29,7 @@ const Jobs: NextPage = () => {
   const [congress, setCongress] = useState<number>(117)
   const [billType, setBillType] = useState<string>('house')
   const [billNum, setBillNum] = useState<number>(1)
-  const [bioguide, setBioguide] = useState<string | null>(null)
+  const [bioguideId, setBioguideId] = useState<string | null>(null)
 
   const [didFetchTestQueueState, setDidFetchTestQueueState] = useState(false)
   const fetchTestTimeoutRef = useRef<number | null>(null)
@@ -567,19 +567,19 @@ const Jobs: NextPage = () => {
         }`}
       >
         <div className="flex items-center gap-2 p-4 pb-0">
-          <label className="ml-2">bioguide</label>
+          <label className="ml-2">bioguideId</label>
           <input
             id="biotguide"
             type="text"
             placeholder={`A000009`}
             className="bg-neutral-900 text-neutral-100  border-b-2 outline-none rounded focus:border-blue-500"
-            onChange={(e) => setBioguide(e.target.value)}
+            onChange={(e) => setBioguideId(e.target.value)}
           />
 
           <PlusCircleIconSolid
             className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
-              addTermJob.mutate(termJobDataValidator.parse({ bioguide }))
+              addTermJob.mutate(termJobDataValidator.parse({ bioguideId }))
             }}
           />
           {isTermQueuePaused ? (
@@ -702,7 +702,7 @@ const Jobs: NextPage = () => {
                   <div className="flex flex-col p-2 text-neutral-300">
                     <div className="flex gap-2">
                       <span className="w-[60px] font-bold text-neutral-500">
-                        bioguide
+                        bioguideId
                       </span>
                       <div>{j.data.bioguide}</div>
                     </div>
