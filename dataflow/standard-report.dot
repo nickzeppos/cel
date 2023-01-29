@@ -1,0 +1,37 @@
+digraph {
+  report [shape = rect;];
+  "important list" [fontcolor = orange;];
+  "ranking phrases" [fontcolor = orange;];
+  "step regexes" [fontcolor = orange;];
+  "bill json" [fontcolor = red;];
+  "bill actions json" [fontcolor = red;];
+  term [fontcolor = red;];
+  // member json
+  
+  report -> importance;
+  report -> {"sponsor bioguide id" "has AIC" "terminal step" "list of bioguide ids" "name" "state" "district" "party"};
+  {"list of bioguide ids" "name" "state" "district" "party"} -> term;
+  importance -> {"important list" "ranking phrases" "bill title" "chambress bill nums"};
+  "important list" -> {congress chamber};
+  "ranking phrases" -> chamber;
+  "chambress bill nums" -> {congress chamber};
+  {"bill json" "bill actions json"} -> "chambress bill nums";
+  "step regexes" -> chamber;
+  term -> {congress chamber};
+  {"bill title" "sponsor bioguide id"} -> "bill json";
+  "has AIC" -> {congress chamber "bill steps achieved"};
+  "terminal step" -> "bill steps achieved";
+  "bill steps achieved" -> {"bill actions json" "step regexes"};
+  
+  subgraph cluster_bill {
+    style = dashed;
+    fillcolor = white;
+    color = red;
+    label = "bill";
+    
+    importance;
+    "sponsor bioguide id";
+    "has AIC";
+    "terminal step";
+  }
+}

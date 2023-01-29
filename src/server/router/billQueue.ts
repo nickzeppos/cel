@@ -12,6 +12,19 @@ export const billQueueRouter = createRouter()
           congress: 117,
           billType: 'hr',
           billNum,
+          page: '',
+        })
+        await ctx.queue.billQueue.add('bill-job', {
+          congress: 117,
+          billType: 'hr',
+          billNum,
+          page: 'actions',
+        })
+        await ctx.queue.billQueue.add('bill-job', {
+          congress: 117,
+          billType: 'hr',
+          billNum,
+          page: 'committees',
         })
       }
     },

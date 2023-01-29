@@ -12,6 +12,7 @@ export const billJobDataValidator = z.object({
   congress: z.number().min(93),
   billType: billTypeValidator,
   billNum: z.number(),
+  page: z.string(),
 })
 export const termJobDataValidator = z.object({
   bioguide: z.string(),
