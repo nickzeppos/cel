@@ -123,6 +123,24 @@ function setup() {
   })
     .on('completed', (job) => {
       console.log(`🚂 JOB COMPLETE ${job.jobId} ${job.returnvalue} ${job.prev}`)
+      // get some info about the rate limit from return value
+      // job.returnvalue includes remaining limit
+
+      // if remaining < C wait for W
+      // otherwise just keep going
+
+      // W is a function of actual rate and some relationship with the remaining limit
+      // W affects the actual rate of requests we're making
+      // ARR = actual request rate (job rate)
+      // LRR = limit refresh rate
+
+      // ARR = LRR
+      // we want to discover LRR so that we can set ARR equal to it
+      // but ARR is not what we control directly either
+      // we control delay between requests
+
+      // pause the queue for some amount of time based on that
+      // globalThis.billQueue?.pause() setTime .resume()
     })
     .on('progress', (job) => {
       console.log(`🚂 JOB PROGRESS ${job.jobId} ${job.data}`)

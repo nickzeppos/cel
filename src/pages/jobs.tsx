@@ -107,6 +107,7 @@ const Jobs: NextPage = () => {
   const resumeTestQueue = trpc.useMutation(['test-queue.resume'])
   const resumeBillQueue = trpc.useMutation(['bill-queue.resume'])
   const resumeTermQueue = trpc.useMutation(['term-queue.resume'])
+  const testBillQueue = trpc.useMutation(['bill-queue.queue-rate-limit-test'])
 
   const addTestJob = trpc.useMutation(['test-queue.add-job'])
   const addBillJob = trpc.useMutation(['bill-queue.add-job'])
@@ -406,6 +407,12 @@ const Jobs: NextPage = () => {
             className="h-8 w-8 cursor-pointer text-white"
             onClick={() => {
               cleanBillQueue.mutate()
+            }}
+          />
+          <PlusCircleIconSolid
+            className="h-8 w-8 cursor-pointer text-white"
+            onClick={() => {
+              testBillQueue.mutate()
             }}
           />
           <div className="text-xl font-bold">

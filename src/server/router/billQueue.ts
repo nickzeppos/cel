@@ -5,6 +5,17 @@ import { QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
 export const billQueueRouter = createRouter()
+  .mutation('queue-rate-limit-test', {
+    async resolve({ ctx }) {
+      for (let billNum = 200; billNum <= 300; billNum++) {
+        await ctx.queue.billQueue.add('bill-job', {
+          congress: 117,
+          billType: 'hr',
+          billNum,
+        })
+      }
+    },
+  })
   .mutation('add-job', {
     input: billJobDataValidator,
     async resolve({ input, ctx }) {
