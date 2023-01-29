@@ -1,0 +1,6 @@
+digraph {
+  member;
+  term;
+  "api /member";
+  "api /member/bioguide";
+}
