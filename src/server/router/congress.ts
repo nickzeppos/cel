@@ -1,4 +1,4 @@
-import { fetchCongressAPI } from '../congressAPI'
+import { fetchCongressAPI } from '../../workers/congressAPI'
 import { createRouter } from './context'
 import { z } from 'zod'
 

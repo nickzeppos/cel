@@ -13,6 +13,11 @@ const Member: NextPage = () => {
       console.log(data)
     },
   })
+  const createTerms = trpc.useMutation(['member.create-all-terms'], {
+    onSuccess: (data) => {
+      console.log(data)
+    },
+  })
   const downloadPhotos = trpc.useMutation(['member.download-missing-photos'])
   const squareImage = trpc.useMutation(['member.square-image'])
   const packImage = trpc.useMutation(['member.pack-image'])
@@ -29,6 +34,15 @@ const Member: NextPage = () => {
             onClick={() => {
               createMembers.mutate()
             }}
+            className="p-2 mr-2 bg-neutral-600 rounded"
+          />
+          <Button
+            label="Create Terms"
+            disabled={createTerms.isLoading}
+            onClick={() => {
+              createTerms.mutate()
+            }}
+            className="p-2 mr-2 bg-neutral-600 rounded"
           />
           <Button
             label="Download Images"
@@ -36,6 +50,7 @@ const Member: NextPage = () => {
             onClick={() => {
               downloadPhotos.mutate()
             }}
+            className="p-2 mr-2 bg-neutral-600 rounded"
           />
           <Button
             label="Square Image"
@@ -43,6 +58,7 @@ const Member: NextPage = () => {
             onClick={() => {
               squareImage.mutate()
             }}
+            className="p-2 mr-2 bg-neutral-600 rounded"
           />
           <Button
             label="Pack Image"
@@ -50,6 +66,7 @@ const Member: NextPage = () => {
             onClick={() => {
               packImage.mutate()
             }}
+            className="p-2 mr-2 bg-neutral-600 rounded"
           />
         </div>
         <div className="relative flex-grow overflow-hidden">

@@ -1,0 +1,33 @@
+/Reported(( to House)? \(Amended\))? by the Committee/g
+/Ordered to be Reported/g
+/reported to house from the committee/ig
+/Rules Committee Resolution H. Res. \d+ Reported to House/g
+/Committee on Rules Granted/g
+/Rules Committee Resolution .+ Reported/g
+/Considered under suspension of the rules/g
+/Called up by House Under Suspension of Rules/g
+/Considered by unanimous consent/g
+/Called up by House by Unanimous Consent/g
+/On passage Passed/g
+/On motion to suspend the rules and pass the bill(, as amended)? Agreed/g
+/On motion that the House suspend the rules and agree to the Senate amendments? Agreed/g
+/Passed House( \(Amended\))? by/g
+/On motion to suspend the rules and pass the bill, as Agreed/g
+/Passed.agreed to in House/g
+/Measure passed House/g
+/Failed of Passage in House by Yea-Nay Vote/g
+/Failed of Passage in House by Voice Vote/g
+/Failed to Receive 2\/3's Vote to Suspend and Pass/g
+/On passage Failed/g
+/On motion to suspend the rules and pass the bill(, as amended)? Failed/g
+/On motion that the House suspend the rules and agree to the Senate amendments? Failed/g
+/Received in the Senate/g
+/Reported to Senate by Senator/g
+/Reported by Senator/g
+/Placed on( the)? Union Calendar/g
+/Placed on( the)? House Calendar/g
+/Placed on( the)? Private Calendar/g
+/Placed on( the)? Corrections Calendar/g
+/Placed on( the)? Discharge Calendar/g
+/Placed on( the)? Consent Calendar/g
+/Placed on( the)? Senate Legislative Calendar/g

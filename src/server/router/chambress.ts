@@ -1,10 +1,10 @@
 import { ETry, TETry } from '../../utils/fp'
+import { fetchCongressAPI } from '../../workers/congressAPI'
 import {
   ChamberDisplay,
   CongressAPIError,
   congressToChambress,
 } from '../chambress'
-import { fetchCongressAPI } from '../congressAPI'
 import { createRouter } from './context'
 import * as A from 'fp-ts/lib/Array'
 import * as E from 'fp-ts/lib/Either'

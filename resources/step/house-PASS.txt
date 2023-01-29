@@ -1,0 +1,7 @@
+/On passage Passed/g
+/On motion to suspend the rules and pass the bill(, as amended)? Agreed/g
+/On motion that the House suspend the rules and agree to the Senate amendments? Agreed/g
+/Passed House( \(Amended\))? by/g
+/On motion to suspend the rules and pass the bill, as Agreed/g
+/Passed.agreed to in House/g
+/Measure passed House/g

@@ -22,6 +22,8 @@ model Chambress {
   id       String  @id @default(cuid())
   congress Int
   chamber  Chamber
+  Bill     Bill[]
+  Term     Term[]
 
   @@unique([congress, chamber])
 }
@@ -48,30 +50,88 @@ model Member {
 
   spriteRow Int?
   spriteCol Int?
+  Bill      Bill[]
+  Term      Term[]
 }
 
-// @Schema()
-// export class Person extends Document {
-//   @Prop()
-//   bioguide: string
-//   @Prop()
-//   firstName: string
-//   @Prop()
-//   lastName: string
-//   @Prop()
-//   fullName: string
-// }
+model Term {
+  id       String @id @default(cuid())
+  party    String
+  state    String
+  district Int?
 
-// @Schema()
-// export class Term extends Document {
-// @Prop(raw({ type: SchemaTypes.ObjectId, ref: 'person' }))
-// person: ObjectId
-// @Prop()
-// party: string
-// @Prop()
-// state: string
-// @Prop()
-// district: number
-// @Prop(raw({ type: SchemaTypes.ObjectId, ref: 'chambress' }))
-// chambress: string
-// }
+  chambressId String
+  memberId    String
+
+  chambress Chambress @relation(fields: [chambressId], references: [id])
+  member    Member    @relation(fields: [memberId], references: [bioguideId])
+
+  @@unique([chambressId, memberId])
+}
+
+model Bill {
+  id               String            @id @default(cuid())
+  billNum          Int
+  title            String
+  actions          String[]
+  hasAIC           Boolean
+  terminalStep     Step
+  importance       Importance
+  committeeActions CommitteeAction[]
+  issues           Issue[]
+
+  chambressId String
+  sponsorId   String
+
+  sponsor   Member    @relation(fields: [sponsorId], references: [bioguideId])
+  chambress Chambress @relation(fields: [chambressId], references: [id])
+
+  @@unique([chambressId, billNum])
+}
+
+enum Importance {
+  Commemorative
+  Significant
+  SubstantiveAndSignificant
+}
+
+enum Step {
+  BILL
+  AIC
+  ABC
+  PASS
+  LAW
+}
+
+model CommitteeAction {
+  id           String  @id @default(cuid())
+  hasAic       Boolean
+  reportedFrom Boolean
+
+  committeeId String
+  billId      String
+
+  committee Committee @relation(fields: [committeeId], references: [id])
+  bill      Bill      @relation(fields: [billId], references: [id])
+}
+
+model Committee {
+  id              String            @id @default(cuid())
+  name            String
+  CommitteeAction CommitteeAction[]
+}
+
+model Issue {
+  id     String      @id @default(cuid())
+  name   String
+  source IssueSource
+
+  bills Bill[]
+
+  @@unique([name, source])
+}
+
+enum IssueSource {
+  LEP
+  API
+}

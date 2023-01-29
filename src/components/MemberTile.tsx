@@ -1,4 +1,5 @@
-import { Member } from '@prisma/client'
+import { trpc } from '../utils/trpc'
+import { Member, Term } from '@prisma/client'
 import React from 'react'
 
 interface Props {
@@ -14,6 +15,12 @@ export default function MemberTile({
   isFirstCol = false,
   isFirstRow = false,
 }: Props) {
+  const terms = trpc.useQuery([
+    'member.get-terms-for-member',
+    { bioguideId: member.bioguideId },
+  ])
+  const tileBackground =
+    terms.data?.length! > 0 ? 'bg-emerald-900/[0.2]' : 'bg-red-900/[0.2]'
   return (
     <div
       className={`flex bg-neutral-800 border-black border-r border-b ${
@@ -35,7 +42,9 @@ export default function MemberTile({
           />
         )}
       </div>
-      <div className="px-2 py-1 flex-grow flex flex-col overflow-hidden border-l border-black">
+      <div
+        className={`px-2 py-1 flex-grow flex flex-col overflow-hidden border-l border-black ${tileBackground}`}
+      >
         <div className="text-neutral-300 font-semibold truncate overflow-hidden mb-auto">
           {member.name}
         </div>
@@ -48,6 +57,7 @@ export default function MemberTile({
         <div className="text-neutral-600 text-sm">
           {timeRange('H', member.servedHouseStart, member.servedHouseEnd)}
         </div>
+        <div></div>
       </div>
     </div>
   )

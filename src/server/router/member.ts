@@ -1,13 +1,16 @@
-import { fetchCongressAPI } from '../congressAPI'
+import { fetchCongressAPI } from '../../workers/congressAPI'
+import { ChamberShortName } from '../../workers/types'
+import { shortChamberNameValidator } from '../../workers/validators'
+import { ChamberDisplay, ChamberToEnum } from '../chambress'
 import { createRouter } from './context'
-import { Member, Prisma } from '@prisma/client'
+import { Chamber, Member, Prisma, Term } from '@prisma/client'
 import { option } from 'fp-ts'
 import * as A from 'fp-ts/lib/Array'
 import { pipe } from 'fp-ts/lib/function'
 import * as fs from 'fs'
 import fetch from 'node-fetch'
 import sharp from 'sharp'
-import { z } from 'zod'
+import { string, z } from 'zod'
 
 const MEMBER_IMAGES_DIR = './public/member-images'
 const SQUARE_IMAGES_DIR = './public/square-images'
@@ -60,6 +63,15 @@ const allMemberResponseValidator = z.object({
 })
 type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
+export const ShortChamberToEnum: Record<ChamberShortName, Chamber> = {
+  ['House']: Chamber.HOUSE,
+  ['Senate']: Chamber.SENATE,
+}
+
+function rangeIncludes1973(start: number | null, end: number | null): boolean {
+  return start != null && (end == null || end >= 1973)
+}
+
 function transformMember({
   bioguideId,
   name,
@@ -95,27 +107,29 @@ function transformMember({
     }
   }
 
-  if (Math.max(servedHouseEnd ?? 0, servedSenateEnd ?? 0) < 1973)
-    return option.none
+  const didServeAfter1973 =
+    rangeIncludes1973(servedHouseStart, servedHouseEnd) ||
+    rangeIncludes1973(servedSenateStart, servedSenateEnd)
 
-  return option.some({
-    bioguideId,
-    name,
-    party,
-    state,
-    district,
-    url,
-    imageUrl,
-    attribution,
-    servedHouseStart,
-    servedHouseEnd,
-    servedSenateStart,
-    servedSenateEnd,
-    spriteCol: null,
-    spriteRow: null,
-  })
+  return didServeAfter1973
+    ? option.some({
+        bioguideId,
+        name,
+        party,
+        state,
+        district,
+        url,
+        imageUrl,
+        attribution,
+        servedHouseStart,
+        servedHouseEnd,
+        servedSenateStart,
+        servedSenateEnd,
+        spriteCol: null,
+        spriteRow: null,
+      })
+    : option.none
 }
-
 export const memberRouter = createRouter()
   .mutation('create-all', {
     async resolve({ ctx }) {
@@ -163,6 +177,35 @@ export const memberRouter = createRouter()
           bioguideId: 'asc',
         },
       })
+    },
+  })
+  .query('get-terms-for-member', {
+    input: z.object({ bioguideId: z.string() }),
+    async resolve({ ctx, input }) {
+      const { bioguideId } = input
+      return await ctx.prisma.term.findMany({
+        where: {
+          memberId: bioguideId,
+        },
+      })
+    },
+  })
+  .mutation('create-all-terms', {
+    async resolve({ ctx }) {
+      const members = await ctx.prisma.member.findMany({
+        where: {
+          Term: {
+            none: {},
+          },
+        },
+        orderBy: {
+          bioguideId: 'asc',
+        },
+      })
+      for (const member of members) {
+        const { bioguideId } = member
+        await ctx.queue.termQueue.add('term-job', { bioguide: bioguideId })
+      }
     },
   })
   .mutation('download-missing-photos', {
