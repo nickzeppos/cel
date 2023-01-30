@@ -1,7 +1,7 @@
 digraph {
-  rankdir = "BT";
-  "list of committees" [shape = rect;];
-  "congress committees json" [fontcolor = red;];
-  
-  "list of committees" -> "congress committees json" -> {congress chamber};
+    rankdir = "BT";
+    "list of committees" [shape = rect;];
+    "congress committees json" [fontcolor = red;];
+    
+    "list of committees" -> "congress committees json" -> {congress chamber};
 }
