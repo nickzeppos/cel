@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 import {
   TestJobData,
   TestJobName,
@@ -31,7 +32,15 @@ declare global {
     | undefined
     | null
   var termWorker:
-    | Queue<TermJobData, TermJobResponse, TermJobName>
+    | Worker<TermJobData, TermJobResponse, TermJobName>
+    | undefined
+    | null
+  var assetQueue:
+    | Queue<AssetJobData, AssetJobResponse, AssetJobName>
+    | undefined
+    | null
+  var assetWorker:
+    | Worker<AssetJobData, AssetJobResponse, AssetJobName>
     | undefined
     | null
 }

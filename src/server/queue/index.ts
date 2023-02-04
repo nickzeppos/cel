@@ -1,4 +1,7 @@
 import {
+  AssetJobData,
+  AssetJobName,
+  AssetJobResponse,
   BillJobData,
   BillJobName,
   BillJobResponse,
@@ -18,6 +21,16 @@ const connection = {
 
 cleanup()
 setup()
+
+// does this work?
+// function close(
+//   closeable: { close: () => any } | null | undefined
+// ): void {
+//   if(closeable != null) {
+//     closeable.close()
+//     closeable = undefined
+//   }
+// }
 
 export function cleanup() {
   if (globalThis.testQueue != null) {
@@ -44,6 +57,10 @@ export function cleanup() {
     console.log('🧹 cleanup termQueueEvents')
     globalThis.termQueueEvents.close()
     globalThis.termQueueEvents = undefined
+  }
+  if (globalThis.assetQueue != null) {
+    globalThis.assetQueue.close()
+    globalThis.assetQueue = undefined
   }
 }
 
@@ -179,12 +196,23 @@ function setup() {
     .on('failed', (job) => {
       console.log(`🚂 JOB FAILED ${job.jobId}`)
     })
+
+  globalThis.assetQueue = new Queue<
+    AssetJobData,
+    AssetJobResponse,
+    AssetJobName
+  >('asset-queue', {
+    connection,
+  })
 }
 
 export const queue = {
   testQueue: globalThis.testQueue as NonNullable<typeof globalThis.testQueue>,
   billQueue: globalThis.billQueue as NonNullable<typeof globalThis.billQueue>,
   termQueue: globalThis.termQueue as NonNullable<typeof globalThis.termQueue>,
+  assetQueue: globalThis.assetQueue as NonNullable<
+    typeof globalThis.assetQueue
+  >,
   testQueueEvents: globalThis.testQueueEvents as NonNullable<
     typeof globalThis.testQueueEvents
   >,

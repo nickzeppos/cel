@@ -8,6 +8,7 @@ import {
   termJobDataValidator,
   termResponseValidator,
 } from './validators'
+import { Chamber } from '@prisma/client'
 import { z } from 'zod'
 
 export interface TestJobData {
@@ -77,3 +78,11 @@ export interface BillResources {
 
 export type TermResponse = z.infer<typeof termResponseValidator>
 export type PartyHistory = z.infer<typeof partyHistoryValidator>
+
+export interface AssetJobData {
+  chamber: Chamber
+}
+export interface AssetJobResponse {
+  message: string
+}
+export type AssetJobName = 'asset-job'

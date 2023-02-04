@@ -65,3 +65,8 @@ termWorker
   .on('paused', () => {
     console.log(`🐜 PAUSED`)
   })
+
+const assetWorker = new Worker('asset-queue', `${__dirname}/assetWorker.js`, {
+  connection,
+  concurrency: 1,
+})
