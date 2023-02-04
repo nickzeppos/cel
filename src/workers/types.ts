@@ -8,7 +8,7 @@ import {
   termJobDataValidator,
   termResponseValidator,
 } from './validators'
-import { Chamber } from '@prisma/client'
+import { Chamber, Step } from '@prisma/client'
 import { z } from 'zod'
 
 export interface TestJobData {
@@ -47,7 +47,10 @@ export const IMPORTANT_LIST_PATH = `${RESOURCE_ROOT}/important`
 export const RANKING_PHRASES_PATH = `${RESOURCE_ROOT}/ranking`
 export const COMMITTEE_FILTERS_PATH = `${RESOURCE_ROOT}/committee`
 export const STEP_REGEXES_PATH = `${RESOURCE_ROOT}/step`
+export const getStepRegexPath = (chamber: Chamber, step: Step): string =>
+  `${STEP_REGEXES_PATH}/${chamber.toLocaleLowerCase()}-${step}.txt`
 
+// need the ordering when calculating terminal step
 export enum NumericStep {
   BILL,
   AIC,

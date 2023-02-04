@@ -22,16 +22,6 @@ const connection = {
 cleanup()
 setup()
 
-// does this work?
-// function close(
-//   closeable: { close: () => any } | null | undefined
-// ): void {
-//   if(closeable != null) {
-//     closeable.close()
-//     closeable = undefined
-//   }
-// }
-
 export function cleanup() {
   if (globalThis.testQueue != null) {
     console.log('🧹 cleanup testQueue')
