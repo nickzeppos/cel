@@ -4,7 +4,8 @@
     "outDir": "./.workers",
     "target": "es6",
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "downlevelIteration": true
   },
   "include": ["./src/workers/*.ts"],
   "exclude": ["./node_modules/"]

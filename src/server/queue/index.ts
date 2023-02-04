@@ -52,6 +52,10 @@ export function cleanup() {
     globalThis.assetQueue.close()
     globalThis.assetQueue = undefined
   }
+  if (globalThis.assetQueueEvents != null) {
+    globalThis.assetQueueEvents.close()
+    globalThis.assetQueueEvents = undefined
+  }
 }
 
 function setup() {
@@ -194,6 +198,7 @@ function setup() {
   >('asset-queue', {
     connection,
   })
+  globalThis.assetQueueEvents = new QueueEvents('asset-queue', { connection })
 }
 
 export const queue = {
@@ -202,6 +207,9 @@ export const queue = {
   termQueue: globalThis.termQueue as NonNullable<typeof globalThis.termQueue>,
   assetQueue: globalThis.assetQueue as NonNullable<
     typeof globalThis.assetQueue
+  >,
+  assetQueueEvents: globalThis.assetQueueEvents as NonNullable<
+    typeof globalThis.assetQueueEvents
   >,
   testQueueEvents: globalThis.testQueueEvents as NonNullable<
     typeof globalThis.testQueueEvents

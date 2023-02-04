@@ -21,10 +21,12 @@ export default async function (
     (pathsExist) => pathsExist.every((value) => value),
   )
   if (!isPolicySatisfied) {
+    console.error('😱 Bad new 🐻s!')
+    console.error('Step regex asset could not be materialized')
     throw new Error('Step regex asset could not be materialized')
   }
 
-  const materializedData = pipe(
+  const stepRegexes = pipe(
     STEPS.map(
       (step) =>
         [
@@ -37,10 +39,11 @@ export default async function (
         ] as const,
     ),
     (entries) => new Map(entries),
+    (map) => JSON.stringify([...map]),
   )
 
-  console.log('🚀', materializedData)
   return {
     message: 'done',
+    stepRegexes,
   }
 }

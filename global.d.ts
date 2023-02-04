@@ -1,5 +1,10 @@
 /* eslint-disable no-var */
 import {
+  AssetJobData,
+  AssetJobName,
+  AssetJobResponse,
+} from './src/server/workers/assetWorker'
+import {
   TestJobData,
   TestJobName,
   TestJobResponse,
@@ -43,6 +48,7 @@ declare global {
     | Worker<AssetJobData, AssetJobResponse, AssetJobName>
     | undefined
     | null
+  var assetQueueEvents: QueueEvents | undefined | null
 }
 
 export {}

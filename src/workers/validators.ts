@@ -1,4 +1,4 @@
-import { Chamber } from '@prisma/client'
+import { Chamber, Step } from '@prisma/client'
 import { z } from 'zod'
 
 export const fullChamberNameValidator = z.enum([
@@ -321,3 +321,8 @@ export const memberResponseValidator = z.object({
     format: z.string(),
   }),
 })
+
+export const stepRegexesValidator = z.map(
+  z.nativeEnum(Step),
+  z.array(z.string()),
+)

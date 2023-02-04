@@ -85,7 +85,10 @@ export type PartyHistory = z.infer<typeof partyHistoryValidator>
 export interface AssetJobData {
   chamber: Chamber
 }
+// this needs to be redis-safe!
 export interface AssetJobResponse {
   message: string
+  // stepRegexes?: Map<Step, string[]>
+  stepRegexes?: string //Map<Step, string[]>
 }
 export type AssetJobName = 'asset-job'
