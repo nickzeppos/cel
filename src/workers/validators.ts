@@ -326,3 +326,50 @@ export const stepRegexesValidator = z.map(
   z.nativeEnum(Step),
   z.array(z.string()),
 )
+export type StepRegexes = z.infer<typeof stepRegexesValidator>
+
+export const allMemberResponseValidator = z.object({
+  members: z.array(
+    z.object({
+      bioguideId: z.string(),
+      depiction: z
+        .object({
+          attribution: z.string().nullish(),
+          imageUrl: z.string().nullish(),
+        })
+        .nullish(),
+      district: z.number().int().nullable(),
+      name: z.string(),
+      party: z.string(),
+      served: z.object({
+        House: z
+          .array(
+            z.object({
+              end: z.number().int().nullable(),
+              start: z.number().int(),
+            }),
+          )
+          .optional(),
+        Senate: z
+          .array(
+            z.object({
+              end: z.number().int().nullable(),
+              start: z.number().int(),
+            }),
+          )
+          .optional(),
+      }),
+      state: z.string(),
+      url: z.string().url(),
+    }),
+  ),
+  pagination: z.object({
+    count: z.number().int(),
+    next: z.string().url().nullish(),
+  }),
+  request: z.object({
+    contentType: z.string(),
+    format: z.string(),
+  }),
+})
+export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>

@@ -22,6 +22,7 @@ type Asset<T, A extends Array<any>, D extends Array<Asset<any, any, any>>> = {
   policies: (...args: A) => boolean
   materialize: (...deps: DataTypesOf<D>) => (...args: A) => T
   persist: (data: T) => void
+  read?: (...args: A) => T
 }
 
 type Engine = {

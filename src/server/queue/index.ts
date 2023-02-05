@@ -5,6 +5,9 @@ import {
   BillJobData,
   BillJobName,
   BillJobResponse,
+  CongressAPIAssetJobData,
+  CongressAPIAssetJobName,
+  CongressAPIAssetJobResponse,
   TermJobData,
   TermJobName,
   TermJobResponse,
@@ -24,27 +27,22 @@ setup()
 
 export function cleanup() {
   if (globalThis.testQueue != null) {
-    console.log('🧹 cleanup testQueue')
     globalThis.testQueue.close()
     globalThis.testQueue = undefined
   }
   if (globalThis.billQueue != null) {
-    console.log('🧹 cleanup billQueue')
     globalThis.billQueue.close()
     globalThis.billQueue = undefined
   }
   if (globalThis.testQueueEvents != null) {
-    console.log('🧹 cleanup testQueueEvents')
     globalThis.testQueueEvents.close()
     globalThis.testQueueEvents = undefined
   }
   if (globalThis.billQueueEvents != null) {
-    console.log('🧹 cleanup billQueueEvents')
     globalThis.billQueueEvents.close()
     globalThis.billQueueEvents = undefined
   }
   if (globalThis.termQueueEvents != null) {
-    console.log('🧹 cleanup termQueueEvents')
     globalThis.termQueueEvents.close()
     globalThis.termQueueEvents = undefined
   }
@@ -56,140 +54,46 @@ export function cleanup() {
     globalThis.assetQueueEvents.close()
     globalThis.assetQueueEvents = undefined
   }
+  if (globalThis.congressAPIAssetQueue != null) {
+    globalThis.congressAPIAssetQueue.close()
+    globalThis.congressAPIAssetQueue = undefined
+  }
+  if (globalThis.congressAPIAssetQueueEvents != null) {
+    globalThis.congressAPIAssetQueueEvents.close()
+    globalThis.congressAPIAssetQueueEvents = undefined
+  }
 }
 
 function setup() {
-  console.log('🔼 setup test queue')
   globalThis.testQueue = new Queue<TestJobData, TestJobResponse, TestJobName>(
     'test-queue',
     {
       connection,
     },
   )
-    .on('cleaned', () => {
-      console.log('🚂 CLEANED')
-    })
-    .on('paused', () => {
-      console.log('🚂 PAUSED')
-    })
-    .on('resumed', () => {
-      console.log('🚂 RESUMED')
-    })
-  console.log('🔼 setup bill queue')
+  globalThis.billQueueEvents = new QueueEvents('bill-queue', {
+    connection,
+  })
+
   globalThis.billQueue = new Queue<BillJobData, BillJobResponse, BillJobName>(
     'bill-queue',
     {
       connection,
     },
   )
-    .on('cleaned', () => {
-      console.log('🚂 CLEANED')
-    })
-    .on('paused', () => {
-      console.log('🚂 PAUSED')
-    })
-    .on('resumed', () => {
-      console.log('🚂 RESUMED')
-    })
+  globalThis.testQueueEvents = new QueueEvents('test-queue', {
+    connection,
+  })
+
   globalThis.termQueue = new Queue<TermJobData, TermJobResponse, TermJobName>(
     'term-queue',
     {
       connection,
     },
   )
-    .on('cleaned', () => {
-      console.log('🚂 CLEANED')
-    })
-    .on('paused', () => {
-      console.log('🚂 PAUSED')
-    })
-    .on('resumed', () => {
-      console.log('🚂 RESUMED')
-    })
-
-  globalThis.billQueueEvents = new QueueEvents('bill-queue', {
-    connection,
-  })
-    .on('completed', (job) => {
-      console.log(`🚂 JOB COMPLETE ${job.jobId} ${job.returnvalue} ${job.prev}`)
-    })
-    .on('progress', (job) => {
-      console.log(`🚂 JOB PROGRESS ${job.jobId} ${job.data}`)
-    })
-    .on('added', (job) => {
-      console.log(`🚂 JOB ADDED ${job.jobId} ${job.name}`)
-    })
-    .on('removed', (job) => {
-      console.log(`🚂 JOB REMOVED ${job.jobId} ${job.prev}`)
-    })
-    .on('cleaned', (n) => {
-      console.log(`🚂 JOBS CLEANED ${n}`)
-    })
-    .on('failed', (job) => {
-      console.log(`🚂 JOB FAILED ${job.jobId}`)
-    })
-
-  globalThis.testQueueEvents = new QueueEvents('test-queue', {
-    connection,
-  })
-    .on('completed', (job) => {
-      console.log(`🚂 JOB COMPLETE ${job.jobId} ${job.returnvalue} ${job.prev}`)
-      // get some info about the rate limit from return value
-      // job.returnvalue includes remaining limit
-
-      // if remaining < C wait for W
-      // otherwise just keep going
-
-      // W is a function of actual rate and some relationship with the remaining limit
-      // W affects the actual rate of requests we're making
-      // ARR = actual request rate (job rate)
-      // LRR = limit refresh rate
-
-      // ARR = LRR
-      // we want to discover LRR so that we can set ARR equal to it
-      // but ARR is not what we control directly either
-      // we control delay between requests
-
-      // pause the queue for some amount of time based on that
-      // globalThis.billQueue?.pause() setTime .resume()
-    })
-    .on('progress', (job) => {
-      console.log(`🚂 JOB PROGRESS ${job.jobId} ${job.data}`)
-    })
-    .on('added', (job) => {
-      console.log(`🚂 JOB ADDED ${job.jobId} ${job.name}`)
-    })
-    .on('removed', (job) => {
-      console.log(`🚂 JOB REMOVED ${job.jobId} ${job.prev}`)
-    })
-    .on('cleaned', (n) => {
-      console.log(`🚂 JOBS CLEANED ${n}`)
-    })
-    .on('failed', (job) => {
-      console.log(`🚂 JOB FAILED ${job.jobId}`)
-    })
-
   globalThis.termQueueEvents = new QueueEvents('term-queue', {
     connection,
   })
-    .on('completed', (job) => {
-      console.log(`🚂 JOB COMPLETE ${job.jobId} ${job.returnvalue} ${job.prev}`)
-    })
-    .on('progress', (job) => {
-      console.log(`🚂 JOB PROGRESS ${job.jobId} ${job.data}`)
-    })
-    .on('added', (job) => {
-      console.log(`🚂 JOB ADDED ${job.jobId} ${job.name}`)
-    })
-    .on('removed', (job) => {
-      console.log(`🚂 JOB REMOVED ${job.jobId} ${job.prev}`)
-    })
-    .on('cleaned', (n) => {
-      console.log(`🚂 JOBS CLEANED ${n}`)
-    })
-    .on('failed', (job) => {
-      console.log(`🚂 JOB FAILED ${job.jobId}`)
-    })
 
   globalThis.assetQueue = new Queue<
     AssetJobData,
@@ -199,25 +103,51 @@ function setup() {
     connection,
   })
   globalThis.assetQueueEvents = new QueueEvents('asset-queue', { connection })
+
+  globalThis.congressAPIAssetQueue = new Queue<
+    CongressAPIAssetJobData,
+    CongressAPIAssetJobResponse,
+    CongressAPIAssetJobName
+  >('congress-api-asset-queue', {
+    connection,
+    limiter: {
+      groupKey: 'congress-api-rate-limit',
+    },
+  })
+  globalThis.congressAPIAssetQueueEvents = new QueueEvents(
+    'congress-api-asset-queue',
+    { connection },
+  )
 }
 
 export const queue = {
   testQueue: globalThis.testQueue as NonNullable<typeof globalThis.testQueue>,
+  testQueueEvents: globalThis.testQueueEvents as NonNullable<
+    typeof globalThis.testQueueEvents
+  >,
+
   billQueue: globalThis.billQueue as NonNullable<typeof globalThis.billQueue>,
+  billQueueEvents: globalThis.billQueueEvents as NonNullable<
+    typeof globalThis.billQueueEvents
+  >,
+
   termQueue: globalThis.termQueue as NonNullable<typeof globalThis.termQueue>,
+  termQueueEvents: globalThis.termQueueEvents as NonNullable<
+    typeof globalThis.termQueueEvents
+  >,
+
   assetQueue: globalThis.assetQueue as NonNullable<
     typeof globalThis.assetQueue
   >,
   assetQueueEvents: globalThis.assetQueueEvents as NonNullable<
     typeof globalThis.assetQueueEvents
   >,
-  testQueueEvents: globalThis.testQueueEvents as NonNullable<
-    typeof globalThis.testQueueEvents
+
+  congressApiAssetQueue: globalThis.congressAPIAssetQueue as NonNullable<
+    typeof globalThis.congressAPIAssetQueue
   >,
-  billQueueEvents: globalThis.billQueueEvents as NonNullable<
-    typeof globalThis.billQueueEvents
-  >,
-  termQueueEvents: globalThis.termQueueEvents as NonNullable<
-    typeof globalThis.termQueueEvents
-  >,
+  congressAPIAssetQueueEvents:
+    globalThis.congressAPIAssetQueueEvents as NonNullable<
+      typeof globalThis.congressAPIAssetQueueEvents
+    >,
 }

@@ -49,3 +49,9 @@ export const assetPlaygroundRouter = createRouter()
       )
     },
   })
+  .mutation('materialize-members-count', {
+    async resolve({ ctx }) {
+      await ctx.queue.congressApiAssetQueue.add('congress-api-asset-job', {})
+      return
+    },
+  })

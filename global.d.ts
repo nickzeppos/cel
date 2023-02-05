@@ -1,21 +1,21 @@
 /* eslint-disable no-var */
 import {
-  AssetJobData,
-  AssetJobName,
-  AssetJobResponse,
-} from './src/server/workers/assetWorker'
-import {
   TestJobData,
   TestJobName,
   TestJobResponse,
 } from './src/server/workers/testWorker'
 import { TermJobData, TermJobResponse } from './src/workers/types'
+import {
+  AssetJobData,
+  AssetJobName,
+  AssetJobResponse,
+  CongressAPIAssetJobData,
+  CongressAPIAssetJobName,
+  CongressAPIAssetJobResponse,
+} from './src/workers/types.ts'
 import { Queue, QueueEvents, Worker } from 'bullmq'
 
 declare global {
-  var testQueueEvents: QueueEvents | undefined | null
-  var billQueueEvents: QueueEvents | undefined | null
-  var termQueueEvents: QueueEvents | undefined | null
   var testQueue:
     | Queue<TestJobData, TestJobResponse, TestJobName>
     | undefined
@@ -24,6 +24,8 @@ declare global {
     | Worker<TestJobData, TestJobResponse, TestJobName>
     | undefined
     | null
+  var testQueueEvents: QueueEvents | undefined | null
+
   var billQueue:
     | Queue<BillJobData, BillJobResponse, BillJobName>
     | undefined
@@ -32,6 +34,8 @@ declare global {
     | Worker<BillJobData, BillJobResponse, BillJobName>
     | undefined
     | null
+  var billQueueEvents: QueueEvents | undefined | null
+
   var termQueue:
     | Queue<TermJobData, TermJobResponse, TermJobName>
     | undefined
@@ -40,6 +44,8 @@ declare global {
     | Worker<TermJobData, TermJobResponse, TermJobName>
     | undefined
     | null
+  var termQueueEvents: QueueEvents | undefined | null
+
   var assetQueue:
     | Queue<AssetJobData, AssetJobResponse, AssetJobName>
     | undefined
@@ -49,6 +55,24 @@ declare global {
     | undefined
     | null
   var assetQueueEvents: QueueEvents | undefined | null
+
+  var congressAPIAssetQueue:
+    | Queue<
+        CongressAPIAssetJobData,
+        CongressAPIAssetJobResponse,
+        CongressAPIAssetJobName
+      >
+    | undefined
+    | null
+  var congressAPIAssetWorker:
+    | Worker<
+        CongressAPIAssetJobData,
+        CongressAPIAssetJobResponse,
+        CongressAPIAssetJobName
+      >
+    | undefined
+    | null
+  var congressAPIAssetQueueEvents: QueueEvents | undefined | null
 }
 
 export {}

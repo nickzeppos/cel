@@ -1,67 +1,23 @@
 import { fetchCongressAPI } from '../../workers/congressAPI'
 import { ChamberShortName } from '../../workers/types'
-import { shortChamberNameValidator } from '../../workers/validators'
-import { ChamberDisplay, ChamberToEnum } from '../chambress'
+import {
+  AllMemberResponse,
+  allMemberResponseValidator,
+} from '../../workers/validators'
 import { createRouter } from './context'
-import { Chamber, Member, Prisma, Term } from '@prisma/client'
+import { Chamber, Member, Prisma } from '@prisma/client'
 import { option } from 'fp-ts'
 import * as A from 'fp-ts/lib/Array'
 import { pipe } from 'fp-ts/lib/function'
 import * as fs from 'fs'
 import fetch from 'node-fetch'
 import sharp from 'sharp'
-import { string, z } from 'zod'
+import { z } from 'zod'
 
 const MEMBER_IMAGES_DIR = './public/member-images'
 const SQUARE_IMAGES_DIR = './public/square-images'
 const IMAGES_DIR = './public'
 const IMAGE_SIZE = 98
-
-const allMemberResponseValidator = z.object({
-  members: z.array(
-    z.object({
-      bioguideId: z.string(),
-      depiction: z
-        .object({
-          attribution: z.string().nullish(),
-          imageUrl: z.string().nullish(),
-        })
-        .nullish(),
-      district: z.number().int().nullable(),
-      name: z.string(),
-      party: z.string(),
-      served: z.object({
-        House: z
-          .array(
-            z.object({
-              end: z.number().int().nullable(),
-              start: z.number().int(),
-            }),
-          )
-          .optional(),
-        Senate: z
-          .array(
-            z.object({
-              end: z.number().int().nullable(),
-              start: z.number().int(),
-            }),
-          )
-          .optional(),
-      }),
-      state: z.string(),
-      url: z.string().url(),
-    }),
-  ),
-  pagination: z.object({
-    count: z.number().int(),
-    next: z.string().url().nullish(),
-  }),
-  request: z.object({
-    contentType: z.string(),
-    format: z.string(),
-  }),
-})
-type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
 export const ShortChamberToEnum: Record<ChamberShortName, Chamber> = {
   ['House']: Chamber.HOUSE,

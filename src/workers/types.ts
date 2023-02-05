@@ -92,3 +92,14 @@ export interface AssetJobResponse {
   stepRegexes?: string //Map<Step, string[]>
 }
 export type AssetJobName = 'asset-job'
+
+export interface CongressAPIAssetJobData {
+  chamber?: Chamber
+  congress?: number
+  offset?: number
+  limit?: number
+}
+export interface CongressAPIAssetJobResponse {
+  message: string
+}
+export type CongressAPIAssetJobName = 'congress-api-job'

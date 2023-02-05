@@ -14,11 +14,22 @@ const AssetPlayground: NextPage = () => {
   const [chamber, setChamber] = useState<Chamber>('HOUSE')
   const [regexes, setRegexes] = useState<Map<Step, RegExp[]>>(new Map())
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const m = trpc.useMutation(['asset-playground.materialize-step-regex'], {
-    onSuccess: (data) => {
-      console.log(data)
+  const materializeStepRegex = trpc.useMutation(
+    ['asset-playground.materialize-step-regex'],
+    {
+      onSuccess: (data) => {
+        console.log(data)
+      },
     },
-  })
+  )
+  const materializeMembersCount = trpc.useMutation(
+    ['asset-playground.materialize-members-count'],
+    {
+      onSuccess: (data) => {
+        console.log('member count job scheduled')
+      },
+    },
+  )
   trpc.useSubscription(['asset-playground.on-change'], {
     onNext(data) {
       console.log('subscription updated', data)
@@ -68,7 +79,7 @@ const AssetPlayground: NextPage = () => {
         <Button
           label="Materialize"
           onClick={() => {
-            m.mutate({ chamber })
+            materializeStepRegex.mutate({ chamber })
           }}
         />
         <div>
@@ -85,6 +96,14 @@ const AssetPlayground: NextPage = () => {
             </>
           ))}
         </div>
+      </div>
+      <div className="p-2 max-w-xl flex flex-col gap-4">
+        <Button
+          label="Materialize members count"
+          onClick={() => {
+            materializeMembersCount.mutate()
+          }}
+        />
       </div>
     </div>
   )
