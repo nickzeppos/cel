@@ -1,8 +1,8 @@
 import {
   AnyAsset,
   Asset,
-  AssetArray,
   DataTypesOf,
+  membersBiouguideListAsset,
   membersCountAsset,
 } from './assets'
 import {
@@ -22,7 +22,7 @@ export default async function (
   // const { chamber, congress, offset, limit } = job.data
   console.log('running worker')
 
-  await materialize(membersCountAsset, [], [])
+  await materialize(membersBiouguideListAsset, [0, 250], [membersCountAsset])
 
   console.log('worker done')
   return {
@@ -40,7 +40,8 @@ async function materialize<T, A extends any[], D extends AnyAsset[]>(
   // ordered mapping of each dependency's data type without `as`
   const materializedDeps = deps.map((d) => d.read()) as DataTypesOf<D>
   console.log('materialized deps', materializedDeps)
-  if (!asset.policies(...args)) {
+  const policyOutcome = await asset.policies(...materializedDeps)(...args)
+  if (!policyOutcome) {
     console.log('policy failed')
     const materializedData = await asset.materialize(...materializedDeps)(
       ...args,
