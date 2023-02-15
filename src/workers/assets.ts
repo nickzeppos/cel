@@ -53,6 +53,9 @@ export const membersCountAsset: Asset<number, [], []> = {
         encoding: 'utf8',
         flag: 'r',
       })
+      // If we upgrade to >= zod 3.20, we can use z.coerce in place of parseInt
+      // https://github.com/colinhacks/zod/releases
+      // z.coerce.number().int().positive().parse(text)
       const int = parseInt(text)
       const schema = z.number().int().positive()
       return schema.parse(int)
