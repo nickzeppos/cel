@@ -43,8 +43,9 @@ async function materialize<T, A extends any[], D extends AnyAsset[]>(
   const policyOutcome = await asset.policy(...materializedDeps)(...args)
   if (!policyOutcome) {
     console.log('policy failed')
-    const materializedData = await asset.read(...args)
-    asset.write(...args)(materializedData)
+    // Job add here
+    // const materializedData = await asset.read(...args)
+    // asset.write(...args)(materializedData)
   } else {
     console.log('policy passed')
   }
