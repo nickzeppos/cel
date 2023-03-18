@@ -17,25 +17,26 @@ export type Asset<
   A extends Array<any>,
   D extends Array<Asset<any, any, any>>,
 > = {
-  policies: (...deps: DataTypesOf<D>) => (...args: A) => Promise<boolean>
-  materialize: (...deps: DataTypesOf<D>) => (...args: A) => Promise<T>
-  persist: (data: T) => Promise<void>
-  read: () => Promise<T>
+  deps: D
+  policy: (...deps: DataTypesOf<D>) => (...args: A) => Promise<boolean>
+  write: (...args: A) => (data: T) => Promise<void>
+  read: (...args: A) => Promise<T>
 }
 
 const ALWAYS_FETCH_POLICY = async () => false
 
 export const membersCountAsset: Asset<number, [], []> = {
-  policies: () => ALWAYS_FETCH_POLICY,
-  materialize: () => async () => {
-    console.log('IM INSIDE MATERIALIZED')
-    const rawRes = await fetchCongressAPI('/member', { limit: 1 })
-    const json = await rawRes.json()
-    const data = allMemberResponseValidator.parse(json)
-    const { count } = data.pagination
-    return count
-  },
-  persist: async (count) => {
+  deps: [],
+  policy: () => ALWAYS_FETCH_POLICY,
+  // materialize: () => async () => {
+  //   console.log('IM INSIDE MATERIALIZED')
+  //   const rawRes = await fetchCongressAPI('/member', { limit: 1 })
+  //   const json = await rawRes.json()
+  //   const data = allMemberResponseValidator.parse(json)
+  //   const { count } = data.pagination
+  //   return count
+  // },
+  write: () => async (count) => {
     console.log('saving count to file')
     try {
       writeFileSync('./data/members-count.txt', `${count}`, {
@@ -68,27 +69,21 @@ export const membersCountAsset: Asset<number, [], []> = {
 
 export const membersBiouguideListAsset: Asset<
   string[],
-  [offset: number, limit: number],
+  [],
   [typeof membersCountAsset]
 > = {
-  policies: (membersCountAsset) => async (_offset: number, _limit: number) => {
+  deps: [membersCountAsset],
+  policy: (_membersCountAsset) => async () => {
     console.log('running  bioguide list policy')
-    const exists = existsSync('./data/members-bioguide.txt')
-    console.log(exists)
-    if (exists) {
-      const asset = await membersBiouguideListAsset.read()
-      return asset.length === membersCountAsset ? true : false
-    } else {
-      return false
-    }
+    return existsSync('./data/members-bioguide.txt') ? true : false
   },
-  materialize: (_membersCountAsset) => async (offset, limit) => {
-    const rawRes = await fetchCongressAPI('/member', { limit, offset })
-    const json = await rawRes.json()
-    const { members } = allMemberResponseValidator.parse(json)
-    return members.map((member) => member.bioguideId)
-  },
-  persist: async (bioguides) => {
+  // materialize: (_membersCountAsset) => async (offset, limit) => {
+  //   const rawRes = await fetchCongressAPI('/member', { limit, offset })
+  //   const json = await rawRes.json()
+  //   const { members } = allMemberResponseValidator.parse(json)
+  //   return members.map((member) => member.bioguideId)
+  // },
+  write: () => async (bioguides) => {
     console.log('saving bioguides to file')
     const path = `./data/members-bioguides.txt`
     try {
