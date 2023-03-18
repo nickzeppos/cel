@@ -1,5 +1,3 @@
-import { fetchCongressAPI } from './congressAPI'
-import { allMemberResponseValidator } from './validators'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { z } from 'zod'
 
