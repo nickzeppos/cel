@@ -6,7 +6,5 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "downlevelIteration": true
-  },
-  "include": ["./src/workers/*.ts"],
-  "exclude": ["./node_modules/"]
+  }
 }

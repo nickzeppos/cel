@@ -1,25 +1,6 @@
+import { Asset } from './assets.types'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { z } from 'zod'
-
-export type DataTypeOf<A> = A extends Asset<infer DataType, any, any>
-  ? DataType
-  : never
-export type AnyAsset = Asset<any, any, any>
-export type AssetArray = Array<AnyAsset>
-export type DataTypesOf<T extends AssetArray> = {
-  [K in keyof T]: DataTypeOf<T[K]>
-}
-
-export type Asset<
-  T,
-  A extends Array<any>,
-  D extends Array<Asset<any, any, any>>,
-> = {
-  deps: D
-  policy: (...deps: DataTypesOf<D>) => (...args: A) => Promise<boolean>
-  write: (...args: A) => (data: T) => Promise<void>
-  read: (...args: A) => Promise<T>
-}
 
 const ALWAYS_FETCH_POLICY = async () => false
 
