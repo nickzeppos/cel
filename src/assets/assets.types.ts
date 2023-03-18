@@ -11,17 +11,16 @@ export type DataTypesOf<T extends AssetArray> = {
   [K in keyof T]: DataTypeOf<T[K]>
 }
 export type AssetName = string
-export type Asset<
-  T,
-  A extends Array<unknown>,
-  D extends Array<Asset<any, any, any>>,
-> = {
+export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
   name: AssetName
   queue: JobQueueName
   deps: D
-  policy: (...deps: DataTypesOf<D>) => (...args: A) => Promise<boolean>
+  policy: (...args: A) => Promise<boolean>
   write: (...args: A) => (data: T) => Promise<void>
   read: (...args: A) => Promise<T>
+  create: (
+    ...args: A
+  ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<T>
 }
 
 export type JobID = number
@@ -32,7 +31,8 @@ export type JobConfig = {
   queue: JobQueueName
   args: Array<unknown>
 }
+export type JobEdge = { job: JobID; dependsOn: JobID }
 export type JobGraph = {
   jobs: JobConfig[]
-  dependencies: { job: JobID; dependsOn: JobID }[]
+  dependencies: JobEdge[]
 }
