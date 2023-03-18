@@ -69,44 +69,43 @@ describe('materialize a simple asset with no dependencies', () => {
     })
   })
 
-  // it('should support assets with two layers of dependencies', () => {
-  //   const assetWithDeps: Asset<string, [], [Asset<string, [], []>]> = {
-  //     name: 'report2',
-  //     queue: 'local',
-  //     deps: [simpleAsset],
-  //     policy: async () => false,
-  //     write: () => async () => {
-  //       return
-  //     },
-  //     read: async () => 'data',
-  //     create: () => async (simpleData) => `${simpleData} + complex data`,
-  //   }
+  it('should support assets with two layers of dependencies', () => {
+    const assetWithDeps: Asset<string, [], [typeof simpleAsset]> = {
+      name: 'report2',
+      queue: 'local',
+      deps: [simpleAsset],
+      policy: async () => false,
+      write: () => async () => {
+        return
+      },
+      read: async () => 'data',
+      create: () => async (simpleData) => `${simpleData} + complex data`,
+    }
 
-  //   const assetWithTwoLayersOfDeps: Asset<
-  //     string,
-  //     [],
-  //     [Asset<string, [], [Asset<string, [], []>]>]
-  //   > = {
-  //     name: 'report3',
-  //     queue: 'local',
-  //     deps: [assetWithDeps],
-  //     policy: async () => false,
-  //     write: () => async () => {
-  //       return
-  //     },
-  //     read: async () => 'data',
-  //     create: () => async (complexData) => `${complexData} + more complex data`,
-  //   }
+    const assetWithTwoLayersOfDeps: Asset<string, [], [typeof assetWithDeps]> =
+      {
+        name: 'report3',
+        queue: 'local',
+        deps: [assetWithDeps],
+        policy: async () => false,
+        write: () => async () => {
+          return
+        },
+        read: async () => 'data',
+        create: () => async (complexData) =>
+          `${complexData} + even more complex data`,
+      }
 
-  //   expect(materialize(assetWithTwoLayersOfDeps, [])).toEqual({
-  //     jobs: [
-  //       { id: 0, name: 'report', queue: 'local', args: [] },
-  //       { id: 1, name: 'report2', queue: 'local', args: [] },
-  //       { id: 2, name: 'report3', queue: 'local', args: [] },
-  //     ],
-  //     dependencies: [
-  //       { job: 0, dependsOn: 1 },
-  //       { job: 1, dependsOn: 2 },
-  //     ],
-  //   })
+    expect(materialize(assetWithTwoLayersOfDeps, [])).toEqual({
+      jobs: [
+        { id: 0, name: 'report3', queue: 'local', args: [] },
+        { id: 1, name: 'report2', queue: 'local', args: [] },
+        { id: 2, name: 'report', queue: 'local', args: [] },
+      ],
+      dependencies: [
+        { job: 0, dependsOn: 1 },
+        { job: 1, dependsOn: 2 },
+      ],
+    })
+  })
 })
