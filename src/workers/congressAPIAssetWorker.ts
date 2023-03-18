@@ -10,7 +10,7 @@ import {
   CongressAPIAssetJobName,
   CongressAPIAssetJobResponse,
 } from './types'
-import { Job } from 'bullmq'
+import { FlowJob, FlowProducer, Job } from 'bullmq'
 
 export default async function (
   job: Job<
@@ -49,4 +49,11 @@ async function materialize<T, A extends any[], D extends AnyAsset[]>(
   } else {
     console.log('policy passed')
   }
+}
+
+function produceJobPlan<T, A extends any[], D extends AnyAsset[]>(
+  asset: Asset<T, A, D>,
+  args: A,
+): FlowProducer {
+  return new FlowProducer()
 }

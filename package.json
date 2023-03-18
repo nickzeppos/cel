@@ -11,7 +11,9 @@
     "pmigrate": "prisma db push",
     "pstudio": "npx prisma studio",
     "fix-sharp": "npm_config_libc=musl yarn rebuild sharp",
-    "d": "docker-compose up"
+    "d": "docker-compose up",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.3",
