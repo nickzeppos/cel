@@ -1,6 +1,5 @@
 import {
   AnyAsset,
-  ArgsTypeOf,
   Asset,
   JobConfig,
   JobEdge,
@@ -64,31 +63,5 @@ export function materialize<
   return {
     jobs,
     dependencies,
-  }
-}
-
-export function createLocalJob(
-  id: number,
-  name: string,
-  args: unknown[] = [],
-): JobConfig {
-  return {
-    id,
-    name,
-    queue: 'local',
-    args,
-  }
-}
-
-export function createApiJob(
-  id: number,
-  name: string,
-  args: unknown[] = [],
-): JobConfig {
-  return {
-    id,
-    name,
-    queue: 'api',
-    args,
   }
 }

@@ -1,5 +1,5 @@
-import type { Asset, DataTypeOf } from './assets.types'
-import { createLocalJob, materialize } from './engine'
+import type { Asset } from './assets.types'
+import { materialize } from './engine'
 
 describe('materialize a simple asset with no dependencies', () => {
   const simpleAsset: Asset<string, [], []> = {
@@ -16,7 +16,7 @@ describe('materialize a simple asset with no dependencies', () => {
 
   it('should queue one local job', () => {
     expect(materialize(simpleAsset, [])).toEqual({
-      jobs: [createLocalJob(0, 'report')],
+      jobs: [{ id: 0, name: 'report', queue: 'local', args: [] }],
       dependencies: [],
     })
   })
@@ -35,12 +35,14 @@ describe('materialize a simple asset with no dependencies', () => {
     }
 
     expect(materialize(assetWithArgs, ['args', 1])).toEqual({
-      jobs: [createLocalJob(0, 'report', ['args', 1])],
+      jobs: [{ id: 0, name: 'report', queue: 'local', args: ['args', 1] }],
       dependencies: [],
     })
 
     expect(materialize(assetWithArgs, ['other args', 2])).toEqual({
-      jobs: [createLocalJob(0, 'report', ['other args', 2])],
+      jobs: [
+        { id: 0, name: 'report', queue: 'local', args: ['other args', 2] },
+      ],
       dependencies: [],
     })
   })
@@ -57,9 +59,12 @@ describe('materialize a simple asset with no dependencies', () => {
       read: async () => 'data',
       create: () => async (simpleData) => `${simpleData} + complex data`,
     }
-    const jobGraph = materialize(assetWithDeps, [])
-    expect(jobGraph).toEqual({
-      jobs: [createLocalJob(0, 'report2'), createLocalJob(1, 'report')],
+
+    expect(materialize(assetWithDeps, [])).toEqual({
+      jobs: [
+        { id: 0, name: 'report', queue: 'local', args: [] },
+        { id: 1, name: 'report2', queue: 'local', args: [] },
+      ],
       dependencies: [{ job: 0, dependsOn: 1 }],
     })
   })
