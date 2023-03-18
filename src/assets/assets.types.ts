@@ -30,6 +30,7 @@ export type JobConfig = {
   id: JobID
   name: string
   queue: JobQueueName
+  args: Array<unknown>
 }
 export type JobGraph = {
   jobs: JobConfig[]
