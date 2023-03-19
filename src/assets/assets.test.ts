@@ -1,20 +1,20 @@
 import type { AnyAsset, Asset, JobQueueName } from './assets.types'
 import { getJobGraphForAsset, sortJobGraph } from './engine'
 
-describe('getJobGraphForAsset', () => {
-  const membersCountAsset = getAssetExample('membersCount', 'api', [])
-  const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
-  const bioguidesAsset = getAssetExample('bioguides', 'api', [membersAsset])
-  const billsCountAsset = getAssetExample('billsCount', 'api', [])
-  const actionsAsset = getAssetExample('actions', 'api', [billsCountAsset])
-  const billsAsset = getAssetExample('bills', 'api', [billsCountAsset])
-  const reportAsset = getAssetExample('report', 'local', [
-    bioguidesAsset,
-    membersAsset,
-    actionsAsset,
-    billsAsset,
-  ])
+const membersCountAsset = getAssetExample('membersCount', 'api', [])
+const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
+const bioguidesAsset = getAssetExample('bioguides', 'api', [membersAsset])
+const billsCountAsset = getAssetExample('billsCount', 'api', [])
+const actionsAsset = getAssetExample('actions', 'api', [billsCountAsset])
+const billsAsset = getAssetExample('bills', 'api', [billsCountAsset])
+const reportAsset = getAssetExample('report', 'local', [
+  bioguidesAsset,
+  membersAsset,
+  actionsAsset,
+  billsAsset,
+])
 
+describe('getJobGraphForAsset', () => {
   it('should queue one local job', () => {
     const actual = getJobGraphForAsset(membersCountAsset)
     expect(actual.jobs).toEqual([
@@ -76,20 +76,19 @@ describe('getJobGraphForAsset', () => {
 })
 
 describe('sortJobGraph', () => {
-  const membersCountAsset = getAssetExample('membersCount', 'api', [])
-  const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
   it('should sort a simple job graph that has no dependencies', () => {
     const jobGraph = getJobGraphForAsset(membersCountAsset)
     const actual = sortJobGraph(jobGraph)
 
     expect(actual).toEqual([0])
-  }),
-    it('should sort a job graph with dependencies', () => {
-      const jobGraph = getJobGraphForAsset(membersAsset)
-      const actual = sortJobGraph(jobGraph)
+  })
 
-      expect(actual).toEqual([1, 0])
-    })
+  it('should sort a job graph with dependencies', () => {
+    const jobGraph = getJobGraphForAsset(membersAsset)
+    const actual = sortJobGraph(jobGraph)
+
+    expect(actual).toEqual([1, 0])
+  })
 })
 
 function getAssetExample<D extends AnyAsset[]>(

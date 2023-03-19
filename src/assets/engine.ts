@@ -92,7 +92,7 @@ export function sortJobGraph(graph: JobGraph): number[] {
       .forEach((edge) => visit(edge.job))
     visiting.delete(job)
     visited.add(job)
-    sorted.push(job)
+    sorted.unshift(job)
   }
 
   graph.jobs.forEach((job) => visit(job.id))
