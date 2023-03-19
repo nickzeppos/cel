@@ -1,64 +1,72 @@
-import {
-  AnyAsset,
-  Asset,
-  JobConfig,
-  JobEdge,
-  JobGraph,
-  JobID,
-} from './assets.types'
+import { AnyAsset, Asset, JobConfig, JobGraph, JobID } from './assets.types'
 
-export function materialize<
+export function getJobGraphForAsset<
   T,
-  A extends Array<unknown>,
-  D extends Array<Asset<any, any, any>>,
->(asset: Asset<T, A, D>, args: A): JobGraph {
+  A extends unknown[],
+  D extends AnyAsset[],
+>(asset: Asset<T, A, D>): JobGraph {
   const jobs: JobConfig[] = []
-  const dependencies: JobEdge[] = []
 
   const assetStack: AnyAsset[] = [asset]
-  const visitedDeps: WeakSet<AnyAsset> = new WeakSet()
   const assetJobMap: WeakMap<AnyAsset, JobID> = new WeakMap()
+  const visitedFrom: Map<AnyAsset, AnyAsset[]> = new Map()
+
+  let id = 0
+  let currentAsset: AnyAsset | undefined = asset
 
   const getJobConfig = (asset: AnyAsset): JobConfig => {
     return {
       id: id++,
       name: asset.name,
       queue: asset.queue,
-      args,
+      args: [],
     }
   }
-  const getParentJobID = (): JobID | undefined => {
-    const assetDownTheStack = assetStack[assetStack.length - 2]
-    if (assetDownTheStack === undefined) {
-      return undefined
-    }
-    return assetJobMap.get(assetDownTheStack)
-  }
 
-  let id = 0
-  let currentAsset: AnyAsset | undefined = asset
+  while (currentAsset !== undefined) {
+    const asset = currentAsset
 
-  do {
-    if (!visitedDeps.has(currentAsset)) {
-      const jobConfig = getJobConfig(currentAsset)
-      const job = getParentJobID()
-      if (job !== undefined) {
-        dependencies.push({ job, dependsOn: jobConfig.id })
-      }
-      assetJobMap.set(currentAsset, jobConfig.id)
+    // make a job for the current asset if it doesn't already exist
+    if (!assetJobMap.has(asset)) {
+      const jobConfig = getJobConfig(asset)
       jobs.push(jobConfig)
-      visitedDeps.add(currentAsset)
+      assetJobMap.set(asset, jobConfig.id)
     }
-    const deps = currentAsset.deps as AnyAsset[]
-    const nextUnvisitedDep = deps.find((dep) => !visitedDeps.has(dep))
 
+    // go to the next unvisited dep or back up to parent
+    const deps = asset.deps as AnyAsset[]
+    const nextUnvisitedDep = deps.find((dep) => {
+      const parents = visitedFrom.get(dep)
+      if (parents === undefined) {
+        return true
+      }
+      return !parents.includes(asset)
+    })
     if (nextUnvisitedDep !== undefined) {
       assetStack.push(nextUnvisitedDep)
+      if (!visitedFrom.has(nextUnvisitedDep)) {
+        visitedFrom.set(nextUnvisitedDep, [currentAsset])
+      } else {
+        const parents = visitedFrom.get(nextUnvisitedDep)!
+        if (!parents.includes(currentAsset)) {
+          visitedFrom.set(nextUnvisitedDep, [...parents, currentAsset])
+        }
+      }
     } else {
       assetStack.pop()
     }
     currentAsset = assetStack[assetStack.length - 1]
-  } while (currentAsset !== undefined)
+  }
+
+  const dependencies = [...visitedFrom.entries()].flatMap(
+    ([asset, parents]) => {
+      const dependsOn = assetJobMap.get(asset)!
+      return parents.map((parent) => ({
+        job: assetJobMap.get(parent)!,
+        dependsOn,
+      }))
+    },
+  )
 
   return {
     jobs,
