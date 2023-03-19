@@ -1,4 +1,4 @@
-import { membersCountAsset } from '../../assets/assetDefinitions'
+import { membersCountAsset, reportAsset } from '../../assets/assetDefinitions'
 import { materialize } from '../../assets/engine'
 import {
   AssetJobData,
@@ -54,6 +54,12 @@ export const assetPlaygroundRouter = createRouter()
   .mutation('materialize-members-count', {
     async resolve({ ctx }) {
       materialize(membersCountAsset)
+      return
+    },
+  })
+  .mutation('materialize-report', {
+    async resolve({ ctx }) {
+      materialize(reportAsset)
       return
     },
   })

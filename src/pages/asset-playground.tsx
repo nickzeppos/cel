@@ -30,6 +30,14 @@ const AssetPlayground: NextPage = () => {
       },
     },
   )
+  const materializeReport = trpc.useMutation(
+    ['asset-playground.materialize-report'],
+    {
+      onSuccess: (data) => {
+        console.log('report job scheduled')
+      },
+    },
+  )
   trpc.useSubscription(['asset-playground.on-change'], {
     onNext(data) {
       console.log('subscription updated', data)
@@ -102,6 +110,12 @@ const AssetPlayground: NextPage = () => {
           label="Materialize members count"
           onClick={() => {
             materializeMembersCount.mutate()
+          }}
+        />
+        <Button
+          label="Materialize report"
+          onClick={() => {
+            materializeReport.mutate()
           }}
         />
       </div>

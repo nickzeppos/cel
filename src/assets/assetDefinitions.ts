@@ -16,94 +16,83 @@ export const membersCountAsset: Asset<number, [], []> = {
   create: () => async () => 0,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const oldMembersCountAsset = {
-  deps: [],
+export const membersAsset: Asset<number, [], [typeof membersCountAsset]> = {
+  name: 'members',
+  queue: 'congress-api-asset-queue',
+  deps: [membersCountAsset],
   policy: ALWAYS_FETCH_POLICY,
-  // materialize: () => async () => {
-  //   console.log('IM INSIDE MATERIALIZED')
-  //   const rawRes = await fetchCongressAPI('/member', { limit: 1 })
-  //   const json = await rawRes.json()
-  //   const data = allMemberResponseValidator.parse(json)
-  //   const { count } = data.pagination
-  //   return count
-  // },
-  write: () => async (count: number) => {
-    console.log('saving count to file')
-    try {
-      writeFileSync('./data/members-count.txt', `${count}`, {
-        encoding: 'utf8',
-        flag: 'w',
-      })
-    } catch (e) {
-      console.error(e)
-    }
+  write: () => async () => {
+    return
   },
-  read: async () => {
-    console.log('reading count from file')
-    try {
-      const text = readFileSync('./data/members-count.txt', {
-        encoding: 'utf8',
-        flag: 'r',
-      })
-      // If we upgrade to >= zod 3.20, we can use z.coerce in place of parseInt
-      // https://github.com/colinhacks/zod/releases
-      // z.coerce.number().int().positive().parse(text)
-      const int = parseInt(text)
-      const schema = z.number().int().positive()
-      return schema.parse(int)
-    } catch (e) {
-      console.error(e)
-    }
-    throw new Error('failed to read')
-  },
-  name: '',
-  queue: 'local',
-  create: function (): <DD extends []>(...depsData: DD) => Promise<number> {
-    throw new Error('Function not implemented.')
-  },
+  read: async () => 0,
+  create: () => async () => 0,
 }
 
-// export const membersBiouguideListAsset: Asset<
-//   string[],
-//   [],
-//   [typeof membersCountAsset]
-// > = {
-//   deps: [membersCountAsset],
-//   policy: (_membersCountAsset) => async () => {
-//     console.log('running  bioguide list policy')
-//     return existsSync('./data/members-bioguide.txt') ? true : false
-//   },
-//   // materialize: (_membersCountAsset) => async (offset, limit) => {
-//   //   const rawRes = await fetchCongressAPI('/member', { limit, offset })
-//   //   const json = await rawRes.json()
-//   //   const { members } = allMemberResponseValidator.parse(json)
-//   //   return members.map((member) => member.bioguideId)
-//   // },
-//   write: () => async (bioguides) => {
-//     console.log('saving bioguides to file')
-//     const path = `./data/members-bioguides.txt`
-//     try {
-//       writeFileSync(path, `${bioguides.join('\n')}`, {
-//         encoding: 'utf8',
-//         flag: 'w',
-//       })
-//     } catch (e) {
-//       console.error(e)
-//     }
-//   },
-//   read: async () => {
-//     console.log('reading bioguides from file')
-//     try {
-//       const text = readFileSync(`/data/member-bioguides.txt`, {
-//         encoding: 'utf8',
-//         flag: 'r',
-//       })
-//       const stringArray = text.split('\n')
-//       return z.array(z.string()).parse(stringArray)
-//     } catch (e) {
-//       console.error(e)
-//     }
-//     throw new Error('Failed to read bioguides')
-//   },
-// }
+export const bioguidesAsset: Asset<number, [], [typeof membersAsset]> = {
+  name: 'bioguides',
+  queue: 'congress-api-asset-queue',
+  deps: [membersAsset],
+  policy: ALWAYS_FETCH_POLICY,
+  write: () => async () => {
+    return
+  },
+  read: async () => 0,
+  create: () => async () => 0,
+}
+
+export const billsCountAsset: Asset<number, [], []> = {
+  name: 'billsCount',
+  queue: 'congress-api-asset-queue',
+  deps: [],
+  policy: ALWAYS_FETCH_POLICY,
+  write: () => async () => {
+    return
+  },
+  read: async () => 0,
+  create: () => async () => 0,
+}
+
+export const actionsAsset: Asset<number, [], [typeof billsCountAsset]> = {
+  name: 'actions',
+  queue: 'congress-api-asset-queue',
+  deps: [billsCountAsset],
+  policy: ALWAYS_FETCH_POLICY,
+  write: () => async () => {
+    return
+  },
+  read: async () => 0,
+  create: () => async () => 0,
+}
+
+export const billsAsset: Asset<number, [], [typeof billsCountAsset]> = {
+  name: 'bills',
+  queue: 'congress-api-asset-queue',
+  deps: [billsCountAsset],
+  policy: ALWAYS_FETCH_POLICY,
+  write: () => async () => {
+    return
+  },
+  read: async () => 0,
+  create: () => async () => 0,
+}
+
+export const reportAsset: Asset<
+  string,
+  [],
+  [
+    typeof bioguidesAsset,
+    typeof membersAsset,
+    typeof billsAsset,
+    typeof actionsAsset,
+  ]
+> = {
+  name: 'report',
+  queue: 'local-asset-queue',
+  deps: [bioguidesAsset, membersAsset, billsAsset, actionsAsset],
+  policy: ALWAYS_FETCH_POLICY,
+  write: () => async () => {
+    return
+  },
+  read: async () => '',
+  create: () => async () => '',
+}

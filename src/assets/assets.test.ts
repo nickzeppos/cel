@@ -26,7 +26,7 @@ const actionsAsset = getAssetExample('actions', 'congress-api-asset-queue', [
 const billsAsset = getAssetExample('bills', 'congress-api-asset-queue', [
   billsCountAsset,
 ])
-const reportAsset = getAssetExample('report', 'local', [
+const reportAsset = getAssetExample('report', 'local-asset-queue', [
   bioguidesAsset,
   membersAsset,
   actionsAsset,
@@ -85,7 +85,7 @@ describe('getJobGraphForAsset', () => {
   it('should support a complex graph', () => {
     const actual = getJobGraphForAsset(reportAsset)
     expect(actual.jobs).toEqual([
-      { id: 0, name: 'report', queue: 'local', args: [] },
+      { id: 0, name: 'report', queue: 'local-asset-queue', args: [] },
       { id: 1, name: 'bioguides', queue: 'congress-api-asset-queue', args: [] },
       { id: 2, name: 'members', queue: 'congress-api-asset-queue', args: [] },
       {

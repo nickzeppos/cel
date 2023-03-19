@@ -8,6 +8,9 @@ import {
   CongressAPIAssetJobData,
   CongressAPIAssetJobName,
   CongressAPIAssetJobResponse,
+  LocalAssetJobData,
+  LocalAssetJobName,
+  LocalAssetJobResponse,
   TermJobData,
   TermJobName,
   TermJobResponse,
@@ -61,6 +64,14 @@ export function cleanup() {
   if (globalThis.congressAPIAssetQueueEvents != null) {
     globalThis.congressAPIAssetQueueEvents.close()
     globalThis.congressAPIAssetQueueEvents = undefined
+  }
+  if (globalThis.localAssetQueue != null) {
+    globalThis.localAssetQueue.close()
+    globalThis.localAssetQueue = undefined
+  }
+  if (globalThis.localAssetQueueEvents != null) {
+    globalThis.localAssetQueueEvents.close()
+    globalThis.localAssetQueueEvents = undefined
   }
 }
 
@@ -118,6 +129,17 @@ function setup() {
     'congress-api-asset-queue',
     { connection },
   )
+
+  globalThis.localAssetQueue = new Queue<
+    LocalAssetJobData,
+    LocalAssetJobResponse,
+    LocalAssetJobName
+  >('local-asset-queue', {
+    connection,
+  })
+  globalThis.localAssetQueueEvents = new QueueEvents('local-asset-queue', {
+    connection,
+  })
 }
 
 export const queue = {
@@ -150,4 +172,11 @@ export const queue = {
     globalThis.congressAPIAssetQueueEvents as NonNullable<
       typeof globalThis.congressAPIAssetQueueEvents
     >,
+
+  localAssetQueue: globalThis.localAssetQueue as NonNullable<
+    typeof globalThis.localAssetQueue
+  >,
+  localAssetQueueEvents: globalThis.localAssetQueueEvents as NonNullable<
+    typeof globalThis.localAssetQueueEvents
+  >,
 }

@@ -20,6 +20,7 @@ const connection = {
         duration: 5000, //ms
       },
     ],
+    ['local-asset-queue', `${__dirname}/localAssetWorker.js`],
   ] as const
 ).map(
   ([queue, file, limiter = undefined]) =>

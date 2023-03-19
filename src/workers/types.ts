@@ -103,3 +103,12 @@ export interface CongressAPIAssetJobResponse {
   message: string
 }
 export type CongressAPIAssetJobName = 'congress-api-job' | 'membersCount'
+
+export interface LocalAssetJobData {
+  chamber?: Chamber
+  congress?: number
+}
+export interface LocalAssetJobResponse {
+  message: string
+}
+export type LocalAssetJobName = 'report'

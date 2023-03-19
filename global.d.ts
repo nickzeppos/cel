@@ -73,6 +73,16 @@ declare global {
     | undefined
     | null
   var congressAPIAssetQueueEvents: QueueEvents | undefined | null
+
+  var localAssetQueue:
+    | Queue<LocalAssetJobData, LocalAssetJobResponse, LocalAssetJobName>
+    | undefined
+    | null
+  var localAssetWorker:
+    | Worker<LocalAssetJobData, LocalAssetJobResponse, LocalAssetJobName>
+    | undefined
+    | null
+  var localAssetQueueEvents: QueueEvents | undefined | null
 }
 
 export {}
