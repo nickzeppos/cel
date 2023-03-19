@@ -10,9 +10,8 @@ export type AssetArray = Array<AnyAsset>
 export type DataTypesOf<T extends AssetArray> = {
   [K in keyof T]: DataTypeOf<T[K]>
 }
-export type AssetName = string
 export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
-  name: AssetName
+  name: string
   queue: JobQueueName
   deps: D
   policy: (...args: A) => Promise<boolean>

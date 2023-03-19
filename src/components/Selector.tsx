@@ -21,7 +21,7 @@ export default function Selector<T extends string>({
   return (
     <Listbox value={value} onChange={onChange}>
       {({ open }) => (
-        <>
+        <div className="flex flex-col">
           <Listbox.Label className="block text-sm font-medium">
             {label}
           </Listbox.Label>
@@ -93,7 +93,7 @@ export default function Selector<T extends string>({
               </Listbox.Options>
             </Transition>
           </div>
-        </>
+        </div>
       )}
     </Listbox>
   )

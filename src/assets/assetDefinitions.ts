@@ -1,6 +1,4 @@
-import { Asset } from './assets.types'
-import { readFileSync, writeFileSync } from 'fs'
-import { z } from 'zod'
+import { AnyAsset, Asset } from './assets.types'
 
 const ALWAYS_FETCH_POLICY = async () => false
 
@@ -95,4 +93,30 @@ export const reportAsset: Asset<
   },
   read: async () => '',
   create: () => async () => '',
+}
+
+export type AssetNameOf<T extends AnyAsset> = T['name']
+
+const allAssets = {
+  membersCount: membersCountAsset,
+  members: membersAsset,
+  bioguides: bioguidesAsset,
+  billsCount: billsCountAsset,
+  actions: actionsAsset,
+  bills: billsAsset,
+  report: reportAsset,
+} as const
+
+export type AssetName = keyof typeof allAssets
+
+export function getAssetForName(name: AssetName): AnyAsset {
+  return allAssets[name]
+}
+
+export function getAssetNames(): AssetName[] {
+  return Object.keys(allAssets) as AssetName[]
+}
+
+export function isAssetName(name: string): name is AssetName {
+  return name in allAssets
 }

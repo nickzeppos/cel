@@ -1,121 +1,90 @@
+import { AssetName, getAssetNames } from '../assets/assetDefinitions'
 import AdminHeader from '../components/AdminHeader'
 import Button from '../components/Button'
 import Selector from '../components/Selector'
 import { ChamberToDisplay } from '../server/chambress'
 import { trpc } from '../utils/trpc'
-import { stepRegexesValidator } from '../workers/validators'
-import { Chamber, Step } from '@prisma/client'
+import { Chamber } from '@prisma/client'
+import clsx from 'clsx'
 import { NextPage } from 'next'
 import { useState } from 'react'
 
 const CHAMBERS: Chamber[] = ['HOUSE', 'SENATE']
+// numbers from 93 to 117 as strings, but reversed
+const CONGRESSESS = Array.from({ length: 25 }, (_, i) => 117 - i).map((i) =>
+  i.toString(),
+)
+const ASSETS = getAssetNames()
 
 const AssetPlayground: NextPage = () => {
   const [chamber, setChamber] = useState<Chamber>('HOUSE')
-  const [regexes, setRegexes] = useState<Map<Step, RegExp[]>>(new Map())
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const materializeStepRegex = trpc.useMutation(
-    ['asset-playground.materialize-step-regex'],
-    {
-      onSuccess: (data) => {
-        console.log(data)
-      },
-    },
-  )
-  const materializeMembersCount = trpc.useMutation(
-    ['asset-playground.materialize-members-count'],
-    {
-      onSuccess: (data) => {
-        console.log('member count job scheduled')
-      },
-    },
-  )
-  const materializeReport = trpc.useMutation(
-    ['asset-playground.materialize-report'],
-    {
-      onSuccess: (data) => {
-        console.log('report job scheduled')
-      },
-    },
-  )
-  trpc.useSubscription(['asset-playground.on-change'], {
-    onNext(data) {
-      console.log('subscription updated', data)
-
-      const { stepRegexes, error } = data
-      if (error) {
-        console.log('bad news 🐻s materializing the asset')
-        setRegexes(new Map())
-        setErrorMessage(error)
-        return
-      }
-
-      if (stepRegexes == null) {
-        console.log('👻 no data')
-        return
-      }
-
-      const v = stepRegexesValidator.safeParse(new Map(JSON.parse(stepRegexes)))
-      if (v.success) {
-        setRegexes(
-          new Map(
-            [...v.data.entries()].map(([step, strings]) => [
-              step,
-              strings.map((string) => new RegExp(string)),
-            ]),
-          ),
-        )
-        setErrorMessage(null)
-      } else {
-        console.log('bad news 🐻s while parsing data', v.error)
-      }
+  const [congress, setCongress] = useState<string>('117')
+  const [asset, setAsset] = useState<AssetName>('report')
+  const [minBillNum, setMinBillNum] = useState<number | null>(null)
+  const [maxBillNum, setMaxBillNum] = useState<number | null>(null)
+  const materialize = trpc.useMutation(['asset-playground.materialize'], {
+    onSuccess: (data) => {
+      console.log('job scheduled')
     },
   })
+
   return (
     <div>
       <AdminHeader currentPage="asset-playground" />
-      <div className="p-2 max-w-xl flex flex-col gap-4">
-        <div>
-          <Selector
-            label="Chamber"
-            value={chamber}
-            options={CHAMBERS}
-            onChange={setChamber}
-            displayNames={ChamberToDisplay}
+      <div className="p-4 max-w-xl flex flex-col gap-4">
+        <div className="text-2xl font-bold">Args</div>
+        <div className="flex flex-row gap-4">
+          <div className="flex-grow">
+            <Selector
+              label="Chamber"
+              value={chamber}
+              options={CHAMBERS}
+              onChange={setChamber}
+              displayNames={ChamberToDisplay}
+            />
+          </div>
+          <div className="w-[200px]">
+            <Selector
+              label="Congress"
+              value={congress}
+              options={CONGRESSESS}
+              onChange={setCongress}
+            />
+          </div>
+        </div>
+        <Selector
+          label="Asset"
+          value={asset}
+          options={ASSETS}
+          onChange={setAsset}
+        />
+        <div className="text-sm font-medium">Bill Number Range</div>
+        <div className="flex flex-row gap-4">
+          <NumberTextField
+            label="Min Bill Number"
+            initialValue={minBillNum}
+            onChange={setMinBillNum}
+            placeholder="Min"
+          />
+          <NumberTextField
+            label="Max Bill Number"
+            initialValue={maxBillNum}
+            onChange={setMaxBillNum}
+            placeholder="Max"
           />
         </div>
         <Button
           label="Materialize"
           onClick={() => {
-            materializeStepRegex.mutate({ chamber })
-          }}
-        />
-        <div>
-          <div className="text-lg">Output</div>
-          {errorMessage && <div className="text-red-700">{errorMessage}</div>}
-          {[...regexes.entries()].map(([step, rexs]) => (
-            <>
-              <div className="text-md">{step}</div>
-              <ul key={step}>
-                {rexs.map((rex, i) => (
-                  <li key={i}>{rex.source}</li>
-                ))}
-              </ul>
-            </>
-          ))}
-        </div>
-      </div>
-      <div className="p-2 max-w-xl flex flex-col gap-4">
-        <Button
-          label="Materialize members count"
-          onClick={() => {
-            materializeMembersCount.mutate()
-          }}
-        />
-        <Button
-          label="Materialize report"
-          onClick={() => {
-            materializeReport.mutate()
+            const congressNumber = parseInt(congress)
+            console.log(minBillNum, maxBillNum)
+            materialize.mutate({
+              chamber,
+              congress: congressNumber,
+              assetName: asset,
+              minBillNum,
+              maxBillNum,
+            })
           }}
         />
       </div>
@@ -124,3 +93,42 @@ const AssetPlayground: NextPage = () => {
 }
 
 export default AssetPlayground
+
+function NumberTextField({
+  label,
+  initialValue,
+  onChange,
+  placeholder,
+}: {
+  label: string
+  initialValue: number | null
+  onChange: (value: number | null) => void
+  placeholder?: string
+}) {
+  const [value, setValue] = useState(initialValue?.toString() ?? '')
+  return (
+    <input
+      type="text"
+      name={label}
+      className={clsx(
+        'relative block w-full py-2 px-3 focus:z-10',
+        'rounded-md border-0',
+        'bg-neutral-800 text-white placeholder:text-gray-500',
+        'ring-1 ring-inset ring-neutral-700',
+        'focus:ring-2 focus:ring-inset focus:ring-indigo-600',
+      )}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => {
+        const value = e.target.value
+        const num = parseInt(value)
+        if (isNaN(num)) {
+          onChange(null)
+        } else {
+          onChange(num)
+        }
+        setValue(value)
+      }}
+    />
+  )
+}

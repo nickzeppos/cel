@@ -1,4 +1,9 @@
-import { membersCountAsset, reportAsset } from '../../assets/assetDefinitions'
+import {
+  getAssetNames,
+  isAssetName,
+  membersCountAsset,
+  reportAsset,
+} from '../../assets/assetDefinitions'
 import { materialize } from '../../assets/engine'
 import {
   AssetJobData,
@@ -11,12 +16,16 @@ import { Job, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
 export const assetPlaygroundRouter = createRouter()
-  .mutation('materialize-step-regex', {
+  .mutation('materialize', {
     input: z.object({
       chamber: z.enum(['HOUSE', 'SENATE']),
+      congress: z.number().min(93).max(117),
+      assetName: z.string().refine(isAssetName),
+      minBillNum: z.number().nullish(),
+      maxBillNum: z.number().nullish(),
     }),
     async resolve({ input, ctx }) {
-      await ctx.queue.assetQueue.add('asset-job', input)
+      console.log(input)
       return
     },
   })
