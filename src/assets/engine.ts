@@ -73,3 +73,29 @@ export function getJobGraphForAsset<
     dependencies,
   }
 }
+
+export function sortJobGraph(graph: JobGraph): number[] {
+  const sorted: number[] = []
+  const visited: Set<number> = new Set()
+  const visiting: Set<number> = new Set()
+
+  const visit = (job: number) => {
+    if (visiting.has(job)) {
+      throw new Error('cycle detected')
+    }
+    if (visited.has(job)) {
+      return
+    }
+    visiting.add(job)
+    graph.dependencies
+      .filter((edge) => edge.dependsOn === job)
+      .forEach((edge) => visit(edge.job))
+    visiting.delete(job)
+    visited.add(job)
+    sorted.push(job)
+  }
+
+  graph.jobs.forEach((job) => visit(job.id))
+
+  return sorted
+}

@@ -1,5 +1,5 @@
 import type { AnyAsset, Asset, JobQueueName } from './assets.types'
-import { getJobGraphForAsset } from './engine'
+import { getJobGraphForAsset, sortJobGraph } from './engine'
 
 describe('getJobGraphForAsset', () => {
   const membersCountAsset = getAssetExample('membersCount', 'api', [])
@@ -73,6 +73,23 @@ describe('getJobGraphForAsset', () => {
       ]),
     )
   })
+})
+
+describe('sortJobGraph', () => {
+  const membersCountAsset = getAssetExample('membersCount', 'api', [])
+  const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
+  it('should sort a simple job graph that has no dependencies', () => {
+    const jobGraph = getJobGraphForAsset(membersCountAsset)
+    const actual = sortJobGraph(jobGraph)
+
+    expect(actual).toEqual([0])
+  }),
+    it('should sort a job graph with dependencies', () => {
+      const jobGraph = getJobGraphForAsset(membersAsset)
+      const actual = sortJobGraph(jobGraph)
+
+      expect(actual).toEqual([1, 0])
+    })
 })
 
 function getAssetExample<D extends AnyAsset[]>(
