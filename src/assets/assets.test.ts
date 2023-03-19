@@ -1,5 +1,5 @@
 import type { AnyAsset, Asset, JobQueueName } from './assets.types'
-import { getJobGraphForAsset, sortJobGraph } from './engine'
+import { getFlowForJobList, getJobGraphForAsset, sortJobGraph } from './engine'
 
 const membersCountAsset = getAssetExample('membersCount', 'api', [])
 const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
@@ -97,6 +97,20 @@ describe('sortJobGraph', () => {
     // loop over jobGraph.dependencies and check that each job is after its dependency
     jobGraph.dependencies.forEach(({ job, dependsOn }) => {
       expect(actual.indexOf(job)).toBeGreaterThan(actual.indexOf(dependsOn))
+    })
+  })
+})
+
+describe('getFlowForJobList', () => {
+  it('should return a flow for a simple job list', () => {
+    const jobGraph = getJobGraphForAsset(membersCountAsset)
+    const sortedJobList = sortJobGraph(jobGraph)
+    const actual = getFlowForJobList(jobGraph, sortedJobList)
+
+    expect(actual).toEqual({
+      name: 'membersCount',
+      queueName: 'api',
+      children: [],
     })
   })
 })

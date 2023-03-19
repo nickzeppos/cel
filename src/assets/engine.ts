@@ -1,4 +1,5 @@
 import { AnyAsset, Asset, JobConfig, JobGraph, JobID } from './assets.types'
+import { FlowJob, FlowProducer } from 'bullmq'
 
 export function getJobGraphForAsset<
   T,
@@ -98,4 +99,23 @@ export function sortJobGraph(graph: JobGraph): number[] {
   graph.jobs.forEach((job) => visit(job.id))
 
   return sorted
+}
+
+export function getFlowForJobList(
+  graph: JobGraph,
+  sortedJobList: number[],
+): FlowJob {
+  let result: FlowJob | undefined = undefined
+
+  for (const jobID of sortedJobList) {
+    const job = graph.jobs.find((job) => job.id === jobID)!
+    const flowJob = {
+      name: job.name,
+      queueName: job.queue,
+      children: [],
+    }
+    result = flowJob
+  }
+
+  return result!
 }
