@@ -89,6 +89,16 @@ describe('sortJobGraph', () => {
 
     expect(actual).toEqual([1, 0])
   })
+
+  it('should sort a complex job graph', () => {
+    const jobGraph = getJobGraphForAsset(reportAsset)
+    const actual = sortJobGraph(jobGraph)
+
+    // loop over jobGraph.dependencies and check that each job is after its dependency
+    jobGraph.dependencies.forEach(({ job, dependsOn }) => {
+      expect(actual.indexOf(job)).toBeGreaterThan(actual.indexOf(dependsOn))
+    })
+  })
 })
 
 function getAssetExample<D extends AnyAsset[]>(
