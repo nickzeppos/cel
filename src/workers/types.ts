@@ -102,4 +102,4 @@ export interface CongressAPIAssetJobData {
 export interface CongressAPIAssetJobResponse {
   message: string
 }
-export type CongressAPIAssetJobName = 'congress-api-job'
+export type CongressAPIAssetJobName = 'congress-api-job' | 'membersCount'

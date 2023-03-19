@@ -1,3 +1,5 @@
+import { membersCountAsset } from '../../assets/assetDefinitions'
+import { materialize } from '../../assets/engine'
 import {
   AssetJobData,
   AssetJobName,
@@ -5,7 +7,7 @@ import {
 } from '../../workers/types'
 import { createRouter } from './context'
 import * as trpc from '@trpc/server'
-import { Job, QueueEvents, QueueEventsListener } from 'bullmq'
+import { Job, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
 export const assetPlaygroundRouter = createRouter()
@@ -51,7 +53,7 @@ export const assetPlaygroundRouter = createRouter()
   })
   .mutation('materialize-members-count', {
     async resolve({ ctx }) {
-      await ctx.queue.congressApiAssetQueue.add('congress-api-asset-job', {})
+      materialize(membersCountAsset)
       return
     },
   })

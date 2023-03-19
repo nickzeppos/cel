@@ -1,6 +1,21 @@
 import { AnyAsset, Asset, JobConfig, JobGraph, JobID } from './assets.types'
 import { FlowJob, FlowProducer } from 'bullmq'
 
+export async function materialize<T, A extends unknown[], D extends AnyAsset[]>(
+  asset: Asset<T, A, D>,
+): Promise<void> {
+  const jobGraph = getJobGraphForAsset(asset)
+  const sortedJobList = sortJobGraph(jobGraph)
+  const flow = getFlowForJobList(jobGraph, sortedJobList)
+  const producer = new FlowProducer({
+    connection: {
+      host: 'cel-cache',
+      port: 6379,
+    },
+  })
+  await producer.add(flow)
+}
+
 export function getJobGraphForAsset<
   T,
   A extends unknown[],

@@ -24,7 +24,7 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
 }
 
 export type JobID = number
-export type JobQueueName = 'local' | 'api'
+export type JobQueueName = 'local' | 'congress-api-asset-queue'
 export type JobConfig = {
   id: JobID
   name: string

@@ -2,12 +2,30 @@ import type { AnyAsset, Asset, JobQueueName } from './assets.types'
 import { getFlowForJobList, getJobGraphForAsset, sortJobGraph } from './engine'
 import { FlowJob } from 'bullmq'
 
-const membersCountAsset = getAssetExample('membersCount', 'api', [])
-const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
-const bioguidesAsset = getAssetExample('bioguides', 'api', [membersAsset])
-const billsCountAsset = getAssetExample('billsCount', 'api', [])
-const actionsAsset = getAssetExample('actions', 'api', [billsCountAsset])
-const billsAsset = getAssetExample('bills', 'api', [billsCountAsset])
+const membersCountAsset = getAssetExample(
+  'membersCount',
+  'congress-api-asset-queue',
+  [],
+)
+const membersAsset = getAssetExample('members', 'congress-api-asset-queue', [
+  membersCountAsset,
+])
+const bioguidesAsset = getAssetExample(
+  'bioguides',
+  'congress-api-asset-queue',
+  [membersAsset],
+)
+const billsCountAsset = getAssetExample(
+  'billsCount',
+  'congress-api-asset-queue',
+  [],
+)
+const actionsAsset = getAssetExample('actions', 'congress-api-asset-queue', [
+  billsCountAsset,
+])
+const billsAsset = getAssetExample('bills', 'congress-api-asset-queue', [
+  billsCountAsset,
+])
 const reportAsset = getAssetExample('report', 'local', [
   bioguidesAsset,
   membersAsset,
@@ -19,7 +37,12 @@ describe('getJobGraphForAsset', () => {
   it('should queue one local job', () => {
     const actual = getJobGraphForAsset(membersCountAsset)
     expect(actual.jobs).toEqual([
-      { id: 0, name: 'membersCount', queue: 'api', args: [] },
+      {
+        id: 0,
+        name: 'membersCount',
+        queue: 'congress-api-asset-queue',
+        args: [],
+      },
     ])
     expect(actual.dependencies).toEqual([])
   })
@@ -27,8 +50,13 @@ describe('getJobGraphForAsset', () => {
   it('should support assets with dependencies', () => {
     const actual = getJobGraphForAsset(membersAsset)
     expect(actual.jobs).toEqual([
-      { id: 0, name: 'members', queue: 'api', args: [] },
-      { id: 1, name: 'membersCount', queue: 'api', args: [] },
+      { id: 0, name: 'members', queue: 'congress-api-asset-queue', args: [] },
+      {
+        id: 1,
+        name: 'membersCount',
+        queue: 'congress-api-asset-queue',
+        args: [],
+      },
     ])
     expect(actual.dependencies).toEqual([{ job: 0, dependsOn: 1 }])
   })
@@ -36,9 +64,14 @@ describe('getJobGraphForAsset', () => {
   it('should support assets with two layers of dependencies', () => {
     const actual = getJobGraphForAsset(bioguidesAsset)
     expect(actual.jobs).toEqual([
-      { id: 0, name: 'bioguides', queue: 'api', args: [] },
-      { id: 1, name: 'members', queue: 'api', args: [] },
-      { id: 2, name: 'membersCount', queue: 'api', args: [] },
+      { id: 0, name: 'bioguides', queue: 'congress-api-asset-queue', args: [] },
+      { id: 1, name: 'members', queue: 'congress-api-asset-queue', args: [] },
+      {
+        id: 2,
+        name: 'membersCount',
+        queue: 'congress-api-asset-queue',
+        args: [],
+      },
     ])
     expect(actual.dependencies).toHaveLength(2)
     expect(actual.dependencies).toEqual(
@@ -53,12 +86,22 @@ describe('getJobGraphForAsset', () => {
     const actual = getJobGraphForAsset(reportAsset)
     expect(actual.jobs).toEqual([
       { id: 0, name: 'report', queue: 'local', args: [] },
-      { id: 1, name: 'bioguides', queue: 'api', args: [] },
-      { id: 2, name: 'members', queue: 'api', args: [] },
-      { id: 3, name: 'membersCount', queue: 'api', args: [] },
-      { id: 4, name: 'actions', queue: 'api', args: [] },
-      { id: 5, name: 'billsCount', queue: 'api', args: [] },
-      { id: 6, name: 'bills', queue: 'api', args: [] },
+      { id: 1, name: 'bioguides', queue: 'congress-api-asset-queue', args: [] },
+      { id: 2, name: 'members', queue: 'congress-api-asset-queue', args: [] },
+      {
+        id: 3,
+        name: 'membersCount',
+        queue: 'congress-api-asset-queue',
+        args: [],
+      },
+      { id: 4, name: 'actions', queue: 'congress-api-asset-queue', args: [] },
+      {
+        id: 5,
+        name: 'billsCount',
+        queue: 'congress-api-asset-queue',
+        args: [],
+      },
+      { id: 6, name: 'bills', queue: 'congress-api-asset-queue', args: [] },
     ])
     expect(actual.dependencies).toHaveLength(8)
     expect(actual.dependencies).toEqual(
@@ -110,7 +153,7 @@ describe('getFlowForJobList', () => {
 
     expect(actual).toEqual({
       name: 'membersCount',
-      queueName: 'api',
+      queueName: 'congress-api-asset-queue',
       children: [],
     })
   })
@@ -122,11 +165,11 @@ describe('getFlowForJobList', () => {
 
     expect(actual).toEqual({
       name: 'members',
-      queueName: 'api',
+      queueName: 'congress-api-asset-queue',
       children: [
         {
           name: 'membersCount',
-          queueName: 'api',
+          queueName: 'congress-api-asset-queue',
           children: [],
         },
       ],
