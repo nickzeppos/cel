@@ -1,5 +1,6 @@
 import type { AnyAsset, Asset, JobQueueName } from './assets.types'
 import { getFlowForJobList, getJobGraphForAsset, sortJobGraph } from './engine'
+import { FlowJob } from 'bullmq'
 
 const membersCountAsset = getAssetExample('membersCount', 'api', [])
 const membersAsset = getAssetExample('members', 'api', [membersCountAsset])
@@ -111,6 +112,52 @@ describe('getFlowForJobList', () => {
       name: 'membersCount',
       queueName: 'api',
       children: [],
+    })
+  })
+
+  it('should return a flow for a job list with dependencies', () => {
+    const jobGraph = getJobGraphForAsset(membersAsset)
+    const sortedJobList = sortJobGraph(jobGraph)
+    const actual = getFlowForJobList(jobGraph, sortedJobList)
+
+    expect(actual).toEqual({
+      name: 'members',
+      queueName: 'api',
+      children: [
+        {
+          name: 'membersCount',
+          queueName: 'api',
+          children: [],
+        },
+      ],
+    })
+  })
+
+  it('should return a flow for a complex job list', () => {
+    const jobGraph = getJobGraphForAsset(reportAsset)
+    const sortedJobList = sortJobGraph(jobGraph)
+    const actual = getFlowForJobList(jobGraph, sortedJobList)
+
+    jobGraph.dependencies.forEach(({ job, dependsOn }) => {
+      let currentFlowJob: FlowJob | undefined = actual
+
+      const descendChildrenToFindFlowJobMatching = (jobID: number) => {
+        let found = false
+        const jobConfig = jobGraph.jobs.find(
+          (jobConfig) => jobConfig.id === jobID,
+        )!
+        while (!found && currentFlowJob !== undefined) {
+          if (currentFlowJob.name === jobConfig.name) {
+            found = true
+          } else {
+            currentFlowJob = currentFlowJob.children![0]
+          }
+        }
+        return found
+      }
+
+      expect(descendChildrenToFindFlowJobMatching(job)).toBe(true)
+      expect(descendChildrenToFindFlowJobMatching(dependsOn)).toBe(true)
     })
   })
 })

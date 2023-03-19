@@ -109,13 +109,17 @@ export function getFlowForJobList(
 
   for (const jobID of sortedJobList) {
     const job = graph.jobs.find((job) => job.id === jobID)!
-    const flowJob = {
+    const flowJob: FlowJob = {
       name: job.name,
       queueName: job.queue,
-      children: [],
+      children: filterNullOrUndefined([result]),
     }
     result = flowJob
   }
 
   return result!
+}
+
+function filterNullOrUndefined<T>(arr: (T | null | undefined)[]): T[] {
+  return arr.filter((item) => item !== null && item !== undefined) as T[]
 }
