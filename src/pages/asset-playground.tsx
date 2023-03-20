@@ -1,6 +1,9 @@
 import { AssetName, getAssetNames } from '../assets/assetDefinitions'
 import AdminHeader from '../components/AdminHeader'
-import AssetGraphTiles from '../components/AssetGraphTiles'
+import AssetGraphTiles, {
+  AssetJobSummaryMap,
+  getAssetJobSummary,
+} from '../components/AssetGraphTiles'
 import Button from '../components/Button'
 import Selector from '../components/Selector'
 import { ChamberToDisplay } from '../server/chambress'
@@ -24,17 +27,15 @@ const AssetPlayground: NextPage = () => {
   const [asset, setAsset] = useState<AssetName>('report')
   const [minBillNum, setMinBillNum] = useState<number | null>(null)
   const [maxBillNum, setMaxBillNum] = useState<number | null>(null)
-  const [states, setStates] = useState<Record<AssetName, JobState | 'unknown'>>(
-    {
-      report: 'unknown',
-      actions: 'unknown',
-      bills: 'unknown',
-      members: 'unknown',
-      membersCount: 'unknown',
-      billsCount: 'unknown',
-      bioguides: 'unknown',
-    },
-  )
+  const [states, setStates] = useState<AssetJobSummaryMap>({
+    report: getAssetJobSummary('report'),
+    actions: getAssetJobSummary('actions'),
+    bills: getAssetJobSummary('bills'),
+    members: getAssetJobSummary('members'),
+    membersCount: getAssetJobSummary('membersCount'),
+    billsCount: getAssetJobSummary('billsCount'),
+    bioguides: getAssetJobSummary('bioguides'),
+  })
   const materialize = trpc.useMutation(['asset-playground.materialize'], {
     onSuccess: (data) => {
       console.log('job scheduled', data)
@@ -45,7 +46,11 @@ const AssetPlayground: NextPage = () => {
       console.log('on change', data)
       setStates((currentStates) => ({
         ...currentStates,
-        [data.assetName]: data.jobState,
+        [data.assetName]: {
+          ...currentStates[data.assetName],
+          state: data.jobState,
+          childJobName: data.childJobName,
+        },
       }))
     },
   })

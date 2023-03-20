@@ -5,11 +5,27 @@ import {
   membersCountAsset,
   reportAsset,
 } from '../../assets/assetDefinitions'
+import { JobQueueName, isQueueName } from '../../assets/assets.types'
 import { materialize } from '../../assets/engine'
+import {
+  CongressAPIAssetJobData,
+  CongressAPIAssetJobName,
+  CongressAPIAssetJobResponse,
+  LocalAssetJobData,
+  LocalAssetJobName,
+  LocalAssetJobResponse,
+} from '../../workers/types'
 import { createRouter } from './context'
 import * as trpc from '@trpc/server'
 import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
+
+const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
+type AssetJobChangeEvent = {
+  assetName: AssetName
+  jobState: JobState | 'unknown'
+  childJobName: AssetName | null | undefined
+}
 
 export const assetPlaygroundRouter = createRouter()
   .mutation('materialize', {
@@ -28,19 +44,22 @@ export const assetPlaygroundRouter = createRouter()
   })
   .subscription('on-change', {
     resolve({ ctx }) {
-      return new trpc.Subscription<{
-        assetName: AssetName
-        jobState: JobState | 'unknown'
-      }>((emit) => {
+      return new trpc.Subscription<AssetJobChangeEvent>((emit) => {
+        const queues = {
+          ['local-asset-queue']: ctx.queue.localAssetQueue,
+          ['congress-api-asset-queue']: ctx.queue.congressApiAssetQueue,
+        } as const
         const localHandlers = setupAssetJobChangeHandlers(
           ctx.queue.localAssetQueue,
           ctx.queue.localAssetQueueEvents,
           emit,
+          queues,
         )
         const congressApiHandlers = setupAssetJobChangeHandlers(
           ctx.queue.congressApiAssetQueue,
           ctx.queue.congressAPIAssetQueueEvents,
           emit,
+          queues,
         )
 
         return () => {
@@ -69,8 +88,6 @@ export const assetPlaygroundRouter = createRouter()
     },
   })
 
-const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
-
 function setupAssetJobChangeHandlers<
   JobData,
   JobResponse,
@@ -78,10 +95,19 @@ function setupAssetJobChangeHandlers<
 >(
   queue: Queue<JobData, JobResponse, JobName>,
   queueEvents: QueueEvents,
-  emit: trpc.SubscriptionEmit<{
-    assetName: AssetName
-    jobState: JobState | 'unknown'
-  }>,
+  emit: trpc.SubscriptionEmit<AssetJobChangeEvent>,
+  queues: {
+    'local-asset-queue': Queue<
+      LocalAssetJobData,
+      LocalAssetJobResponse,
+      LocalAssetJobName
+    >
+    'congress-api-asset-queue': Queue<
+      CongressAPIAssetJobData,
+      CongressAPIAssetJobResponse,
+      CongressAPIAssetJobName
+    >
+  },
 ) {
   const getAndEmitJob = async (jobId: string) => {
     const job = await queue.getJob(jobId)
@@ -89,7 +115,21 @@ function setupAssetJobChangeHandlers<
 
     const assetName = job.name as AssetName
     const jobState = await job.getState()
-    emit.data({ assetName, jobState })
+    const deps = await job.getDependencies()
+
+    const childJobKey =
+      getOnlyJobKey(Object.keys(deps.processed ?? {})) ??
+      getOnlyJobKey(deps.unprocessed)
+
+    let childJobName: AssetName | null = null
+    if (childJobKey != null) {
+      const { jobId, queueName } = childJobKey
+      const childJob = await queues[queueName].getJob(jobId)
+      if (childJob == null) return
+      childJobName = childJob.name as AssetName
+    }
+
+    emit.data({ assetName, jobState, childJobName })
   }
 
   const handlers: Partial<QueueEventsListener> = {
@@ -115,6 +155,22 @@ function setupAssetJobChangeHandlers<
   })
 
   return handlers
+}
+
+function parseJobKey(key: string) {
+  const [, queueName, jobId] = key.split(':')
+  if (queueName == null || jobId == null) throw new Error('Invalid job key')
+  if (!isQueueName(queueName)) throw new Error('Invalid queue name')
+  return { queueName, jobId }
+}
+
+function getOnlyJobKey(
+  keys?: string[],
+): { queueName: JobQueueName; jobId: string } | null {
+  if (keys == null || keys.length === 0) return null
+  if (keys.length > 1)
+    throw new Error('Multiple keys found when expecting 1 or 0')
+  return parseJobKey(keys[0]!)
 }
 
 function cleanupAssetJobChangeHandlers(

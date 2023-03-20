@@ -24,6 +24,9 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
 
 export type JobID = number
 export type JobQueueName = 'local-asset-queue' | 'congress-api-asset-queue'
+export function isQueueName(name: string): name is JobQueueName {
+  return name === 'local-asset-queue' || name === 'congress-api-asset-queue'
+}
 export type JobConfig = {
   id: JobID
   name: string
