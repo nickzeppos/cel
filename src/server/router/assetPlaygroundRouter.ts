@@ -1,18 +1,14 @@
 import {
-  getAssetNames,
+  AssetName,
+  getAssetForName,
   isAssetName,
   membersCountAsset,
   reportAsset,
 } from '../../assets/assetDefinitions'
 import { materialize } from '../../assets/engine'
-import {
-  AssetJobData,
-  AssetJobName,
-  AssetJobResponse,
-} from '../../workers/types'
 import { createRouter } from './context'
 import * as trpc from '@trpc/server'
-import { Job, QueueEventsListener } from 'bullmq'
+import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
 export const assetPlaygroundRouter = createRouter()
@@ -24,51 +20,108 @@ export const assetPlaygroundRouter = createRouter()
       minBillNum: z.number().nullish(),
       maxBillNum: z.number().nullish(),
     }),
-    async resolve({ input, ctx }) {
+    async resolve({ input }) {
       console.log(input)
+      materialize(getAssetForName(input.assetName))
       return
     },
   })
   .subscription('on-change', {
     resolve({ ctx }) {
-      return new trpc.Subscription<{ stepRegexes?: string; error?: string }>(
-        (emit) => {
-          const onCompleted: QueueEventsListener['completed'] = async (job) => {
-            const j = await Job.fromId<
-              AssetJobData,
-              AssetJobResponse,
-              AssetJobName
-            >(ctx.queue.assetQueue, job.jobId)
-            const stepRegexes = j?.returnvalue?.stepRegexes
-            console.log(job.returnvalue)
-            if (stepRegexes == null) {
-              console.log('response is null')
-              return
-            }
-            emit.data({ stepRegexes })
-          }
-          const onFailed: QueueEventsListener['failed'] = async (job) => {
-            emit.data({ error: job.failedReason })
-          }
-          ctx.queue.assetQueueEvents.on('completed', onCompleted)
-          ctx.queue.assetQueueEvents.on('failed', onFailed)
-          return () => {
-            ctx.queue.assetQueueEvents.off('completed', onCompleted)
-            ctx.queue.assetQueueEvents.off('failed', onFailed)
-          }
-        },
-      )
+      return new trpc.Subscription<{
+        assetName: AssetName
+        jobState: JobState | 'unknown'
+      }>((emit) => {
+        const localHandlers = setupAssetJobChangeHandlers(
+          ctx.queue.localAssetQueue,
+          ctx.queue.localAssetQueueEvents,
+          emit,
+        )
+        const congressApiHandlers = setupAssetJobChangeHandlers(
+          ctx.queue.congressApiAssetQueue,
+          ctx.queue.congressAPIAssetQueueEvents,
+          emit,
+        )
+
+        return () => {
+          cleanupAssetJobChangeHandlers(
+            ctx.queue.localAssetQueueEvents,
+            localHandlers,
+          )
+          cleanupAssetJobChangeHandlers(
+            ctx.queue.congressAPIAssetQueueEvents,
+            congressApiHandlers,
+          )
+        }
+      })
     },
   })
   .mutation('materialize-members-count', {
-    async resolve({ ctx }) {
+    async resolve({}) {
       materialize(membersCountAsset)
       return
     },
   })
   .mutation('materialize-report', {
-    async resolve({ ctx }) {
+    async resolve({}) {
       materialize(reportAsset)
       return
     },
   })
+
+const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
+
+function setupAssetJobChangeHandlers<
+  JobData,
+  JobResponse,
+  JobName extends string,
+>(
+  queue: Queue<JobData, JobResponse, JobName>,
+  queueEvents: QueueEvents,
+  emit: trpc.SubscriptionEmit<{
+    assetName: AssetName
+    jobState: JobState | 'unknown'
+  }>,
+) {
+  const getAndEmitJob = async (jobId: string) => {
+    const job = await queue.getJob(jobId)
+    if (job == null) return
+
+    const assetName = job.name as AssetName
+    const jobState = await job.getState()
+    emit.data({ assetName, jobState })
+  }
+
+  const handlers: Partial<QueueEventsListener> = {
+    async active({ jobId }) {
+      await getAndEmitJob(jobId)
+    },
+    async added({ jobId }) {
+      await getAndEmitJob(jobId)
+    },
+    async waiting({ jobId }) {
+      await getAndEmitJob(jobId)
+    },
+    async completed({ jobId }) {
+      await getAndEmitJob(jobId)
+    },
+    async failed({ jobId }) {
+      await getAndEmitJob(jobId)
+    },
+  }
+
+  EVENTS.forEach((event) => {
+    if (handlers[event] != null) queueEvents.on(event, handlers[event]!)
+  })
+
+  return handlers
+}
+
+function cleanupAssetJobChangeHandlers(
+  queue: QueueEvents,
+  handlers: Partial<QueueEventsListener>,
+) {
+  EVENTS.forEach((event) => {
+    if (handlers[event] != null) queue.off(event, handlers[event]!)
+  })
+}

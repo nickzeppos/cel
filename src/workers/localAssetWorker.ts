@@ -12,5 +12,6 @@ export default async function execute(
   console.log(job.name)
   console.log(job.queueName)
   console.log(job.data)
+  await new Promise((resolve) => setTimeout(resolve, 2000))
   return { message: '' }
 }

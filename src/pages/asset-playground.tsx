@@ -1,13 +1,15 @@
 import { AssetName, getAssetNames } from '../assets/assetDefinitions'
 import AdminHeader from '../components/AdminHeader'
+import AssetGraphTiles from '../components/AssetGraphTiles'
 import Button from '../components/Button'
 import Selector from '../components/Selector'
 import { ChamberToDisplay } from '../server/chambress'
 import { trpc } from '../utils/trpc'
 import { Chamber } from '@prisma/client'
+import { JobState } from 'bullmq'
 import clsx from 'clsx'
 import { NextPage } from 'next'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const CHAMBERS: Chamber[] = ['HOUSE', 'SENATE']
 // numbers from 93 to 117 as strings, but reversed
@@ -22,9 +24,29 @@ const AssetPlayground: NextPage = () => {
   const [asset, setAsset] = useState<AssetName>('report')
   const [minBillNum, setMinBillNum] = useState<number | null>(null)
   const [maxBillNum, setMaxBillNum] = useState<number | null>(null)
+  const [states, setStates] = useState<Record<AssetName, JobState | 'unknown'>>(
+    {
+      report: 'unknown',
+      actions: 'unknown',
+      bills: 'unknown',
+      members: 'unknown',
+      membersCount: 'unknown',
+      billsCount: 'unknown',
+      bioguides: 'unknown',
+    },
+  )
   const materialize = trpc.useMutation(['asset-playground.materialize'], {
     onSuccess: (data) => {
-      console.log('job scheduled')
+      console.log('job scheduled', data)
+    },
+  })
+  trpc.useSubscription(['asset-playground.on-change'], {
+    onNext: (data) => {
+      console.log('on change', data)
+      setStates((currentStates) => ({
+        ...currentStates,
+        [data.assetName]: data.jobState,
+      }))
     },
   })
 
@@ -88,6 +110,7 @@ const AssetPlayground: NextPage = () => {
           }}
         />
       </div>
+      <AssetGraphTiles states={states} />
     </div>
   )
 }
@@ -106,6 +129,7 @@ function NumberTextField({
   placeholder?: string
 }) {
   const [value, setValue] = useState(initialValue?.toString() ?? '')
+
   return (
     <input
       type="text"
