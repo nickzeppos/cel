@@ -24,19 +24,22 @@ interface AssetGraphTilesProps {
 }
 export default function AssetGraphTiles({ states }: AssetGraphTilesProps) {
   return (
-    <div className="grid grid-cols-3 grid-rows-4 gap-4 p-16">
-      <AssetGraphTile />
-      <AssetGraphTile name="report" state={states?.['report']} />
-      <AssetGraphTile />
-      <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
-      <AssetGraphTile name="actions" state={states?.['actions']} />
-      <AssetGraphTile name="bills" state={states?.['bills']} />
-      <AssetGraphTile name="members" state={states?.['members']} />
-      <AssetGraphTile />
-      <AssetGraphTile />
-      <AssetGraphTile name="membersCount" state={states?.['membersCount']} />
-      <AssetGraphTile name="billsCount" state={states?.['billsCount']} />
-      <AssetGraphTile />
+    <div className="flex flex-col p-4 m-4 border rounded-md border-gray-800">
+      <div className="text-2xl font-bold ">Jobs</div>
+      <div className="grid grid-cols-3 grid-rows-4 gap-4">
+        <AssetGraphTile />
+        <AssetGraphTile name="report" state={states?.['report']} />
+        <AssetGraphTile />
+        <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
+        <AssetGraphTile name="actions" state={states?.['actions']} />
+        <AssetGraphTile name="bills" state={states?.['bills']} />
+        <AssetGraphTile name="members" state={states?.['members']} />
+        <AssetGraphTile />
+        <AssetGraphTile />
+        <AssetGraphTile name="membersCount" state={states?.['membersCount']} />
+        <AssetGraphTile name="billsCount" state={states?.['billsCount']} />
+        <AssetGraphTile />
+      </div>
     </div>
   )
 }

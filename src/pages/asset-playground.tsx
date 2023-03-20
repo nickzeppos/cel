@@ -58,7 +58,7 @@ const AssetPlayground: NextPage = () => {
   return (
     <div>
       <AdminHeader currentPage="asset-playground" />
-      <div className="p-4 max-w-xl flex flex-col gap-4">
+      <div className="p-4 max-w-xl flex flex-col gap-4 m-4 border rounded-md border-gray-800">
         <div className="text-2xl font-bold">Args</div>
         <div className="flex flex-row gap-4">
           <div className="flex-grow">
@@ -85,7 +85,7 @@ const AssetPlayground: NextPage = () => {
           options={ASSETS}
           onChange={setAsset}
         />
-        <div className="text-sm font-medium">Bill Number Range</div>
+        <div className="text-sm font-medium mb-[-12px]">Bill Number Range</div>
         <div className="flex flex-row gap-4">
           <NumberTextField
             label="Min Bill Number"
