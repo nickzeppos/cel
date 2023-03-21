@@ -1,3 +1,4 @@
+import { AssetName } from '../assets/assetDefinitions'
 import {
   billJobDataValidator,
   billTypeValidator,
@@ -96,14 +97,15 @@ export type AssetJobName = 'asset-job'
 export interface CongressAPIAssetJobData {
   chamber?: Chamber
   congress?: number
-  offset?: number
-  limit?: number
+  minBillNum?: number
+  maxBillNum?: number
 }
 export interface CongressAPIAssetJobResponse {
   message: string
+  data: DataTypeOf<AnyAsset>
 }
-export type CongressAPIAssetJobName = 'congress-api-job' | 'membersCount'
 
+export type CongressAPIAssetJobName = Exclude<AssetName, LocalAssetJobName>
 export interface LocalAssetJobData {
   chamber?: Chamber
   congress?: number
