@@ -1,3 +1,4 @@
+import { getAssetForName } from '../assets/assetDefinitions'
 import {
   CongressAPIAssetJobData,
   CongressAPIAssetJobName,
@@ -16,6 +17,26 @@ export default async function execute(
   console.log(job.name)
   console.log(job.queueName)
   console.log(job.data)
-  await new Promise((resolve) => setTimeout(resolve, 2000))
-  return { message: '' }
+
+  const asset = getAssetForName(job.name)
+  const deps = asset.deps as AnyAsset[]
+  const args = job.data
+  const depsData = await Promise.all(
+    deps.map((dep) => {
+      return dep.read(args)
+    }),
+  )
+  const policyOutcome = await asset.policy(args)
+  if (policyOutcome) {
+    console.log('Asset policy passed, reading asset')
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    const data = await asset.read(args)
+    return { message: 'Asset read', data }
+  } else {
+    console.log('Asset policy failed, creating asset')
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+    const data = await asset.create(args)(...depsData)
+    await asset.write(args)(data)
+    return { message: 'Asset created', data }
+  }
 }

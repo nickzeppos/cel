@@ -1,6 +1,7 @@
 import { AnyAsset, Asset } from './assets.types'
 
 const ALWAYS_FETCH_POLICY = async () => false
+const NEVER_FETCH_POLICY = async () => true
 
 export const membersCountAsset: Asset<number, [], []> = {
   name: 'membersCount',
@@ -18,7 +19,7 @@ export const membersAsset: Asset<number, [], [typeof membersCountAsset]> = {
   name: 'members',
   queue: 'congress-api-asset-queue',
   deps: [membersCountAsset],
-  policy: ALWAYS_FETCH_POLICY,
+  policy: NEVER_FETCH_POLICY,
   write: () => async () => {
     return
   },
@@ -30,7 +31,7 @@ export const bioguidesAsset: Asset<number, [], [typeof membersAsset]> = {
   name: 'bioguides',
   queue: 'congress-api-asset-queue',
   deps: [membersAsset],
-  policy: ALWAYS_FETCH_POLICY,
+  policy: NEVER_FETCH_POLICY,
   write: () => async () => {
     return
   },
@@ -54,7 +55,7 @@ export const actionsAsset: Asset<number, [], [typeof billsCountAsset]> = {
   name: 'actions',
   queue: 'congress-api-asset-queue',
   deps: [billsCountAsset],
-  policy: ALWAYS_FETCH_POLICY,
+  policy: NEVER_FETCH_POLICY,
   write: () => async () => {
     return
   },
