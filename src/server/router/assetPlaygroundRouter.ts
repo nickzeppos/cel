@@ -1,6 +1,7 @@
 import {
   AssetName,
   getAssetForName,
+  getAssetNames,
   isAssetName,
   membersCountAsset,
   reportAsset,
@@ -28,6 +29,12 @@ type AssetJobChangeEvent = {
 }
 
 export const assetPlaygroundRouter = createRouter()
+  // query to get all asset names
+  .query('asset-names', {
+    resolve() {
+      return getAssetNames()
+    },
+  })
   .mutation('materialize', {
     input: z.object({
       chamber: z.enum(['HOUSE', 'SENATE']),

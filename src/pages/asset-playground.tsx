@@ -1,4 +1,3 @@
-import { AssetName, getAssetNames } from '../assets/assetDefinitions'
 import AdminHeader from '../components/AdminHeader'
 import AssetGraphTiles, {
   AssetJobSummaryMap,
@@ -9,22 +8,23 @@ import Selector from '../components/Selector'
 import { ChamberToDisplay } from '../server/chambress'
 import { trpc } from '../utils/trpc'
 import { Chamber } from '@prisma/client'
-import { JobState } from 'bullmq'
 import clsx from 'clsx'
 import { NextPage } from 'next'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 const CHAMBERS: Chamber[] = ['HOUSE', 'SENATE']
 // numbers from 93 to 117 as strings, but reversed
 const CONGRESSESS = Array.from({ length: 25 }, (_, i) => 117 - i).map((i) =>
   i.toString(),
 )
-const ASSETS = getAssetNames()
 
 const AssetPlayground: NextPage = () => {
+  const assetNamesQuery = trpc.useQuery(['asset-playground.asset-names'])
+  const ASSETS = assetNamesQuery.data ?? []
+
   const [chamber, setChamber] = useState<Chamber>('HOUSE')
   const [congress, setCongress] = useState<string>('117')
-  const [asset, setAsset] = useState<AssetName>('report')
+  const [asset, setAsset] = useState<typeof ASSETS[number]>('report')
   const [minBillNum, setMinBillNum] = useState<number | null>(null)
   const [maxBillNum, setMaxBillNum] = useState<number | null>(null)
   const [states, setStates] = useState<AssetJobSummaryMap>({
