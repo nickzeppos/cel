@@ -3,8 +3,9 @@ import { FlowJob, FlowProducer } from 'bullmq'
 
 export async function materialize<T, A extends unknown[], D extends AnyAsset[]>(
   asset: Asset<T, A, D>,
+  args: A,
 ): Promise<void> {
-  const jobGraph = getJobGraphForAsset(asset)
+  const jobGraph = getJobGraphForAsset(asset, args)
   const sortedJobList = sortJobGraph(jobGraph)
   const flow = getFlowForJobList(jobGraph, sortedJobList)
   const producer = new FlowProducer({
@@ -20,7 +21,7 @@ export function getJobGraphForAsset<
   T,
   A extends unknown[],
   D extends AnyAsset[],
->(asset: Asset<T, A, D>): JobGraph {
+>(asset: Asset<T, A, D>, args: A): JobGraph {
   const jobs: JobConfig[] = []
 
   const assetStack: AnyAsset[] = [asset]
@@ -35,7 +36,7 @@ export function getJobGraphForAsset<
       id: id++,
       name: asset.name,
       queue: asset.queue,
-      args: [],
+      args: args,
     }
   }
 

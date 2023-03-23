@@ -7,6 +7,7 @@ const membersCountAsset = getAssetExample(
   'congress-api-asset-queue',
   [],
 )
+
 const membersAsset = getAssetExample('members', 'congress-api-asset-queue', [
   membersCountAsset,
 ])
@@ -33,9 +34,23 @@ const reportAsset = getAssetExample('report', 'local-asset-queue', [
   billsAsset,
 ])
 
+const membersCountAssetWithArgs = getAssetWithArgsExample(
+  'membersCount',
+  'congress-api-asset-queue',
+  [],
+)
+
+const reportAssetWithArgs = getAssetWithArgsExample(
+  'report',
+  'local-asset-queue',
+  [bioguidesAsset, membersAsset, actionsAsset, billsAsset],
+)
+
+const args: [number, string] = [117, 'SENATE']
+
 describe('getJobGraphForAsset', () => {
   it('should queue one local job', () => {
-    const actual = getJobGraphForAsset(membersCountAsset)
+    const actual = getJobGraphForAsset(membersCountAsset, [])
     expect(actual.jobs).toEqual([
       {
         id: 0,
@@ -48,7 +63,7 @@ describe('getJobGraphForAsset', () => {
   })
 
   it('should support assets with dependencies', () => {
-    const actual = getJobGraphForAsset(membersAsset)
+    const actual = getJobGraphForAsset(membersAsset, [])
     expect(actual.jobs).toEqual([
       { id: 0, name: 'members', queue: 'congress-api-asset-queue', args: [] },
       {
@@ -62,7 +77,7 @@ describe('getJobGraphForAsset', () => {
   })
 
   it('should support assets with two layers of dependencies', () => {
-    const actual = getJobGraphForAsset(bioguidesAsset)
+    const actual = getJobGraphForAsset(bioguidesAsset, [])
     expect(actual.jobs).toEqual([
       { id: 0, name: 'bioguides', queue: 'congress-api-asset-queue', args: [] },
       { id: 1, name: 'members', queue: 'congress-api-asset-queue', args: [] },
@@ -83,7 +98,7 @@ describe('getJobGraphForAsset', () => {
   })
 
   it('should support a complex graph', () => {
-    const actual = getJobGraphForAsset(reportAsset)
+    const actual = getJobGraphForAsset(reportAsset, [])
     expect(actual.jobs).toEqual([
       { id: 0, name: 'report', queue: 'local-asset-queue', args: [] },
       { id: 1, name: 'bioguides', queue: 'congress-api-asset-queue', args: [] },
@@ -117,25 +132,43 @@ describe('getJobGraphForAsset', () => {
       ]),
     )
   })
+
+  it('should support a simple graph with args', () => {
+    const actual = getJobGraphForAsset(membersCountAssetWithArgs, args)
+    expect(actual.jobs).toEqual([
+      {
+        id: 0,
+        name: 'membersCount',
+        queue: 'congress-api-asset-queue',
+        args,
+      },
+    ])
+  })
+
+  it('should pass same args to all jobs in a job graph', () => {
+    const args = [117, 'SENATE']
+    const actual = getJobGraphForAsset(reportAssetWithArgs, args)
+    expect(actual.jobs.every((job) => job.args === args)).toBe(true)
+  })
 })
 
 describe('sortJobGraph', () => {
   it('should sort a simple job graph that has no dependencies', () => {
-    const jobGraph = getJobGraphForAsset(membersCountAsset)
+    const jobGraph = getJobGraphForAsset(membersCountAsset, [])
     const actual = sortJobGraph(jobGraph)
 
     expect(actual).toEqual([0])
   })
 
   it('should sort a job graph with dependencies', () => {
-    const jobGraph = getJobGraphForAsset(membersAsset)
+    const jobGraph = getJobGraphForAsset(membersAsset, [])
     const actual = sortJobGraph(jobGraph)
 
     expect(actual).toEqual([1, 0])
   })
 
   it('should sort a complex job graph', () => {
-    const jobGraph = getJobGraphForAsset(reportAsset)
+    const jobGraph = getJobGraphForAsset(reportAsset, [])
     const actual = sortJobGraph(jobGraph)
 
     // loop over jobGraph.dependencies and check that each job is after its dependency
@@ -147,7 +180,7 @@ describe('sortJobGraph', () => {
 
 describe('getFlowForJobList', () => {
   it('should return a flow for a simple job list', () => {
-    const jobGraph = getJobGraphForAsset(membersCountAsset)
+    const jobGraph = getJobGraphForAsset(membersCountAsset, [])
     const sortedJobList = sortJobGraph(jobGraph)
     const actual = getFlowForJobList(jobGraph, sortedJobList)
 
@@ -159,7 +192,7 @@ describe('getFlowForJobList', () => {
   })
 
   it('should return a flow for a job list with dependencies', () => {
-    const jobGraph = getJobGraphForAsset(membersAsset)
+    const jobGraph = getJobGraphForAsset(membersAsset, [])
     const sortedJobList = sortJobGraph(jobGraph)
     const actual = getFlowForJobList(jobGraph, sortedJobList)
 
@@ -177,7 +210,7 @@ describe('getFlowForJobList', () => {
   })
 
   it('should return a flow for a complex job list', () => {
-    const jobGraph = getJobGraphForAsset(reportAsset)
+    const jobGraph = getJobGraphForAsset(reportAsset, [])
     const sortedJobList = sortJobGraph(jobGraph)
     const actual = getFlowForJobList(jobGraph, sortedJobList)
 
@@ -210,6 +243,24 @@ function getAssetExample<D extends AnyAsset[]>(
   queue: JobQueueName,
   deps: D,
 ): Asset<string, [], D> {
+  return {
+    name,
+    queue,
+    deps,
+    policy: async () => false,
+    write: () => async () => {
+      return
+    },
+    read: async () => 'data',
+    create: () => async () => 'data',
+  }
+}
+
+function getAssetWithArgsExample<D extends AnyAsset[], A extends unknown[]>(
+  name: string,
+  queue: JobQueueName,
+  deps: D,
+): Asset<string, A, D> {
   return {
     name,
     queue,
