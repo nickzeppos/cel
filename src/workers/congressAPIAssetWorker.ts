@@ -34,7 +34,7 @@ export default async function execute(
     return { message: 'Asset read', data }
   } else {
     console.log('Asset policy failed, creating asset')
-    await new Promise((resolve) => setTimeout(resolve, 5000))
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     const data = await asset.create(args)(...depsData)
     await asset.write(args)(data)
     return { message: 'Asset created', data }

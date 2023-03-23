@@ -17,17 +17,61 @@ export const billJobDataValidator = z.object({
 export const termJobDataValidator = z.object({
   bioguide: z.string(),
 })
-const requestResponseValidator = z.object({
+const requestValidator = z.object({
   congress: z.string().optional(),
   contentType: z.string(),
   format: z.string(),
 })
 
-const paginationResponseValidator = z.object({
+const paginationValidator = z.object({
   count: z.number(),
   next: z.string().url().optional(),
   prev: z.string().url().optional(),
 })
+
+const allMemberValidator = z.object({
+  member: z.object({
+    bioguideId: z.string(),
+    depiction: z
+      .object({
+        attribution: z.string().nullish(),
+        imageUrl: z.string().nullish(),
+      })
+      .nullish(),
+    district: z.number().int().nullable(),
+    name: z.string(),
+    party: z.string(),
+    served: z.object({
+      House: z
+        .array(
+          z.object({
+            end: z.number().int().nullable(),
+            start: z.number().int(),
+          }),
+        )
+        .optional(),
+      Senate: z
+        .array(
+          z.object({
+            end: z.number().int().nullable(),
+            start: z.number().int(),
+          }),
+        )
+        .optional(),
+    }),
+    state: z.string(),
+    url: z.string().url(),
+  }),
+})
+
+export type AllMember = z.infer<typeof allMemberValidator>
+
+export const allMemberResponseValidator = z.object({
+  members: z.array(allMemberValidator),
+  pagination: paginationValidator,
+  request: requestValidator,
+})
+export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
 const congressResponseValidator = z.object({
   congresses: z.array(
@@ -45,8 +89,8 @@ const congressResponseValidator = z.object({
       ),
     }),
   ),
-  pagination: paginationResponseValidator,
-  request: requestResponseValidator,
+  pagination: paginationValidator,
+  request: requestValidator,
 })
 
 export const billResponseValidator = z.object({
@@ -163,8 +207,8 @@ export const billResponseValidator = z.object({
     updateDateIncludingText: z.string(),
   }),
   error: z.string().optional(),
-  pagination: paginationResponseValidator.optional(),
-  request: requestResponseValidator,
+  pagination: paginationValidator.optional(),
+  request: requestValidator,
 })
 
 export const billActionsResponseValidator = z.object({
@@ -203,8 +247,8 @@ export const billActionsResponseValidator = z.object({
     }),
   ),
   error: z.string().optional(),
-  pagination: paginationResponseValidator.optional(),
-  request: requestResponseValidator,
+  pagination: paginationValidator.optional(),
+  request: requestValidator,
 })
 
 export const committeeActivitiesValidator = z.object({
@@ -234,8 +278,8 @@ export const billCommitteesResponseValidator = z.object({
     }),
   ),
   error: z.string().optional(),
-  pagination: paginationResponseValidator.optional(),
-  request: requestResponseValidator,
+  pagination: paginationValidator.optional(),
+  request: requestValidator,
 })
 
 export const partyHistoryValidator = z.object({
@@ -327,49 +371,3 @@ export const stepRegexesValidator = z.map(
   z.array(z.string()),
 )
 export type StepRegexes = z.infer<typeof stepRegexesValidator>
-
-export const allMemberResponseValidator = z.object({
-  members: z.array(
-    z.object({
-      bioguideId: z.string(),
-      depiction: z
-        .object({
-          attribution: z.string().nullish(),
-          imageUrl: z.string().nullish(),
-        })
-        .nullish(),
-      district: z.number().int().nullable(),
-      name: z.string(),
-      party: z.string(),
-      served: z.object({
-        House: z
-          .array(
-            z.object({
-              end: z.number().int().nullable(),
-              start: z.number().int(),
-            }),
-          )
-          .optional(),
-        Senate: z
-          .array(
-            z.object({
-              end: z.number().int().nullable(),
-              start: z.number().int(),
-            }),
-          )
-          .optional(),
-      }),
-      state: z.string(),
-      url: z.string().url(),
-    }),
-  ),
-  pagination: z.object({
-    count: z.number().int(),
-    next: z.string().url().nullish(),
-  }),
-  request: z.object({
-    contentType: z.string(),
-    format: z.string(),
-  }),
-})
-export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>

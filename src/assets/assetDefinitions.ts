@@ -1,4 +1,8 @@
+import { fetchCongressAPI } from '../workers/congressAPI'
+import { allMemberResponseValidator } from '../workers/validators'
 import { AnyAsset, Asset } from './assets.types'
+import { readFileSync, writeFileSync } from 'fs'
+import { z } from 'zod'
 
 const ALWAYS_FETCH_POLICY = async () => false
 const NEVER_FETCH_POLICY = async () => true
@@ -8,11 +12,20 @@ export const membersCountAsset: Asset<number, [], []> = {
   queue: 'congress-api-asset-queue',
   deps: [],
   policy: ALWAYS_FETCH_POLICY,
-  write: () => async () => {
-    return
+  write: () => async (count) => {
+    writeFileSync('./data/membersCount.json', count.toString())
   },
-  read: async () => 0,
-  create: () => async () => 0,
+  read: async () => {
+    const countString = readFileSync('./data/membersCount.json', 'utf8')
+    const count = parseInt(countString)
+    return z.number().parse(count)
+  },
+  create: () => async () => {
+    console.log('creating members count')
+    const res = await fetchCongressAPI('/member', { limit: 1 })
+    const json = await res.json()
+    return allMemberResponseValidator.parse(json).pagination.count
+  },
 }
 
 export const membersAsset: Asset<number, [], [typeof membersCountAsset]> = {
