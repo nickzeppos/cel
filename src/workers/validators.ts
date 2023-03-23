@@ -1,13 +1,14 @@
-import { Chamber, Step } from '@prisma/client'
+import { Step } from '@prisma/client'
 import { z } from 'zod'
 
 export const fullChamberNameValidator = z.enum([
   'House of Representatives',
   'Senate',
 ])
-
+const chamberAbbreviationValidator = z.enum(['H', 'S'])
 export const shortChamberNameValidator = z.enum(['House', 'Senate'])
 export const billTypeValidator = z.enum(['hr', 's'])
+const billTypeCapitalizedValidator = z.enum(['HR', 'S'])
 export const billJobDataValidator = z.object({
   congress: z.number().min(93),
   billType: billTypeValidator,
@@ -64,14 +65,33 @@ const allMemberValidator = z.object({
   }),
 })
 
-export type AllMember = z.infer<typeof allMemberValidator>
-
 export const allMemberResponseValidator = z.object({
   members: z.array(allMemberValidator),
   pagination: paginationValidator,
   request: requestValidator,
 })
-export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
+
+const allBillValidator = z.object({
+  congress: z.number().int(),
+  latestAction: z.object({
+    actionDate: z.string(),
+    text: z.string(),
+  }),
+  number: z.string(),
+  originChamber: shortChamberNameValidator,
+  originChamberCode: chamberAbbreviationValidator,
+  title: z.string(),
+  type: billTypeCapitalizedValidator,
+  updateDate: z.string(),
+  updateDateIncludingText: z.string(),
+  url: z.string().url(),
+})
+
+export const allBillResponseValidator = z.object({
+  bills: z.array(allBillValidator),
+  pagination: paginationValidator,
+  request: requestValidator,
+})
 
 const congressResponseValidator = z.object({
   congresses: z.array(

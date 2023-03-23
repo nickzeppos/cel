@@ -21,6 +21,7 @@ export default async function execute(
   const asset = getAssetForName(job.name)
   const deps = asset.deps as AnyAsset[]
   const args = job.data
+
   const depsData = await Promise.all(
     deps.map((dep) => {
       return dep.read(args)

@@ -17,6 +17,7 @@ import {
   LocalAssetJobResponse,
 } from '../../workers/types'
 import { createRouter } from './context'
+import { Chamber } from '@prisma/client'
 import * as trpc from '@trpc/server'
 import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
@@ -37,15 +38,16 @@ export const assetPlaygroundRouter = createRouter()
   })
   .mutation('materialize', {
     input: z.object({
-      chamber: z.enum(['HOUSE', 'SENATE']),
+      chamber: z.nativeEnum(Chamber),
       congress: z.number().min(93).max(117),
       assetName: z.string().refine(isAssetName),
       minBillNum: z.number().nullish(),
       maxBillNum: z.number().nullish(),
     }),
     async resolve({ input }) {
-      console.log(input)
-      materialize(getAssetForName(input.assetName))
+      const { assetName, ...restOfInput } = input
+      const args = Object.values(restOfInput).filter((x) => x != null)
+      materialize(getAssetForName(input.assetName), args)
       return
     },
   })
@@ -84,13 +86,13 @@ export const assetPlaygroundRouter = createRouter()
   })
   .mutation('materialize-members-count', {
     async resolve({}) {
-      materialize(membersCountAsset)
+      // materialize(membersCountAsset)
       return
     },
   })
   .mutation('materialize-report', {
     async resolve({}) {
-      materialize(reportAsset)
+      // materialize(reportAsset)
       return
     },
   })
