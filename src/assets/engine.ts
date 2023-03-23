@@ -129,6 +129,7 @@ export function getFlowForJobList(
       name: job.name,
       queueName: job.queue,
       children: filterNullOrUndefined([result]),
+      data: job.args,
     }
     result = flowJob
   }

@@ -188,6 +188,7 @@ describe('getFlowForJobList', () => {
       name: 'membersCount',
       queueName: 'congress-api-asset-queue',
       children: [],
+      data: [],
     })
   })
 
@@ -204,8 +205,10 @@ describe('getFlowForJobList', () => {
           name: 'membersCount',
           queueName: 'congress-api-asset-queue',
           children: [],
+          data: [],
         },
       ],
+      data: [],
     })
   })
 
