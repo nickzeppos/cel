@@ -5,9 +5,9 @@ export async function materialize<T, A extends unknown[], D extends AnyAsset[]>(
   asset: Asset<T, A, D>,
   args: A,
 ): Promise<void> {
-  const jobGraph = getJobGraphForAsset(asset, args)
+  const jobGraph = getJobGraphForAsset(asset)
   const sortedJobList = sortJobGraph(jobGraph)
-  const flow = getFlowForJobList(jobGraph, sortedJobList)
+  const flow = getFlowForJobList(jobGraph, sortedJobList, args)
   const producer = new FlowProducer({
     connection: {
       host: 'cel-cache',
@@ -21,7 +21,7 @@ export function getJobGraphForAsset<
   T,
   A extends unknown[],
   D extends AnyAsset[],
->(asset: Asset<T, A, D>, args: A): JobGraph {
+>(asset: Asset<T, A, D>): JobGraph {
   const jobs: JobConfig[] = []
 
   const assetStack: AnyAsset[] = [asset]
@@ -36,7 +36,7 @@ export function getJobGraphForAsset<
       id: id++,
       name: asset.name,
       queue: asset.queue,
-      args: args,
+      args: [],
     }
   }
 
@@ -120,6 +120,7 @@ export function sortJobGraph(graph: JobGraph): number[] {
 export function getFlowForJobList(
   graph: JobGraph,
   sortedJobList: number[],
+  args: unknown[],
 ): FlowJob {
   let result: FlowJob | undefined = undefined
 
@@ -129,7 +130,7 @@ export function getFlowForJobList(
       name: job.name,
       queueName: job.queue,
       children: filterNullOrUndefined([result]),
-      data: job.args,
+      data: args,
     }
     result = flowJob
   }
