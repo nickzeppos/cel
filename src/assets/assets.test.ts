@@ -209,19 +209,6 @@ describe('getFlowForJobList', () => {
     })
   })
 
-  const getNestedData = (job: FlowJob): any[] => {
-    const res = []
-    if (job.data) {
-      res.push(job.data)
-    }
-    if (job.children) {
-      job.children.forEach((child) => {
-        res.push(...getNestedData(child))
-      })
-    }
-    return res
-  }
-
   it('should return a flow for a simple job list with args', () => {
     const jobGraph = getJobGraphForAsset(membersCountAsset)
     const sortedJobList = sortJobGraph(jobGraph)
@@ -239,6 +226,19 @@ describe('getFlowForJobList', () => {
     const jobGraph = getJobGraphForAsset(reportAsset)
     const sortedJobList = sortJobGraph(jobGraph)
     const actual = getFlowForJobList(jobGraph, sortedJobList, args)
+
+    const getNestedData = (job: FlowJob): any[] => {
+      const res = []
+      if (job.data) {
+        res.push(job.data)
+      }
+      if (job.children) {
+        job.children.forEach((child) => {
+          res.push(...getNestedData(child))
+        })
+      }
+      return res
+    }
 
     // expect the parent FlowJob to have args for data
     expect(actual.data).toEqual(args)
