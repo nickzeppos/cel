@@ -14,13 +14,13 @@ export default async function execute(
   >,
 ): Promise<CongressAPIAssetJobResponse> {
   console.log('Running congress api asset worker')
-  console.log(job.name)
   console.log(job.queueName)
+  console.log(job.name)
   console.log(job.data)
 
   const asset = getAssetForName(job.name)
   const deps = asset.deps as AnyAsset[]
-  const args = job.data
+  const args = [...Object.values(job.data)]
 
   const depsData = await Promise.all(
     deps.map((dep) => {

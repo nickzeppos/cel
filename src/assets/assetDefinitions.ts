@@ -60,17 +60,15 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
   queue: 'congress-api-asset-queue',
   deps: [],
   policy: ALWAYS_FETCH_POLICY,
-  write:
-    (...args) =>
-    async (count) => {
-      const [chamber, congress] = args[0]
-      writeFileSync(
-        `./data/billsCount-${congress}-${chamber}.json`,
-        count.toString(),
-      )
-    },
-  read: async (...args) => {
-    const [chamber, congress] = args[0]
+  write: (args) => async (count) => {
+    const [chamber, congress] = args
+    writeFileSync(
+      `./data/billsCount-${congress}-${chamber}.json`,
+      count.toString(),
+    )
+  },
+  read: async (args) => {
+    const [chamber, congress] = args
     const countString = readFileSync(
       `./data/billsCount-${congress}-${chamber}.json`,
       'utf8',
@@ -78,17 +76,15 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
     const count = parseInt(countString)
     return z.number().parse(count)
   },
-  create:
-    (...args) =>
-    async () => {
-      const [chamber, congress] = args[0]
-      const billType = chamber === 'HOUSE' ? 'hr' : 's'
-      const res = await fetchCongressAPI(`/bill/${congress}/${billType}`, {
-        limit: 1,
-      })
-      const json = await res.json()
-      return allBillResponseValidator.parse(json).pagination.count
-    },
+  create: (args) => async () => {
+    const [chamber, congress] = args
+    const billType = chamber === 'HOUSE' ? 'hr' : 's'
+    const res = await fetchCongressAPI(`/bill/${congress}/${billType}`, {
+      limit: 1,
+    })
+    const json = await res.json()
+    return allBillResponseValidator.parse(json).pagination.count
+  },
 }
 
 export const actionsAsset: Asset<number, [], [typeof billsCountAsset]> = {
