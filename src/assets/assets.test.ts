@@ -34,20 +34,6 @@ const reportAsset = getAssetExample('report', 'local-asset-queue', [
   billsAsset,
 ])
 
-const membersCountAssetWithArgs = getAssetWithArgsExample(
-  'membersCount',
-  'congress-api-asset-queue',
-  [],
-)
-
-const reportAssetWithArgs = getAssetWithArgsExample(
-  'report',
-  'local-asset-queue',
-  [bioguidesAsset, membersAsset, actionsAsset, billsAsset],
-)
-
-const args: [number, string] = [117, 'SENATE']
-
 describe('getJobGraphForAsset', () => {
   it('should queue one local job', () => {
     const actual = getJobGraphForAsset(membersCountAsset)
@@ -267,24 +253,6 @@ function getAssetExample<D extends AnyAsset[]>(
   queue: JobQueueName,
   deps: D,
 ): Asset<string, [], D> {
-  return {
-    name,
-    queue,
-    deps,
-    policy: async () => false,
-    write: () => async () => {
-      return
-    },
-    read: async () => 'data',
-    create: () => async () => 'data',
-  }
-}
-
-function getAssetWithArgsExample<D extends AnyAsset[], A extends unknown[]>(
-  name: string,
-  queue: JobQueueName,
-  deps: D,
-): Asset<string, A, D> {
   return {
     name,
     queue,
