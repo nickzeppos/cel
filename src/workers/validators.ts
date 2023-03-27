@@ -1,5 +1,14 @@
-import { Step } from '@prisma/client'
+import { isAssetName } from '../assets/assetDefinitions'
+import { Chamber, Step } from '@prisma/client'
 import { z } from 'zod'
+
+export const materializeValidator = z.object({
+  chamber: z.nativeEnum(Chamber),
+  congress: z.number().min(93).max(117),
+  assetName: z.string().refine(isAssetName),
+  minBillNum: z.number().nullish(),
+  maxBillNum: z.number().nullish(),
+})
 
 export const fullChamberNameValidator = z.enum([
   'House of Representatives',

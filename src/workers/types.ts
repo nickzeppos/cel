@@ -4,6 +4,7 @@ import {
   billTypeValidator,
   committeeActivitiesValidator,
   fullChamberNameValidator,
+  materializeValidator,
   partyHistoryValidator,
   shortChamberNameValidator,
   termJobDataValidator,
@@ -94,12 +95,11 @@ export interface AssetJobResponse {
 }
 export type AssetJobName = 'asset-job'
 
-export interface CongressAPIAssetJobData {
-  chamber?: Chamber
-  congress?: number
-  minBillNum?: number
-  maxBillNum?: number
-}
+export type CongressAPIAssetJobData = Omit<
+  z.infer<typeof materializeValidator>,
+  'assetName'
+>[keyof Omit<z.infer<typeof materializeValidator>, 'assetName'>][]
+
 export interface CongressAPIAssetJobResponse {
   message: string
   data: DataTypeOf<AnyAsset>

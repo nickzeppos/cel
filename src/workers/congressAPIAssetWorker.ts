@@ -20,13 +20,14 @@ export default async function execute(
 
   const asset = getAssetForName(job.name)
   const deps = asset.deps as AnyAsset[]
-  const args = [...Object.values(job.data)]
+  const args = job.data
 
   const depsData = await Promise.all(
     deps.map((dep) => {
       return dep.read(args)
     }),
   )
+  console.log(depsData)
   const policyOutcome = await asset.policy(args)
   if (policyOutcome) {
     console.log('Asset policy passed, reading asset')

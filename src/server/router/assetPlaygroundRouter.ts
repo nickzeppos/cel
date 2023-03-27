@@ -2,9 +2,6 @@ import {
   AssetName,
   getAssetForName,
   getAssetNames,
-  isAssetName,
-  membersCountAsset,
-  reportAsset,
 } from '../../assets/assetDefinitions'
 import { JobQueueName, isQueueName } from '../../assets/assets.types'
 import { materialize } from '../../assets/engine'
@@ -16,11 +13,10 @@ import {
   LocalAssetJobName,
   LocalAssetJobResponse,
 } from '../../workers/types'
+import { materializeValidator } from '../../workers/validators'
 import { createRouter } from './context'
-import { Chamber } from '@prisma/client'
 import * as trpc from '@trpc/server'
 import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
-import { z } from 'zod'
 
 const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
 type AssetJobChangeEvent = {
@@ -37,13 +33,7 @@ export const assetPlaygroundRouter = createRouter()
     },
   })
   .mutation('materialize', {
-    input: z.object({
-      chamber: z.nativeEnum(Chamber),
-      congress: z.number().min(93).max(117),
-      assetName: z.string().refine(isAssetName),
-      minBillNum: z.number().nullish(),
-      maxBillNum: z.number().nullish(),
-    }),
+    input: materializeValidator,
     async resolve({ input }) {
       const { assetName, ...restOfInput } = input
       const args = Object.values(restOfInput).filter((x) => x != null)
@@ -82,18 +72,6 @@ export const assetPlaygroundRouter = createRouter()
           )
         }
       })
-    },
-  })
-  .mutation('materialize-members-count', {
-    async resolve({}) {
-      // materialize(membersCountAsset)
-      return
-    },
-  })
-  .mutation('materialize-report', {
-    async resolve({}) {
-      // materialize(reportAsset)
-      return
     },
   })
 
