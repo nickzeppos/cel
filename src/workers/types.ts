@@ -95,6 +95,10 @@ export interface AssetJobResponse {
 }
 export type AssetJobName = 'asset-job'
 
+// infer type from materialize input validator, but remove assetName.
+// result is object type with keys of the remaining properties
+// index object type by keys with same omission
+// create array type with values obtained by indexing
 export type CongressAPIAssetJobData = Omit<
   z.infer<typeof materializeValidator>,
   'assetName'
