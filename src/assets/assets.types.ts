@@ -14,6 +14,7 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
   name: string
   queue: JobQueueName
   deps: D
+  refreshPeriod: number
   policy: (...args: A) => Promise<boolean>
   write: (...args: A) => (data: T) => Promise<void>
   read: (...args: A) => Promise<T>

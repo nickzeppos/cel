@@ -5,22 +5,47 @@ import {
 } from '../workers/validators'
 import { AnyAsset, Asset } from './assets.types'
 import { Chamber } from '@prisma/client'
-import { readFileSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { z } from 'zod'
 
+// Policy constants
 const ALWAYS_FETCH_POLICY = async () => false
 const NEVER_FETCH_POLICY = async () => true
+const ONE_DAY_REFRESH = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 
 export const membersCountAsset: Asset<number, [], []> = {
   name: 'membersCount',
   queue: 'congress-api-asset-queue',
   deps: [],
-  policy: ALWAYS_FETCH_POLICY,
+  refreshPeriod: ONE_DAY_REFRESH,
+  policy: async () => {
+    // if meta file doesn't exist, policy fails
+    if (!existsSync(`./data/${membersCountAsset.name}-meta.json`)) {
+      return false
+    }
+    // if meta file exists, compare to current time
+    const lastUpdated = readFileSync(
+      `./data/${membersCountAsset.name}-meta.json`,
+      'utf8',
+    )
+    const lastUpdatedDate = new Date(lastUpdated)
+    const now = new Date()
+    const diff = now.getTime() - lastUpdatedDate.getTime()
+    // if diff is greater than refresh period, policy fails
+    return diff > membersCountAsset.refreshPeriod
+  },
   write: () => async (count) => {
-    writeFileSync('./data/membersCount.json', count.toString())
+    writeFileSync(`./data/${membersCountAsset.name}.json`, count.toString())
+    writeFileSync(
+      `./data/${membersCountAsset.name}-meta.json`,
+      new Date().toString(),
+    )
   },
   read: async () => {
-    const countString = readFileSync('./data/membersCount.json', 'utf8')
+    const countString = readFileSync(
+      `./data/${membersCountAsset.name}.json`,
+      'utf8',
+    )
     const count = parseInt(countString)
     return z.number().parse(count)
   },
@@ -35,6 +60,7 @@ export const membersAsset: Asset<number, [], [typeof membersCountAsset]> = {
   name: 'members',
   queue: 'congress-api-asset-queue',
   deps: [membersCountAsset],
+  refreshPeriod: ONE_DAY_REFRESH,
   policy: NEVER_FETCH_POLICY,
   write: () => async () => {
     return
@@ -47,6 +73,7 @@ export const bioguidesAsset: Asset<number, [], [typeof membersAsset]> = {
   name: 'bioguides',
   queue: 'congress-api-asset-queue',
   deps: [membersAsset],
+  refreshPeriod: ONE_DAY_REFRESH,
   policy: NEVER_FETCH_POLICY,
   write: () => async () => {
     return
@@ -59,18 +86,19 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
   name: 'billsCount',
   queue: 'congress-api-asset-queue',
   deps: [],
+  refreshPeriod: ONE_DAY_REFRESH,
   policy: ALWAYS_FETCH_POLICY,
   write: (args) => async (count) => {
     const [chamber, congress] = args
     writeFileSync(
-      `./data/billsCount-${congress}-${chamber}.json`,
+      `./data/${billsCountAsset.name}-${congress}-${chamber}.json`,
       count.toString(),
     )
   },
   read: async (args) => {
     const [chamber, congress] = args
     const countString = readFileSync(
-      `./data/billsCount-${congress}-${chamber}.json`,
+      `./data/${billsCountAsset.name}-${congress}-${chamber}.json`,
       'utf8',
     )
     const count = parseInt(countString)
@@ -91,6 +119,7 @@ export const actionsAsset: Asset<number, [], [typeof billsCountAsset]> = {
   name: 'actions',
   queue: 'congress-api-asset-queue',
   deps: [billsCountAsset],
+  refreshPeriod: ONE_DAY_REFRESH,
   policy: NEVER_FETCH_POLICY,
   write: () => async () => {
     return
@@ -103,6 +132,7 @@ export const billsAsset: Asset<number, [], [typeof billsCountAsset]> = {
   name: 'bills',
   queue: 'congress-api-asset-queue',
   deps: [billsCountAsset],
+  refreshPeriod: ONE_DAY_REFRESH,
   policy: ALWAYS_FETCH_POLICY,
   write: () => async () => {
     return
@@ -124,6 +154,7 @@ export const reportAsset: Asset<
   name: 'report',
   queue: 'local-asset-queue',
   deps: [bioguidesAsset, membersAsset, billsAsset, actionsAsset],
+  refreshPeriod: ONE_DAY_REFRESH,
   policy: ALWAYS_FETCH_POLICY,
   write: () => async () => {
     return
