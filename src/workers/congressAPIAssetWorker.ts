@@ -27,7 +27,6 @@ export default async function execute(
       return dep.read(args)
     }),
   )
-  console.log(depsData)
   const policyOutcome = await asset.policy(args)
   if (policyOutcome) {
     console.log('Asset policy passed, reading asset')
