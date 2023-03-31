@@ -39,46 +39,52 @@ const paginationValidator = z.object({
   prev: z.string().url().optional(),
 })
 
-const allMemberValidator = z.object({
-  member: z.object({
-    bioguideId: z.string(),
-    depiction: z
-      .object({
-        attribution: z.string().nullish(),
-        imageUrl: z.string().nullish(),
-      })
-      .nullish(),
-    district: z.number().int().nullable(),
-    name: z.string(),
-    party: z.string(),
-    served: z.object({
-      House: z
-        .array(
-          z.object({
-            end: z.number().int().nullable(),
-            start: z.number().int(),
-          }),
-        )
-        .optional(),
-      Senate: z
-        .array(
-          z.object({
-            end: z.number().int().nullable(),
-            start: z.number().int(),
-          }),
-        )
-        .optional(),
-    }),
-    state: z.string(),
-    url: z.string().url(),
+export const allMemberValidator = z.object({
+  bioguideId: z.string(),
+  depiction: z
+    .object({
+      attribution: z.string().nullish(),
+      imageUrl: z.string().nullish(),
+    })
+    .nullish(),
+  district: z.number().int().optional(),
+  name: z.string(),
+  party: z.string(),
+  served: z.object({
+    House: z
+      .array(
+        z.object({
+          end: z.number().int().optional(),
+          start: z.number().int(),
+        }),
+      )
+      .optional(),
+    Senate: z
+      .array(
+        z.object({
+          end: z.number().int().optional(),
+          start: z.number().int(),
+        }),
+      )
+      .optional(),
   }),
+  state: z.string(),
+  url: z.string().url(),
+})
+
+export type AllMember = z.infer<typeof allMemberValidator>
+
+const allMemberWithKeyValidator = z.object({
+  member: allMemberValidator,
 })
 
 export const allMemberResponseValidator = z.object({
-  members: z.array(allMemberValidator),
+  members: z.array(allMemberWithKeyValidator),
   pagination: paginationValidator,
   request: requestValidator,
 })
+
+export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
 const allBillValidator = z.object({
   congress: z.number().int(),
@@ -312,7 +318,7 @@ export const billCommitteesResponseValidator = z.object({
 })
 
 export const partyHistoryValidator = z.object({
-  endYear: z.union([z.number(), z.string().nullable()]), // API suxxx
+  endYear: z.union([z.number(), z.string().nullable()]).optional(), // API suxxx
   partyCode: z.string(),
   partyName: z.string(),
   startYear: z.number(),
@@ -329,70 +335,68 @@ export const termResponseValidator = z.object({
   termEndYear: z.number().nullable(),
 })
 
-export const memberResponseValidator = z.object({
-  member: z.object({
-    addressInformation: z
-      .object({
-        city: z.string(),
-        district: z.string(),
-        officeAddress: z.string(),
-        officeTelephone: z.object({
-          phoneNumber: z.string(),
-        }),
-        zipCode: z.number(),
-      })
-      .optional(),
-    birthYear: z.string(),
-    cosponsoredLegislation: z.object({
-      count: z.number(),
-      url: z.string(),
-    }),
-    currentMember: z.boolean(),
-    deathYear: z.string().nullable(),
-    depiction: z.object({
-      attribution: z.string().nullable(),
-      imageUrl: z.string(),
-    }),
-    directOrderName: z.string(),
-    district: z.number().nullable(),
-    firstName: z.string(),
-    honorificName: z.string().nullable(),
-    identifiers: z.object({
-      bioguideId: z.string(),
-    }),
-    invertedOrderName: z.string(),
-    lastName: z.string(),
-    leadership: z.array(
+export const memberValidator = z.object({
+  addressInformation: z
+    .object({
+      city: z.string(),
+      district: z.string(),
+      officeAddress: z.string(),
+      officeTelephone: z.object({
+        phoneNumber: z.string(),
+      }),
+      zipCode: z.number(),
+    })
+    .optional(),
+  birthYear: z.string(),
+  cosponsoredLegislation: z.object({
+    count: z.number(),
+    url: z.string(),
+  }),
+  currentMember: z.boolean().optional(),
+  deathYear: z.string().nullable(),
+  depiction: z.object({
+    attribution: z.string().nullable(),
+    imageUrl: z.string(),
+  }),
+  directOrderName: z.string(),
+  district: z.number().nullable().optional(),
+  firstName: z.string(),
+  honorificName: z.string().nullable().optional(),
+  identifiers: z.object({
+    bioguideId: z.string(),
+  }),
+  invertedOrderName: z.string(),
+  lastName: z.string(),
+  leadership: z
+    .array(
       z.object({
         congress: z.number(),
         current: z.boolean(),
         type: z.string(),
       }),
-    ),
-    middleName: z.string().nullable(),
-    nickName: z.string().nullable(),
-    officialWebSiteUrl: z.string().optional(),
-    party: z.string(),
-    partyHistory: z.array(partyHistoryValidator),
-    sponsoredLegislation: z.object({
-      count: z.number(),
-      url: z.string(),
-    }),
-    state: z.string(),
-    suffixName: z.string().nullable(),
-    terms: z.array(termResponseValidator),
-    updateDate: z.string(),
-  }),
-  pagination: z
-    .object({
-      count: z.number().int(),
-      next: z.string().url().nullish(),
-    })
+    )
     .optional(),
-  request: z.object({
-    contentType: z.string(),
-    format: z.string(),
+  middleName: z.string().nullable().optional(),
+  nickName: z.string().nullable().optional(),
+  officialWebSiteUrl: z.string().optional(),
+  party: z.string().optional(),
+  partyHistory: z.array(partyHistoryValidator),
+  sponsoredLegislation: z.object({
+    count: z.number(),
+    url: z.string(),
   }),
+  state: z.string().optional(),
+  suffixName: z.string().nullable().optional(),
+  terms: z.array(termResponseValidator),
+  updateDate: z.string(),
+})
+
+export type Member = z.infer<typeof memberValidator>
+
+export const memberResponseValidator = z.object({
+  member: memberValidator,
+  pagination: paginationValidator.optional(),
+  request: requestValidator,
 })
 
 export const stepRegexesValidator = z.map(
