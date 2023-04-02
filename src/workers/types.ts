@@ -1,7 +1,7 @@
 import { AssetName } from '../assets/assetDefinitions'
 import {
   billJobDataValidator,
-  billTypeValidator,
+  billTypeLowercaseValidator,
   committeeActivitiesValidator,
   fullChamberNameValidator,
   materializeValidator,
@@ -35,7 +35,7 @@ export interface TermJobResponse {
 }
 export type ChamberShortName = z.infer<typeof shortChamberNameValidator>
 
-export type BillType = z.infer<typeof billTypeValidator>
+export type BillType = z.infer<typeof billTypeLowercaseValidator>
 export type ChamberShortNameLowercase = Lowercase<ChamberShortName>
 export type CommitteeActivies = z.infer<typeof committeeActivitiesValidator>
 

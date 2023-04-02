@@ -1,8 +1,10 @@
 import { fetchCongressAPI } from '../workers/congressAPI'
 import {
+  AllBill,
   AllMember,
   Member,
   allBillResponseValidator,
+  allBillValidator,
   allMemberResponseValidator,
   allMemberValidator,
   memberResponseValidator,
@@ -131,7 +133,7 @@ export const membersAsset: Asset<
         allMemberValidator.parse(member.member),
       )
       members = [...members, ...parsed]
-      totalCount += members.length
+      totalCount += parsed.length
       offset += limit
 
       // manually throttle API requests 1 per ~10s
@@ -189,21 +191,21 @@ export const bioguidesAsset: Asset<Array<Member>, [], [typeof membersAsset]> = {
     return bioguides
   },
   create: () => async (members) => {
-    const slicedMembers = members.slice(0, 9) // just first 10 for testing
+    const slicedMembers = members.slice(0, 99) // just first 100 for testing
 
     let bioguides: Array<Member> = []
 
     for (const member of slicedMembers) {
       const { served, bioguideId } = member
-      console.log(`starting ${bioguideId}`)
-      if (!servedIncludes1973(served)) {
-        console.log(
-          `skipping ${bioguideId} because served does not include 1973`,
-        )
-        continue
-      }
+      // console.log(`starting ${bioguideId}`)
+      // if (!servedIncludes1973(served)) {
+      //   console.log(
+      //     `skipping ${bioguideId} because served does not include 1973`,
+      //   )
+      //   continue
+      // }
 
-      console.log(`found ${bioguideId} served in relevant range, fetching`)
+      // console.log(`found ${bioguideId} served in relevant range, fetching`)
       const res = await fetchCongressAPI(`/member/${bioguideId}`)
       const json = await res.json()
       try {
@@ -276,17 +278,65 @@ export const actionsAsset: Asset<number, [], [typeof billsCountAsset]> = {
   create: () => async () => 0,
 }
 
-export const billsAsset: Asset<number, [], [typeof billsCountAsset]> = {
+export const billsAsset: Asset<
+  Array<AllBill>,
+  [Chamber, number],
+  [typeof billsCountAsset]
+> = {
   name: 'bills',
   queue: 'congress-api-asset-queue',
   deps: [billsCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: ALWAYS_FETCH_POLICY,
-  write: () => async () => {
-    return
+  policy: async (args) => {
+    const [chamber, congress] = args
+    const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
+    !existsSync(`${fileName}.json`) ? false : null
+    !existsSync(`${fileName}-meta.json`) ? false : null
+    const lastUpdated = readFileSync(`${fileName}-meta.json`, 'utf8')
+    const lastUpdatedDate = new Date(lastUpdated)
+    const now = new Date()
+    const diff = now.getTime() - lastUpdatedDate.getTime()
+    return diff > billsAsset.refreshPeriod
   },
-  read: async () => 0,
-  create: () => async () => 0,
+  write: (args) => async (bills) => {
+    const [chamber, congress] = args
+    const fileName = `./data/${billsAsset.name}/${congress}-${chamber}`
+    writeFileSync(`${fileName}.json`, JSON.stringify(bills))
+    writeFileSync(`${fileName}-meta.json`, new Date().toString())
+  },
+  read: async (args) => {
+    const [chamber, congress] = args
+    const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
+    const file = readFileSync(`${fileName}.json`, 'utf8')
+    const bills = JSON.parse(file)
+    return z.array(allBillValidator).parse(bills)
+  },
+  create: (args) => async (billsCount) => {
+    const [chamber, congress] = args
+    const billType = chamber === 'HOUSE' ? 'hr' : 's'
+
+    let bills: Array<AllBill> = []
+    let offset = 0
+    let limit = 250
+    let totalCount = 0
+    do {
+      const res = await fetchCongressAPI(`/bill/${congress}/${billType}`, {
+        offset,
+        limit,
+      })
+      const json = await res.json()
+      const { bills: newBills, pagination } =
+        allBillResponseValidator.parse(json)
+      const parsed = newBills.map((bill) => allBillValidator.parse(bill))
+      bills = [...bills, ...parsed]
+      totalCount += parsed.length
+      offset += limit
+
+      // manually throttle by 5s
+      await throttle(5000)
+    } while (totalCount < billsCount)
+    return bills
+  },
 }
 
 export const reportAsset: Asset<

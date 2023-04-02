@@ -14,13 +14,13 @@ export const fullChamberNameValidator = z.enum([
   'House of Representatives',
   'Senate',
 ])
-const chamberAbbreviationValidator = z.enum(['H', 'S'])
+const abbreviationChamberNameValidator = z.enum(['H', 'S'])
 export const shortChamberNameValidator = z.enum(['House', 'Senate'])
-export const billTypeValidator = z.enum(['hr', 's'])
-const billTypeCapitalizedValidator = z.enum(['HR', 'S'])
+export const billTypeLowercaseValidator = z.enum(['hr', 's'])
+const billTypeUppercaseValidator = z.enum(['HR', 'S'])
 export const billJobDataValidator = z.object({
   congress: z.number().min(93),
-  billType: billTypeValidator,
+  billType: billTypeLowercaseValidator,
   billNum: z.number(),
   page: z.string(),
 })
@@ -86,7 +86,7 @@ export const allMemberResponseValidator = z.object({
 
 export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
-const allBillValidator = z.object({
+export const allBillValidator = z.object({
   congress: z.number().int(),
   latestAction: z.object({
     actionDate: z.string(),
@@ -94,13 +94,15 @@ const allBillValidator = z.object({
   }),
   number: z.string(),
   originChamber: shortChamberNameValidator,
-  originChamberCode: chamberAbbreviationValidator,
+  originChamberCode: abbreviationChamberNameValidator,
   title: z.string(),
-  type: billTypeCapitalizedValidator,
+  type: billTypeUppercaseValidator,
   updateDate: z.string(),
   updateDateIncludingText: z.string(),
   url: z.string().url(),
 })
+
+export type AllBill = z.infer<typeof allBillValidator>
 
 export const allBillResponseValidator = z.object({
   bills: z.array(allBillValidator),
