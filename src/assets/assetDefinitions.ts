@@ -11,8 +11,8 @@ import {
   memberValidator,
 } from '../workers/validators'
 import { AnyAsset, Asset } from './assets.types'
-import { servedIncludes1973 } from './utils'
 import { Chamber } from '@prisma/client'
+import { format, formatDistance } from 'date-fns'
 import {
   existsSync,
   mkdirSync,
@@ -45,7 +45,9 @@ export const membersCountAsset: Asset<number, [], []> = {
   refreshPeriod: ONE_DAY_REFRESH,
   policy: async () => {
     // if meta file doesn't exist, policy fails
-    !existsSync(`./data/${membersCountAsset.name}-meta.json`) ? false : null
+    if (!existsSync(`./data/${membersCountAsset.name}-meta.json`)) {
+      return false
+    }
     // if meta file exists, compare to current time
     const lastUpdated = readFileSync(
       `./data/${membersCountAsset.name}-meta.json`,
@@ -89,8 +91,12 @@ export const membersAsset: Asset<
   deps: [membersCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
   policy: async () => {
-    !existsSync(`./data/${membersAsset.name}-meta.json`) ? false : null
-    !existsSync(`./data/${membersAsset.name}.json`) ? false : null
+    if (
+      !existsSync(`./data/${membersAsset.name}-meta.json`) ||
+      !existsSync(`./data/${membersAsset.name}.json`)
+    ) {
+      return false
+    }
     const lastUpdated = readFileSync(
       `./data/${membersAsset.name}-meta.json`,
       'utf8',
@@ -232,20 +238,42 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
   refreshPeriod: ONE_DAY_REFRESH,
   policy: async (args) => {
     const [chamber, congress] = args
+
+    // file exists
     const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}`
-    !existsSync(`${fileName}.json`) ? false : null
-    !existsSync(`${fileName}-meta.json`) ? false : null
+    if (
+      [`${fileName}.json`, `${fileName}-meta.json`]
+        .map((f) => existsSync(f))
+        .includes(false)
+    ) {
+      debug('billsCountAsset.policy', 'file not found')
+      return false
+    }
+
+    // file is not stale
     const lastUpdated = readFileSync(`${fileName}-meta.json`, 'utf8')
     const lastUpdatedDate = new Date(lastUpdated)
-    const now = new Date()
-    const diff = now.getTime() - lastUpdatedDate.getTime()
-    return diff > billsCountAsset.refreshPeriod
+
+    const diff = Date.now() - lastUpdatedDate.getTime()
+    debug(
+      'billsCountAsset.policy',
+      `last updated ${format(
+        lastUpdatedDate,
+        'yyyy-MM-dd hh:mm a',
+      )} (${formatDistance(lastUpdatedDate, Date.now(), {
+        addSuffix: true,
+      })}))`,
+    )
+    const isStale = diff > billsCountAsset.refreshPeriod
+    debug('billsCountAsset.policy', `asset ${isStale ? 'is' : 'is not'} stale`)
+    return !isStale
   },
   write: (args) => async (count) => {
     const [chamber, congress] = args
     const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}`
     writeFileSync(`${fileName}.json`, count.toString())
     writeFileSync(`${fileName}-meta.json`, new Date().toString())
+    debug('billsCountAsset.write', `wrote "${count}" to ${fileName}`)
   },
   read: async (args) => {
     const [chamber, congress] = args
@@ -257,9 +285,10 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
   create: (args) => async () => {
     const [chamber, congress] = args
     const billType = chamber === 'HOUSE' ? 'hr' : 's'
-    const res = await fetchCongressAPI(`/bill/${congress}/${billType}`, {
-      limit: 1,
-    })
+    const url = `/bill/${congress}/${billType}`
+    debug('billsCountAsset.create', `fetching ${url}`)
+    const res = await fetchCongressAPI(url, { limit: 1 })
+    debug('billsCountAsset.create', `done fetching ${url}`)
     const json = await res.json()
     return allBillResponseValidator.parse(json).pagination.count
   },
@@ -290,8 +319,13 @@ export const billsAsset: Asset<
   policy: async (args) => {
     const [chamber, congress] = args
     const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
-    !existsSync(`${fileName}.json`) ? false : null
-    !existsSync(`${fileName}-meta.json`) ? false : null
+    if (!existsSync(`${fileName}.json`)) {
+      return false
+    }
+    if (!existsSync(`${fileName}-meta.json`)) {
+      return false
+    }
+
     const lastUpdated = readFileSync(`${fileName}-meta.json`, 'utf8')
     const lastUpdatedDate = new Date(lastUpdated)
     const now = new Date()
@@ -385,4 +419,8 @@ export function getAssetNames(): AssetName[] {
 
 export function isAssetName(name: string): name is AssetName {
   return name in allAssets
+}
+
+function debug(key: string, message: string): void {
+  console.debug(`[${key} | ${format(Date.now(), 'HH:mm:ss.SSS')}]: ${message}`)
 }
