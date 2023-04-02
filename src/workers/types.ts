@@ -4,7 +4,6 @@ import {
   billTypeLowercaseValidator,
   committeeActivitiesValidator,
   fullChamberNameValidator,
-  materializeValidator,
   partyHistoryValidator,
   shortChamberNameValidator,
   termJobDataValidator,
@@ -99,10 +98,16 @@ export type AssetJobName = 'asset-job'
 // result is object type with keys of the remaining properties
 // index object type by keys with same omission
 // create array type with values obtained by indexing
-export type CongressAPIAssetJobData = Omit<
-  z.infer<typeof materializeValidator>,
-  'assetName'
->[keyof Omit<z.infer<typeof materializeValidator>, 'assetName'>][]
+// export type CongressAPIAssetJobData = Omit<
+//   z.infer<typeof materializeValidator>,
+//   'assetName'
+// >
+export type CongressAPIAssetJobData = [
+  Chamber | null | undefined,
+  number | null | undefined,
+  number | null | undefined,
+  number | null | undefined,
+]
 
 export interface CongressAPIAssetJobResponse {
   message: string

@@ -1,4 +1,7 @@
-import { fetchCongressAPI } from '../workers/congressAPI'
+import {
+  fetchCongressAPI,
+  throttledFetchCongressAPI,
+} from '../workers/congressAPI'
 import {
   AllBill,
   AllMember,
@@ -23,16 +26,22 @@ import {
 import { z } from 'zod'
 
 // Policy constants
-const ALWAYS_FETCH_POLICY = async () => false
-const NEVER_FETCH_POLICY = async () => true
+const ALWAYS_FETCH_POLICY = () => async () => false
+const NEVER_FETCH_POLICY = () => async () => true
 const ONE_DAY_REFRESH = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 
-// fs fcn
-function ensureDir(dir: string) {
-  if (!existsSync(dir)) {
-    mkdirSync(dir)
+function writeFileSyncWithDir(...args: Parameters<typeof writeFileSync>) {
+  const filename = args[0]
+  if (typeof filename !== 'string') {
+    throw new Error('we only know how to use string filenames!')
   }
+  const dir = filename.split('/').slice(0, -1).join('/')
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true })
+  }
+  return writeFileSync(...args)
 }
+
 // throttler
 async function throttle(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -43,7 +52,7 @@ export const membersCountAsset: Asset<number, [], []> = {
   queue: 'congress-api-asset-queue',
   deps: [],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: async () => {
+  policy: () => async () => {
     // if meta file doesn't exist, policy fails
     if (!existsSync(`./data/${membersCountAsset.name}-meta.json`)) {
       return false
@@ -60,8 +69,11 @@ export const membersCountAsset: Asset<number, [], []> = {
     return diff > membersCountAsset.refreshPeriod
   },
   write: () => async (count) => {
-    writeFileSync(`./data/${membersCountAsset.name}.json`, count.toString())
-    writeFileSync(
+    writeFileSyncWithDir(
+      `./data/${membersCountAsset.name}.json`,
+      count.toString(),
+    )
+    writeFileSyncWithDir(
       `./data/${membersCountAsset.name}-meta.json`,
       new Date().toString(),
     )
@@ -90,7 +102,7 @@ export const membersAsset: Asset<
   queue: 'congress-api-asset-queue',
   deps: [membersCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: async () => {
+  policy: () => async (membersCount) => {
     if (
       !existsSync(`./data/${membersAsset.name}-meta.json`) ||
       !existsSync(`./data/${membersAsset.name}.json`)
@@ -107,8 +119,11 @@ export const membersAsset: Asset<
     return diff > membersAsset.refreshPeriod
   },
   write: () => async (members) => {
-    writeFileSync(`./data/${membersAsset.name}.json`, JSON.stringify(members))
-    writeFileSync(
+    writeFileSyncWithDir(
+      `./data/${membersAsset.name}.json`,
+      JSON.stringify(members),
+    )
+    writeFileSyncWithDir(
       `./data/${membersAsset.name}-meta.json`,
       new Date().toString(),
     )
@@ -154,7 +169,7 @@ export const bioguidesAsset: Asset<Array<Member>, [], [typeof membersAsset]> = {
   queue: 'congress-api-asset-queue',
   deps: [membersAsset],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: async () => {
+  policy: () => async (members) => {
     if (!existsSync(`./data/${bioguidesAsset.name}`)) {
       return false
     }
@@ -171,14 +186,13 @@ export const bioguidesAsset: Asset<Array<Member>, [], [typeof membersAsset]> = {
     return diff > bioguidesAsset.refreshPeriod
   },
   write: () => async (bioguides) => {
-    ensureDir(`./data/${bioguidesAsset.name}`)
     for (const bioguide of bioguides) {
-      writeFileSync(
+      writeFileSyncWithDir(
         `./data/${bioguidesAsset.name}/${bioguide.identifiers.bioguideId}.json`,
         JSON.stringify(bioguide),
       )
     }
-    writeFileSync(
+    writeFileSyncWithDir(
       `./data/${bioguidesAsset.name}-meta.json`,
       new Date().toString(),
     )
@@ -236,9 +250,7 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
   queue: 'congress-api-asset-queue',
   deps: [],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: async (args) => {
-    const [chamber, congress] = args
-
+  policy: (chamber, congress) => async () => {
     // file exists
     const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}`
     if (
@@ -268,26 +280,23 @@ export const billsCountAsset: Asset<number, [Chamber, number], []> = {
     debug('billsCountAsset.policy', `asset ${isStale ? 'is' : 'is not'} stale`)
     return !isStale
   },
-  write: (args) => async (count) => {
-    const [chamber, congress] = args
+  write: (chamber, congress) => async (count) => {
     const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}`
-    writeFileSync(`${fileName}.json`, count.toString())
-    writeFileSync(`${fileName}-meta.json`, new Date().toString())
+    writeFileSyncWithDir(`${fileName}.json`, count.toString())
+    writeFileSyncWithDir(`${fileName}-meta.json`, new Date().toString())
     debug('billsCountAsset.write', `wrote "${count}" to ${fileName}`)
   },
-  read: async (args) => {
-    const [chamber, congress] = args
+  read: async (chamber, congress) => {
     const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}`
     const countString = readFileSync(`${fileName}.json`, 'utf8')
     const count = parseInt(countString)
     return z.number().parse(count)
   },
-  create: (args) => async () => {
-    const [chamber, congress] = args
+  create: (chamber, congress) => async () => {
     const billType = chamber === 'HOUSE' ? 'hr' : 's'
     const url = `/bill/${congress}/${billType}`
     debug('billsCountAsset.create', `fetching ${url}`)
-    const res = await fetchCongressAPI(url, { limit: 1 })
+    const res = await throttledFetchCongressAPI(url, { limit: 1 })
     debug('billsCountAsset.create', `done fetching ${url}`)
     const json = await res.json()
     return allBillResponseValidator.parse(json).pagination.count
@@ -309,66 +318,104 @@ export const actionsAsset: Asset<number, [], [typeof billsCountAsset]> = {
 
 export const billsAsset: Asset<
   Array<AllBill>,
-  [Chamber, number],
+  [Chamber, number, number | null | undefined, number | null | undefined],
   [typeof billsCountAsset]
 > = {
   name: 'bills',
   queue: 'congress-api-asset-queue',
   deps: [billsCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: async (args) => {
-    const [chamber, congress] = args
+  policy: (chamber, congress) => async (billsCount) => {
     const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
-    if (!existsSync(`${fileName}.json`)) {
-      return false
-    }
-    if (!existsSync(`${fileName}-meta.json`)) {
+    // if files don't exist, policy fails
+    if (
+      !existsSync(`${fileName}.json`) ||
+      !existsSync(`${fileName}-meta.json`)
+    ) {
       return false
     }
 
+    // if file is stale, policy fails
     const lastUpdated = readFileSync(`${fileName}-meta.json`, 'utf8')
     const lastUpdatedDate = new Date(lastUpdated)
     const now = new Date()
     const diff = now.getTime() - lastUpdatedDate.getTime()
-    return diff > billsAsset.refreshPeriod
+    const isStale = diff > billsAsset.refreshPeriod
+    if (isStale) {
+      return false
+    }
+
+    // if count in file is incomplete (!= billsCount), policy fails
+    const dataStr = readFileSync(`${fileName}.json`, 'utf8')
+    const data = JSON.parse(dataStr)
+    const bills = z.array(allBillValidator).safeParse(data)
+    if (!bills.success) {
+      error('billsAsset.policy', `failed to parse ${fileName}.json`)
+      return false
+    }
+    const isComplete = bills.data.length === billsCount
+    if (!isComplete) {
+      error(
+        'billsAsset.policy',
+        `${fileName}.json contains ${bills.data.length} bills, but billsCount is ${billsCount}}`,
+      )
+      return false
+    }
+
+    return true
   },
-  write: (args) => async (bills) => {
-    const [chamber, congress] = args
+  write: (chamber, congress) => async (bills) => {
     const fileName = `./data/${billsAsset.name}/${congress}-${chamber}`
-    writeFileSync(`${fileName}.json`, JSON.stringify(bills))
-    writeFileSync(`${fileName}-meta.json`, new Date().toString())
+
+    // call writeFileSync with an option to create folders that don't exist
+    writeFileSyncWithDir(`${fileName}.json`, JSON.stringify(bills))
+    writeFileSyncWithDir(`${fileName}-meta.json`, new Date().toString())
   },
-  read: async (args) => {
-    const [chamber, congress] = args
+  read: async (chamber, congress) => {
     const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
     const file = readFileSync(`${fileName}.json`, 'utf8')
     const bills = JSON.parse(file)
     return z.array(allBillValidator).parse(bills)
   },
-  create: (args) => async (billsCount) => {
-    const [chamber, congress] = args
+  create: (chamber, congress) => async (billsCount) => {
+    debug(
+      'billsAsset.create',
+      `creating ${billsCount} bills with args ${chamber}, ${congress}`,
+    )
     const billType = chamber === 'HOUSE' ? 'hr' : 's'
 
-    let bills: Array<AllBill> = []
+    const bills: Array<AllBill> = []
     let offset = 0
-    let limit = 250
+    const limit = 250
     let totalCount = 0
+    let pageNum = 1
     do {
-      const res = await fetchCongressAPI(`/bill/${congress}/${billType}`, {
+      const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${limit}`
+      debug('billsAsset.create', `fetching ${url}`)
+      const res = await throttledFetchCongressAPI(url, {
         offset,
         limit,
       })
+      debug('billsAsset.create', `done fetching ${url}`)
       const json = await res.json()
-      const { bills: newBills, pagination } =
-        allBillResponseValidator.parse(json)
+      const { bills: newBills } = allBillResponseValidator.parse(json)
       const parsed = newBills.map((bill) => allBillValidator.parse(bill))
-      bills = [...bills, ...parsed]
+      const fileName = `./data/${billsAsset.name}/${congress}-${chamber}-page-${pageNum}.json`
+      writeFileSyncWithDir(fileName, JSON.stringify(parsed))
+      debug('billsAsset.create', `wrote ${parsed.length} bills to ${fileName}`)
+      bills.push(...parsed)
       totalCount += parsed.length
       offset += limit
-
-      // manually throttle by 5s
-      await throttle(5000)
+      pageNum++
+      debug(
+        'billsAsset.create',
+        `added ${parsed.length} bills, total count is ${totalCount}`,
+      )
     } while (totalCount < billsCount)
+    debug(
+      'billsAsset.create',
+      `done fetching bills, total count is ${totalCount}`,
+    )
     return bills
   },
 }
@@ -423,4 +470,8 @@ export function isAssetName(name: string): name is AssetName {
 
 function debug(key: string, message: string): void {
   console.debug(`[${key} | ${format(Date.now(), 'HH:mm:ss.SSS')}]: ${message}`)
+}
+
+function error(key: string, message: string): void {
+  console.error(`[${key} | ${format(Date.now(), 'HH:mm:ss.SSS')}]: ${message}`)
 }

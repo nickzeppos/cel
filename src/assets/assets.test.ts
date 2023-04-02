@@ -258,7 +258,7 @@ function getAssetExample<D extends AnyAsset[]>(
     queue,
     deps,
     refreshPeriod: 0,
-    policy: async () => false,
+    policy: () => async () => false,
     write: () => async () => {
       return
     },

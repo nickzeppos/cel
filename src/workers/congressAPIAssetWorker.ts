@@ -22,24 +22,26 @@ export default async function execute(
   try {
     const asset = getAssetForName(job.name)
     const deps = asset.deps as AnyAsset[]
+
     const args = job.data
+    debug(`Reading asset ${asset.name} with args ${JSON.stringify(args)}`)
 
     const depsData = await Promise.all(
       deps.map((dep) => {
-        return dep.read(args)
+        return dep.read(...args)
       }),
     )
-    const policyOutcome = await asset.policy(args)
+    const policyOutcome = await asset.policy(...args)(...depsData)
     if (policyOutcome) {
       debug('Asset policy passed, reading asset')
       await new Promise((resolve) => setTimeout(resolve, 2000))
-      const data = await asset.read(args)
+      const data = await asset.read(...args)
       return { message: 'Asset read', data }
     } else {
       debug('Asset policy failed, creating asset')
       await new Promise((resolve) => setTimeout(resolve, 2000))
-      const data = await asset.create(args)(...depsData)
-      await asset.write(args)(data)
+      const data = await asset.create(...args)(...depsData)
+      await asset.write(...args)(data)
       return { message: 'Asset created', data }
     }
   } catch (e) {

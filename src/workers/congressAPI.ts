@@ -62,4 +62,8 @@ export const throttle = <R, T extends (...args: Array<any>) => Promise<R>>(
   return wrapped
 }
 
-export const throttledFetchCongressAPI = throttle(fetchCongressAPI)
+// TODO: figure out how to not require explicitly typing the generics here
+export const throttledFetchCongressAPI = throttle<
+  Response,
+  typeof fetchCongressAPI
+>(fetchCongressAPI)

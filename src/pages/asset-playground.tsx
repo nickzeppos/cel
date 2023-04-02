@@ -24,9 +24,9 @@ const AssetPlayground: NextPage = () => {
 
   const [chamber, setChamber] = useState<Chamber>('HOUSE')
   const [congress, setCongress] = useState<string>('117')
-  const [asset, setAsset] = useState<typeof ASSETS[number]>('report')
-  const [minBillNum, setMinBillNum] = useState<number | null>(null)
-  const [maxBillNum, setMaxBillNum] = useState<number | null>(null)
+  const [asset, setAsset] = useState<typeof ASSETS[number]>('bills')
+  const [minBillNum, setMinBillNum] = useState<number | null>(1)
+  const [maxBillNum, setMaxBillNum] = useState<number | null>(10)
   const [states, setStates] = useState<AssetJobSummaryMap>({
     report: getAssetJobSummary('report'),
     actions: getAssetJobSummary('actions'),

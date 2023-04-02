@@ -15,7 +15,9 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
   queue: JobQueueName
   deps: D
   refreshPeriod: number
-  policy: (...args: A) => Promise<boolean>
+  policy: (
+    ...args: A
+  ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<boolean>
   write: (...args: A) => (data: T) => Promise<void>
   read: (...args: A) => Promise<T>
   create: (
