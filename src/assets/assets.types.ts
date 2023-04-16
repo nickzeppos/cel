@@ -2,6 +2,9 @@
 export type DataTypeOf<A> = A extends Asset<infer DataType, any, any>
   ? DataType
   : never
+// export type MetaDataTypeOf<A> = A extends Asset<any, any, any, infer MetaDataType>
+//   ? MetaDataType
+//   : never
 export type ArgsTypeOf<A> = A extends Asset<any, infer ArgsType, any>
   ? ArgsType
   : never
@@ -23,6 +26,7 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
   create: (
     ...args: A
   ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<T>
+  readMetadata?: (...args: A) => any
 }
 
 export type JobID = number

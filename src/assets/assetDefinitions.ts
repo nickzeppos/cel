@@ -420,6 +420,17 @@ export const billsAsset: Asset<
     )
     return bills
   },
+  readMetadata: (chamber, congress) => {
+    const files = readdirSync(`./data/bills/`).filter((f) =>
+      f.includes(`${congress}-${chamber}-page`),
+    )
+    const pageStatuses = files.map((f) => {
+      const file = `./data/bills/${f}`
+      const status = existsSync(file) ? 'complete' : 'incomplete'
+      return { file, status }
+    })
+    return { pageStatuses }
+  },
 }
 
 export const reportAsset: Asset<

@@ -101,10 +101,15 @@ export const assetPlaygroundRouter = createRouter()
       // console.log('get bills asset', chamber, congress)
       // const t0 = Date.now()
       const bills = await billsAsset.read(chamber, congress, null, null)
+      const data: {
+        pageStatuses: { file: string; status: string }[]
+        // expectedPageCount: number
+      } = await billsAsset.readMetadata?.(chamber, congress, null, null)
       // const t1 = Date.now()
       // console.log(`reading bills asset took ${t1 - t0} ms`)
       return {
         count: bills.length,
+        pageStatuses: data.pageStatuses ?? [],
       }
     },
   })
