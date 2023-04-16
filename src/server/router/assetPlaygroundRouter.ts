@@ -1,5 +1,7 @@
 import {
   AssetName,
+  billsAsset,
+  billsCountAsset,
   getAssetForName,
   getAssetNames,
 } from '../../assets/assetDefinitions'
@@ -83,10 +85,26 @@ export const assetPlaygroundRouter = createRouter()
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      const asset = getAssetForName('billsCount')
-      const billsCount = await asset.read(chamber, congress)
+      const billsCount = await billsCountAsset.read(chamber, congress)
       return {
         billsCount,
+      }
+    },
+  })
+  .query('get-bills-asset-state', {
+    input: z.object({
+      chamber: z.nativeEnum(Chamber),
+      congress: z.number().min(93).max(117),
+    }),
+    async resolve({ input }) {
+      const { chamber, congress } = input
+      // console.log('get bills asset', chamber, congress)
+      // const t0 = Date.now()
+      const bills = await billsAsset.read(chamber, congress, null, null)
+      // const t1 = Date.now()
+      // console.log(`reading bills asset took ${t1 - t0} ms`)
+      return {
+        count: bills.length,
       }
     },
   })

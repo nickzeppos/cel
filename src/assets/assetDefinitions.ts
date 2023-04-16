@@ -102,7 +102,7 @@ export const membersAsset: Asset<
   queue: 'congress-api-asset-queue',
   deps: [membersCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: () => async (membersCount) => {
+  policy: () => async () => {
     if (
       !existsSync(`./data/${membersAsset.name}-meta.json`) ||
       !existsSync(`./data/${membersAsset.name}.json`)
@@ -135,6 +135,7 @@ export const membersAsset: Asset<
   create: () => async (membersCount) => {
     let totalCount = 0
     let offset: string | number = 0
+    // eslint-disable-next-line prefer-const
     let limit: string | number = 250
     let members: Array<AllMember> = []
 
@@ -169,7 +170,7 @@ export const bioguidesAsset: Asset<Array<Member>, [], [typeof membersAsset]> = {
   queue: 'congress-api-asset-queue',
   deps: [membersAsset],
   refreshPeriod: ONE_DAY_REFRESH,
-  policy: () => async (members) => {
+  policy: () => async () => {
     if (!existsSync(`./data/${bioguidesAsset.name}`)) {
       return false
     }
@@ -216,7 +217,7 @@ export const bioguidesAsset: Asset<Array<Member>, [], [typeof membersAsset]> = {
     let bioguides: Array<Member> = []
 
     for (const member of slicedMembers) {
-      const { served, bioguideId } = member
+      const { bioguideId } = member
       // console.log(`starting ${bioguideId}`)
       // if (!servedIncludes1973(served)) {
       //   console.log(
@@ -372,8 +373,9 @@ export const billsAsset: Asset<
     writeFileSyncWithDir(`${fileName}-meta.json`, new Date().toString())
   },
   read: async (chamber, congress) => {
-    const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
-    const file = readFileSync(`${fileName}.json`, 'utf8')
+    const fileName = `./data/bills/${congress}-${chamber}.json`
+    console.log('read bills asset at ', fileName)
+    const file = readFileSync(fileName, 'utf8')
     const bills = JSON.parse(file)
     return z.array(allBillValidator).parse(bills)
   },
@@ -456,7 +458,7 @@ const allAssets = {
 
 export type AssetName = keyof typeof allAssets
 
-export function getAssetForName<T extends AssetName>(name: T) {
+export function getAssetForName(name: AssetName): AnyAsset {
   return allAssets[name]
 }
 

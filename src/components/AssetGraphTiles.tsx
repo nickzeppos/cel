@@ -1,4 +1,5 @@
 import { AssetName } from '../assets/assetDefinitions'
+import BillsAssetCard from './BillsAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
 import { Chamber } from '@prisma/client'
 import { JobState } from 'bullmq'
@@ -40,7 +41,11 @@ export default function AssetGraphTiles({
         <AssetGraphTile />
         <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
         <AssetGraphTile name="actions" state={states?.['actions']} />
-        <AssetGraphTile name="bills" state={states?.['bills']} />
+        <AssetGraphTile name="bills" state={states?.['bills']}>
+          {chamber != null && congress != null ? (
+            <BillsAssetCard chamber={chamber} congress={congress} />
+          ) : null}
+        </AssetGraphTile>
         <AssetGraphTile name="members" state={states?.['members']} />
         <AssetGraphTile />
         <AssetGraphTile />
