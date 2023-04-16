@@ -9,7 +9,7 @@ import {
   termJobDataValidator,
   termResponseValidator,
 } from './validators'
-import { Chamber, Step } from '@prisma/client'
+import { Chamber, Step } from '.prisma/client'
 import { z } from 'zod'
 
 export interface TestJobData {

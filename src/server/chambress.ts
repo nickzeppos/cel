@@ -1,4 +1,4 @@
-import { Chamber } from '@prisma/client'
+import { Chamber } from '.prisma/client'
 import { Option, none, some } from 'fp-ts/lib/Option'
 import { Response } from 'node-fetch'
 import { z } from 'zod'

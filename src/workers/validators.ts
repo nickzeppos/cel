@@ -1,5 +1,5 @@
 import { isAssetName } from '../assets/assetDefinitions'
-import { Chamber, Step } from '@prisma/client'
+import { Chamber, Step } from '.prisma/client'
 import { z } from 'zod'
 
 // TODO: next time we change any typing around args
@@ -114,6 +114,7 @@ export const allBillResponseValidator = z.object({
   request: requestValidator,
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const congressResponseValidator = z.object({
   congresses: z.array(
     z.object({

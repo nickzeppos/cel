@@ -1,15 +1,16 @@
 // src/server/router/context.ts
+import { prisma } from '../db/client'
+import { queue } from '../queue'
 import * as trpc from '@trpc/server'
 import * as trpcNext from '@trpc/server/adapters/next'
 import { NodeHTTPCreateContextFnOptions } from '@trpc/server/adapters/node-http'
 import { IncomingMessage } from 'http'
-import { prisma } from '../db/client'
-import { queue } from '../queue'
 import ws from 'ws'
 
 /**
  * Replace this with an object if you want to pass things to createContextInner
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type CreateContextOptions = Record<string, never>
 
 /** Use this helper for:

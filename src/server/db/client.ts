@@ -1,6 +1,6 @@
 // src/server/db/client.ts
 // import { env } from '../../env/server.mjs'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '.prisma/client'
 
 declare global {
   // eslint-disable-next-line no-var

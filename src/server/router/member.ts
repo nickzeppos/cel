@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+/* eslint-disable prefer-const */
 import { fetchCongressAPI } from '../../workers/congressAPI'
 import { ChamberShortName } from '../../workers/types'
 import {
@@ -5,7 +8,7 @@ import {
   allMemberResponseValidator,
 } from '../../workers/validators'
 import { createRouter } from './context'
-import { Chamber, Member, Prisma } from '@prisma/client'
+import { Chamber, Member, Prisma } from '.prisma/client'
 import { option } from 'fp-ts'
 import * as A from 'fp-ts/lib/Array'
 import { pipe } from 'fp-ts/lib/function'
@@ -29,14 +32,7 @@ function rangeIncludes1973(start: number | null, end: number | null): boolean {
 }
 
 function transformMember({
-  bioguideId,
-  name,
-  party,
-  state,
-  district,
-  url,
-  depiction,
-  served,
+  member: { bioguideId, name, party, state, district, url, depiction, served },
 }: AllMemberResponse['members'][number]): option.Option<Member> {
   const imageUrl = depiction?.imageUrl ?? null
   const attribution = depiction?.attribution ?? null
@@ -51,7 +47,7 @@ function transformMember({
       servedSenateStart = term.start
     }
     if (servedSenateEnd == null || servedSenateEnd < (term.end ?? 0)) {
-      servedSenateEnd = term.end
+      servedSenateEnd = term.end ?? null
     }
   }
   for (const term of served.House ?? []) {
@@ -59,7 +55,7 @@ function transformMember({
       servedHouseStart = term.start
     }
     if (servedHouseEnd == null || servedHouseEnd < (term.end ?? 0)) {
-      servedHouseEnd = term.end
+      servedHouseEnd = term.end ?? null
     }
   }
 
@@ -73,7 +69,7 @@ function transformMember({
         name,
         party,
         state,
-        district,
+        district: district ?? null,
         url,
         imageUrl,
         attribution,

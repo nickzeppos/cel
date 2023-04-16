@@ -1,5 +1,5 @@
 import { trpc } from '../utils/trpc'
-import { Chamber } from '@prisma/client'
+import { Chamber } from '.prisma/client'
 import clsx from 'clsx'
 
 interface Props {

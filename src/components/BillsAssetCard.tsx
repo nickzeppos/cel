@@ -1,4 +1,6 @@
 import { trpc } from '../utils/trpc'
+import { pageStatusValidator } from '../utils/validators'
+import { Chamber } from '.prisma/client'
 import {
   detectOverflow,
   useClientPoint,
@@ -6,7 +8,6 @@ import {
   useHover,
   useInteractions,
 } from '@floating-ui/react'
-import { Chamber } from '@prisma/client'
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
@@ -33,26 +34,44 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
   trpc.useSubscription(['asset-playground.bills-asset-progress'], {
     onNext: (data) => {
       console.log('bills asset updated', data)
-      const validator = z.object({
-        type: z.literal('billsAssetPageStatus'),
-        file: z.string(),
-        status: z.string(),
-      })
-      const parsed = validator.safeParse(data)
-      if (!parsed.success) {
-        console.error('invalid data', parsed.error)
+      if (typeof data !== 'object' || data == null || !('type' in data)) {
+        console.warn('unknown subscription event', data)
         return
       }
-      setPageStatuses((current) =>
-        current.map((pageStatus) =>
-          pageStatus.file === parsed.data.file
-            ? {
-                ...pageStatus,
-                status: parsed.data.status,
-              }
-            : pageStatus,
-        ),
-      )
+      switch (data.type) {
+        case 'billsAssetAllPagesStatus':
+          const pageStatuses = z
+            .object({
+              pageStatuses: z.array(pageStatusValidator),
+            })
+            .safeParse(data)
+          if (!pageStatuses.success) {
+            console.error('invalid data', pageStatuses.error)
+            return
+          }
+          setPageStatuses(pageStatuses.data.pageStatuses)
+          break
+        case 'billsAssetPageStatus':
+          const pageStatus = pageStatusValidator.safeParse(data)
+          if (!pageStatus.success) {
+            console.error('invalid data', pageStatus.error)
+            return
+          }
+          const newPageStatus = pageStatus.data
+          setPageStatuses((current) =>
+            current.map((existingPageStatus) =>
+              existingPageStatus.file === newPageStatus.file
+                ? {
+                    ...existingPageStatus,
+                    status: newPageStatus.status,
+                  }
+                : existingPageStatus,
+            ),
+          )
+          break
+        default:
+          console.warn('unknown subscription event', data)
+      }
     },
   })
   const boundaryRef = useRef<HTMLDivElement>(null)

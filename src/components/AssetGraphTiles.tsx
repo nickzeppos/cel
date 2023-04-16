@@ -1,7 +1,7 @@
 import { AssetName } from '../assets/assetDefinitions'
 import BillsAssetCard from './BillsAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
-import { Chamber } from '@prisma/client'
+import { Chamber } from '.prisma/client'
 import { JobState } from 'bullmq'
 import clsx from 'clsx'
 import { DependencyList, useEffect, useRef } from 'react'

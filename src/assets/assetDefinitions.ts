@@ -1,3 +1,4 @@
+import { billsAssetMetadataValidator } from '../utils/validators'
 import {
   fetchCongressAPI,
   throttledFetchCongressAPI,
@@ -14,9 +15,10 @@ import {
   memberValidator,
 } from '../workers/validators'
 import { AnyAsset, Asset } from './assets.types'
-import { Chamber } from '@prisma/client'
+import { Chamber } from '.prisma/client'
 import { format, formatDistance } from 'date-fns'
 import {
+  createWriteStream,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -359,7 +361,6 @@ export const billsAsset: Asset<
   [typeof billsCountAsset],
   {
     pageStatuses: { file: string; status: string }[]
-    expectedPageFiles: string[]
   }
 > = {
   name: 'bills',
@@ -367,57 +368,53 @@ export const billsAsset: Asset<
   deps: [billsCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
   policy: (chamber, congress) => async (billsCount) => {
-    const fileName = `./data/${billsAsset.name}-${congress}-${chamber}`
-    // if files don't exist, policy fails
-    if (
-      !existsSync(`${fileName}.json`) ||
-      !existsSync(`${fileName}-meta.json`)
-    ) {
-      return false
-    }
+    const fileBase = `./data/${billsAsset.name}/${congress}-${chamber}`
+    const metaFile = `${fileBase}-meta.json`
+    const pageFile = (num: number) => `${fileBase}-page-${num}.json`
+    const pagesToFetch = Array(
+      Math.floor(billsCount / CONGRESS_API_PAGE_SIZE_LIMIT),
+    )
+      .fill(null)
+      .map((_, i) => {
+        const file = pageFile(i + 1)
+        return existsSync(file) ? null : i + 1
+      })
+      .filter(isNotNull)
 
-    // if file is stale, policy fails
-    const lastUpdated = readFileSync(`${fileName}-meta.json`, 'utf8')
-    const lastUpdatedDate = new Date(lastUpdated)
-    const now = new Date()
-    const diff = now.getTime() - lastUpdatedDate.getTime()
-    const isStale = diff > billsAsset.refreshPeriod
-    if (isStale) {
-      return false
-    }
+    debug('billsAsset.policy', `writing ${metaFile}`)
+    writeFileSyncWithDir(
+      metaFile,
+      JSON.stringify({
+        lastPolicyRunTime: new Date().getTime(),
+        pagesToFetch,
+      }),
+    )
 
-    // if count in file is incomplete (!= billsCount), policy fails
-    const dataStr = readFileSync(`${fileName}.json`, 'utf8')
-    const data = JSON.parse(dataStr)
-    const bills = z.array(allBillValidator).safeParse(data)
-    if (!bills.success) {
-      error('billsAsset.policy', `failed to parse ${fileName}.json`)
-      return false
-    }
-    const isComplete = bills.data.length === billsCount
-    if (!isComplete) {
-      error(
-        'billsAsset.policy',
-        `${fileName}.json contains ${bills.data.length} bills, but billsCount is ${billsCount}}`,
-      )
-      return false
-    }
-
-    return true
+    return pagesToFetch.length === 0
   },
   write: (chamber, congress) => async (bills) => {
-    const fileName = `./data/${billsAsset.name}/${congress}-${chamber}`
-
+    const fileName = `./data/${billsAsset.name}/${congress}-${chamber}.json`
     // call writeFileSync with an option to create folders that don't exist
-    writeFileSyncWithDir(`${fileName}.json`, JSON.stringify(bills))
-    writeFileSyncWithDir(`${fileName}-meta.json`, new Date().toString())
+    writeFileSyncWithDir(fileName, JSON.stringify(bills))
   },
   read: async (chamber, congress) => {
-    const fileName = `./data/bills/${congress}-${chamber}.json`
-    console.log('read bills asset at ', fileName)
-    const file = readFileSync(fileName, 'utf8')
-    const bills = JSON.parse(file)
-    return z.array(allBillValidator).parse(bills)
+    const pattern = new RegExp(`${congress}-${chamber}-page-(\d+)\.json`)
+    const files = readdirSync(`./data/bills/`).filter(pattern.test)
+    const bills = []
+    for (const file of files) {
+      const rawFile = readFileSync(file, 'utf8')
+      const fileBills = z
+        .object({
+          bills: z.array(allBillValidator),
+        })
+        .safeParse(JSON.parse(rawFile))
+      if (!fileBills.success) {
+        error('billsAsset.create', `failed to parse ${file}`)
+        continue
+      }
+      bills.push(...fileBills.data.bills)
+    }
+    return bills
   },
   create:
     ({ emit }) =>
@@ -427,19 +424,40 @@ export const billsAsset: Asset<
         'billsAsset.create',
         `creating ${billsCount} bills with args ${chamber}, ${congress}`,
       )
+
+      // read the pages we need to fetch from the meta.json
+      const metaFile = `./data/${billsAsset.name}/${congress}-${chamber}-meta.json`
+      const metaFileExists = existsSync(metaFile)
+      if (!metaFileExists) {
+        throw new Error(`expected meta file to exist: ${metaFile}`)
+      }
+      const metaFileRaw = readFileSync(metaFile, 'utf8')
+      const metaFileJSON = JSON.parse(metaFileRaw)
+
+      const metadata = billsAssetMetadataValidator.safeParse(metaFileJSON)
+      if (!metadata.success) {
+        throw new Error(`failed to parse meta file: ${metaFile}`)
+      }
+      // TODO: maybe just do this in the policy and cache a record
+      // of file => status in the meta file
+      const pageStatuses = getBillsPageStatuses(chamber, congress, billsCount)
+      emit({ type: 'billsAssetAllPagesStatus', pageStatuses })
+
       const billType = chamber === 'HOUSE' ? 'hr' : 's'
-      const bills: Array<AllBill> = []
-      let offset = 0
-      let totalCount = 0
-      let pageNum = 1
-      do {
-        const fileName = `./data/${billsAsset.name}/${congress}-${chamber}-page-${pageNum}.json`
+      const writeFilePromises = []
+      debug(
+        'billsAsset.create',
+        `we need to fetch pages ${metadata.data.pagesToFetch.join(', ')}`,
+      )
+      for (const pageNumber of metadata.data.pagesToFetch) {
+        const fileName = `./data/${billsAsset.name}/${congress}-${chamber}-page-${pageNumber}.json`
+        const offset = (pageNumber - 1) * CONGRESS_API_PAGE_SIZE_LIMIT
+        const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
         emit({
           type: 'billsAssetPageStatus',
           file: fileName,
           status: 'fetching',
         })
-        const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
         debug('billsAsset.create', `fetching ${url}`)
         const res = await throttledFetchCongressAPI(url, {
           offset,
@@ -451,44 +469,43 @@ export const billsAsset: Asset<
           status: 'complete',
         })
         debug('billsAsset.create', `done fetching ${url}`)
-        const json = await res.json()
-        const { bills: newBills } = allBillResponseValidator.parse(json)
-        const parsed = newBills.map((bill) => allBillValidator.parse(bill))
-        writeFileSyncWithDir(fileName, JSON.stringify(parsed))
-        debug(
-          'billsAsset.create',
-          `wrote ${parsed.length} bills to ${fileName}`,
+        const writeStream = createWriteStream(fileName)
+        res.body.pipe(writeStream)
+        writeFilePromises.push(
+          new Promise<void>((resolve) => {
+            writeStream.on('finish', () => {
+              debug('billsAsset.create', `wrote ${fileName}`)
+              resolve()
+            })
+          }),
         )
-        bills.push(...parsed)
-        totalCount += parsed.length
-        offset += CONGRESS_API_PAGE_SIZE_LIMIT
-        pageNum++
-        debug(
-          'billsAsset.create',
-          `added ${parsed.length} bills, total count is ${totalCount}`,
-        )
-      } while (totalCount < billsCount)
+      }
+      await Promise.all(writeFilePromises)
       debug(
         'billsAsset.create',
-        `done fetching bills, total count is ${totalCount}`,
+        `done writing files, added ${writeFilePromises.length} pages`,
       )
-      return bills
+      // TODO: return void once we fix the create API
+      return []
     },
   readMetadata:
     (chamber, congress) =>
-    async ({ count }) => {
-      const expectedPageFiles = Array(
-        Math.floor(count / CONGRESS_API_PAGE_SIZE_LIMIT),
-      )
-        .fill(null)
-        .map((_, i) => `./data/bills/${congress}-${chamber}-page-${i + 1}.json`)
-      const pageStatuses = expectedPageFiles.map((f) => {
-        const file = f
-        const status = existsSync(file) ? 'complete' : 'incomplete'
-        return { file, status }
-      })
-      return { pageStatuses, expectedPageFiles }
-    },
+    async ({ count }) => ({
+      pageStatuses: getBillsPageStatuses(chamber, congress, count),
+    }),
+}
+function getBillsPageStatuses(
+  chamber: Chamber,
+  congress: number,
+  billsCount: number,
+): { file: string; status: string }[] {
+  return Array(Math.floor(billsCount / CONGRESS_API_PAGE_SIZE_LIMIT))
+    .fill(null)
+    .map((_, i) => {
+      const file = `./data/bills/${congress}-${chamber}-page-${i + 1}.json`
+      const status = existsSync(file) ? 'complete' : 'incomplete'
+      return { file, status }
+    })
 }
 
 export const reportAsset: Asset<
@@ -546,4 +563,8 @@ function debug(key: string, message: string): void {
 
 function error(key: string, message: string): void {
   console.error(`[${key} | ${format(Date.now(), 'HH:mm:ss.SSS')}]: ${message}`)
+}
+
+function isNotNull<T>(x: T | null): x is T {
+  return x != null
 }

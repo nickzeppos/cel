@@ -17,7 +17,7 @@ import {
 } from '../../workers/types'
 import { materializeValidator } from '../../workers/validators'
 import { createRouter } from './context'
-import { Chamber } from '@prisma/client'
+import { Chamber } from '.prisma/client'
 import * as trpc from '@trpc/server'
 import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
