@@ -1,19 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type DataTypeOf<A> = A extends Asset<infer DataType, any, any>
+export type DataTypeOf<A> = A extends Asset<infer DataType, any, any, any>
   ? DataType
   : never
-// export type MetaDataTypeOf<A> = A extends Asset<any, any, any, infer MetaDataType>
-//   ? MetaDataType
-//   : never
-export type ArgsTypeOf<A> = A extends Asset<any, infer ArgsType, any>
+export type MetaDataTypeOf<A> = A extends Asset<
+  any,
+  any,
+  any,
+  infer MetaDataType
+>
+  ? MetaDataType
+  : never
+export type ArgsTypeOf<A> = A extends Asset<any, infer ArgsType, any, any>
   ? ArgsType
   : never
-export type AnyAsset = Asset<any, any, any>
+export type AnyAsset = Asset<any, any, any, any>
 export type AssetArray = Array<AnyAsset>
 export type DataTypesOf<T extends AssetArray> = {
   [K in keyof T]: DataTypeOf<T[K]>
 }
-export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
+export type MetaDataTypesOf<T extends AssetArray> = {
+  [K in keyof T]: MetaDataTypeOf<T[K]>
+}
+export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>, M> = {
   name: string
   queue: JobQueueName
   deps: D
@@ -26,7 +34,9 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>> = {
   create: (
     ...args: A
   ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<T>
-  readMetadata?: (...args: A) => any
+  readMetadata?: (
+    ...args: A
+  ) => <DMD extends MetaDataTypesOf<D>>(...depsMetaData: DMD) => Promise<M>
 }
 
 export type JobID = number

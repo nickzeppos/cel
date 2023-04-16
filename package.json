@@ -17,6 +17,7 @@
     "test:throttle": "TEST=true THROTTLE_TIMEOUT=1000 jest src/assets/throttle.test.ts"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.23.0",
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^2.0.11",
     "@prisma/client": "4.8",

@@ -41,7 +41,7 @@ export const assetPlaygroundRouter = createRouter()
     async resolve({ input }) {
       const { assetName, ...restOfInput } = input
       const args = Object.values(restOfInput).filter((x) => x != null)
-      materialize(getAssetForName(input.assetName), args)
+      materialize(getAssetForName(assetName), args)
       return
     },
   })
@@ -101,15 +101,24 @@ export const assetPlaygroundRouter = createRouter()
       // console.log('get bills asset', chamber, congress)
       // const t0 = Date.now()
       const bills = await billsAsset.read(chamber, congress, null, null)
-      const data: {
-        pageStatuses: { file: string; status: string }[]
-        // expectedPageCount: number
-      } = await billsAsset.readMetadata?.(chamber, congress, null, null)
+      const billsCount = await billsCountAsset.readMetadata?.(
+        chamber,
+        congress,
+      )()
+      if (billsCount == null) throw new Error('billsCount is null')
+      const data = await billsAsset.readMetadata?.(
+        chamber,
+        congress,
+        null,
+        null,
+      )(billsCount)
+      if (data == null)
+        throw new Error('unable to read metadata for bills asset')
       // const t1 = Date.now()
       // console.log(`reading bills asset took ${t1 - t0} ms`)
       return {
-        count: bills.length,
-        pageStatuses: data.pageStatuses ?? [],
+        billsCount: bills.length,
+        ...data,
       }
     },
   })
