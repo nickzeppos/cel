@@ -456,7 +456,7 @@ const allAssets = {
 
 export type AssetName = keyof typeof allAssets
 
-export function getAssetForName(name: AssetName): AnyAsset {
+export function getAssetForName<T extends AssetName>(name: T) {
   return allAssets[name]
 }
 

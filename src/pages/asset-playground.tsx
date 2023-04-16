@@ -115,7 +115,11 @@ const AssetPlayground: NextPage = () => {
           }}
         />
       </div>
-      <AssetGraphTiles states={states} />
+      <AssetGraphTiles
+        states={states}
+        congress={parseInt(congress)}
+        chamber={chamber}
+      />
     </div>
   )
 }

@@ -15,8 +15,10 @@ import {
 } from '../../workers/types'
 import { materializeValidator } from '../../workers/validators'
 import { createRouter } from './context'
+import { Chamber } from '@prisma/client'
 import * as trpc from '@trpc/server'
 import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
+import { z } from 'zod'
 
 const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
 type AssetJobChangeEvent = {
@@ -72,6 +74,20 @@ export const assetPlaygroundRouter = createRouter()
           )
         }
       })
+    },
+  })
+  .query('get-bills-count-asset-state', {
+    input: z.object({
+      chamber: z.nativeEnum(Chamber),
+      congress: z.number().min(93).max(117),
+    }),
+    async resolve({ input }) {
+      const { chamber, congress } = input
+      const asset = getAssetForName('billsCount')
+      const billsCount = await asset.read(chamber, congress)
+      return {
+        billsCount,
+      }
     },
   })
 
