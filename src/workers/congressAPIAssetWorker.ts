@@ -31,6 +31,11 @@ export default async function execute(
         return dep.read(...args)
       }),
     )
+
+    const emit = <T extends object>(data: T) => {
+      job.updateProgress(data)
+    }
+
     const policyOutcome = await asset.policy(...args)(...depsData)
     if (policyOutcome) {
       debug('Asset policy passed, reading asset')
@@ -40,7 +45,7 @@ export default async function execute(
     } else {
       debug('Asset policy failed, creating asset')
       await new Promise((resolve) => setTimeout(resolve, 2000))
-      const data = await asset.create(...args)(...depsData)
+      const data = await asset.create({ emit })(...args)(...depsData)
       await asset.write(...args)(data)
       return { message: 'Asset created', data }
     }

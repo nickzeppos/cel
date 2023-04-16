@@ -111,7 +111,7 @@ export const billQueueRouter = createRouter()
         const onRemoved: QueueEventsListener['removed'] = (job) => {
           emit.data({ id: job.jobId })
         }
-        const onCleaned: QueueEventsListener['cleaned'] = (n) => {
+        const onCleaned: QueueEventsListener['cleaned'] = () => {
           emit.data({ id: '*' })
         }
         const onFailed: QueueEventsListener['failed'] = (job) => {

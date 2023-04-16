@@ -8,7 +8,8 @@ import {
 } from '@floating-ui/react'
 import { Chamber } from '@prisma/client'
 import clsx from 'clsx'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { z } from 'zod'
 
 interface Props {
   chamber: Chamber
@@ -19,9 +20,41 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
     'asset-playground.get-bills-asset-state',
     { chamber, congress },
   ])
-
   const pageCount = assetState.data?.pageStatuses.length ?? 'unknown'
-  const pageStatuses = assetState.data?.pageStatuses ?? []
+  const [pageStatuses, setPageStatuses] = useState<
+    {
+      file: string
+      status: string
+    }[]
+  >([])
+  useEffect(() => {
+    setPageStatuses(assetState.data?.pageStatuses ?? [])
+  }, [assetState.data?.pageStatuses])
+  trpc.useSubscription(['asset-playground.bills-asset-progress'], {
+    onNext: (data) => {
+      console.log('bills asset updated', data)
+      const validator = z.object({
+        type: z.literal('billsAssetPageStatus'),
+        file: z.string(),
+        status: z.string(),
+      })
+      const parsed = validator.safeParse(data)
+      if (!parsed.success) {
+        console.error('invalid data', parsed.error)
+        return
+      }
+      setPageStatuses((current) =>
+        current.map((pageStatus) =>
+          pageStatus.file === parsed.data.file
+            ? {
+                ...pageStatus,
+                status: parsed.data.status,
+              }
+            : pageStatus,
+        ),
+      )
+    },
+  })
   const boundaryRef = useRef<HTMLDivElement>(null)
   const [hoverItems, setHoverItems] = useState<Set<string>>(new Set())
 

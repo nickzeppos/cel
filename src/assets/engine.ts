@@ -1,10 +1,12 @@
 import { AnyAsset, Asset, JobConfig, JobGraph, JobID } from './assets.types'
 import { FlowJob, FlowProducer } from 'bullmq'
 
-export async function materialize<T, A extends unknown[], D extends AnyAsset[]>(
-  asset: Asset<T, A, D>,
-  args: A,
-): Promise<void> {
+export async function materialize<
+  T,
+  A extends unknown[],
+  D extends AnyAsset[],
+  M,
+>(asset: Asset<T, A, D, M>, args: A): Promise<void> {
   const jobGraph = getJobGraphForAsset(asset)
   const sortedJobList = sortJobGraph(jobGraph)
   const flow = getFlowForJobList(jobGraph, sortedJobList, args)
@@ -21,7 +23,8 @@ export function getJobGraphForAsset<
   T,
   A extends unknown[],
   D extends AnyAsset[],
->(asset: Asset<T, A, D>): JobGraph {
+  M,
+>(asset: Asset<T, A, D, M>): JobGraph {
   const jobs: JobConfig[] = []
 
   const assetStack: AnyAsset[] = [asset]

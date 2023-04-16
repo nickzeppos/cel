@@ -252,7 +252,7 @@ function getAssetExample<D extends AnyAsset[]>(
   name: string,
   queue: JobQueueName,
   deps: D,
-): Asset<string, [], D> {
+): Asset<string, [], D, unknown> {
   return {
     name,
     queue,
@@ -263,6 +263,6 @@ function getAssetExample<D extends AnyAsset[]>(
       return
     },
     read: async () => 'data',
-    create: () => async () => 'data',
+    create: () => () => async () => 'data',
   }
 }

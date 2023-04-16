@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+export interface EngineContext {
+  emit: (event: unknown) => void
+}
 export type DataTypeOf<A> = A extends Asset<infer DataType, any, any, any>
   ? DataType
   : never
@@ -32,6 +35,8 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>, M> = {
   write: (...args: A) => (data: T) => Promise<void>
   read: (...args: A) => Promise<T>
   create: (
+    ctx: EngineContext,
+  ) => (
     ...args: A
   ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<T>
   readMetadata?: (

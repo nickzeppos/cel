@@ -87,7 +87,7 @@ export const membersCountAsset: Asset<number, [], [], unknown> = {
     const count = parseInt(countString)
     return z.number().parse(count)
   },
-  create: () => async () => {
+  create: () => () => async () => {
     const res = await fetchCongressAPI('/member', { limit: 1 })
     const json = await res.json()
     return allMemberResponseValidator.parse(json).pagination.count
@@ -134,7 +134,7 @@ export const membersAsset: Asset<
     const members = readFileSync(`./data/${membersAsset.name}.json`, 'utf8')
     return z.array(allMemberValidator).parse(JSON.parse(members))
   },
-  create: () => async (membersCount) => {
+  create: () => () => async (membersCount) => {
     let totalCount = 0
     let offset: string | number = 0
     // eslint-disable-next-line prefer-const
@@ -218,7 +218,7 @@ export const bioguidesAsset: Asset<
     }
     return bioguides
   },
-  create: () => async (members) => {
+  create: () => () => async (members) => {
     const slicedMembers = members.slice(0, 99) // just first 100 for testing
 
     let bioguides: Array<Member> = []
@@ -253,7 +253,15 @@ export const bioguidesAsset: Asset<
   },
 }
 
-export const billsCountAsset: Asset<number, [Chamber, number], [], number> = {
+export const billsCountAsset: Asset<
+  number,
+  [Chamber, number],
+  [],
+  {
+    fileExists: boolean
+    count: number
+  }
+> = {
   name: 'billsCount',
   queue: 'congress-api-asset-queue',
   deps: [],
@@ -300,7 +308,7 @@ export const billsCountAsset: Asset<number, [Chamber, number], [], number> = {
     const count = parseInt(countString)
     return z.number().parse(count)
   },
-  create: (chamber, congress) => async () => {
+  create: () => (chamber, congress) => async () => {
     const billType = chamber === 'HOUSE' ? 'hr' : 's'
     const url = `/bill/${congress}/${billType}`
     debug('billsCountAsset.create', `fetching ${url}`)
@@ -310,10 +318,20 @@ export const billsCountAsset: Asset<number, [Chamber, number], [], number> = {
     return allBillResponseValidator.parse(json).pagination.count
   },
   readMetadata: (chamber, congress) => async () => {
-    const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}`
-    const countString = readFileSync(`${fileName}.json`, 'utf8')
+    const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}.json`
+    const fileExists = existsSync(fileName)
+    if (!fileExists) {
+      return {
+        count: 0,
+        fileExists,
+      }
+    }
+    const countString = readFileSync(fileName, 'utf8')
     const count = parseInt(countString)
-    return z.number().parse(count)
+    return {
+      count: z.number().parse(count),
+      fileExists,
+    }
   },
 }
 
@@ -332,7 +350,7 @@ export const actionsAsset: Asset<
     return
   },
   read: async () => 0,
-  create: () => async () => 0,
+  create: () => () => async () => 0,
 }
 
 export const billsAsset: Asset<
@@ -401,59 +419,76 @@ export const billsAsset: Asset<
     const bills = JSON.parse(file)
     return z.array(allBillValidator).parse(bills)
   },
-  create: (chamber, congress) => async (billsCount) => {
-    debug(
-      'billsAsset.create',
-      `creating ${billsCount} bills with args ${chamber}, ${congress}`,
-    )
-    const billType = chamber === 'HOUSE' ? 'hr' : 's'
-
-    const bills: Array<AllBill> = []
-    let offset = 0
-    let totalCount = 0
-    let pageNum = 1
-    do {
-      const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
-      debug('billsAsset.create', `fetching ${url}`)
-      const res = await throttledFetchCongressAPI(url, {
-        offset,
-        limit: CONGRESS_API_PAGE_SIZE_LIMIT,
-      })
-      debug('billsAsset.create', `done fetching ${url}`)
-      const json = await res.json()
-      const { bills: newBills } = allBillResponseValidator.parse(json)
-      const parsed = newBills.map((bill) => allBillValidator.parse(bill))
-      const fileName = `./data/${billsAsset.name}/${congress}-${chamber}-page-${pageNum}.json`
-      writeFileSyncWithDir(fileName, JSON.stringify(parsed))
-      debug('billsAsset.create', `wrote ${parsed.length} bills to ${fileName}`)
-      bills.push(...parsed)
-      totalCount += parsed.length
-      offset += CONGRESS_API_PAGE_SIZE_LIMIT
-      pageNum++
+  create:
+    ({ emit }) =>
+    (chamber, congress) =>
+    async (billsCount) => {
       debug(
         'billsAsset.create',
-        `added ${parsed.length} bills, total count is ${totalCount}`,
+        `creating ${billsCount} bills with args ${chamber}, ${congress}`,
       )
-    } while (totalCount < billsCount)
-    debug(
-      'billsAsset.create',
-      `done fetching bills, total count is ${totalCount}`,
-    )
-    return bills
-  },
-  readMetadata: (chamber, congress) => async (count) => {
-    const expectedPageFiles = Array(
-      Math.floor(count / CONGRESS_API_PAGE_SIZE_LIMIT),
-    )
-      .fill(null)
-      .map((_, i) => `./data/bills/${congress}-${chamber}-page-${i + 1}.json`)
-    const pageStatuses = expectedPageFiles.map((f) => {
-      const file = f
-      const status = existsSync(file) ? 'complete' : 'incomplete'
-      return { file, status }
-    })
-    return { pageStatuses, expectedPageFiles }
-  },
+      const billType = chamber === 'HOUSE' ? 'hr' : 's'
+      const bills: Array<AllBill> = []
+      let offset = 0
+      let totalCount = 0
+      let pageNum = 1
+      do {
+        const fileName = `./data/${billsAsset.name}/${congress}-${chamber}-page-${pageNum}.json`
+        emit({
+          type: 'billsAssetPageStatus',
+          file: fileName,
+          status: 'fetching',
+        })
+        const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
+        debug('billsAsset.create', `fetching ${url}`)
+        const res = await throttledFetchCongressAPI(url, {
+          offset,
+          limit: CONGRESS_API_PAGE_SIZE_LIMIT,
+        })
+        emit({
+          type: 'billsAssetPageStatus',
+          file: fileName,
+          status: 'complete',
+        })
+        debug('billsAsset.create', `done fetching ${url}`)
+        const json = await res.json()
+        const { bills: newBills } = allBillResponseValidator.parse(json)
+        const parsed = newBills.map((bill) => allBillValidator.parse(bill))
+        writeFileSyncWithDir(fileName, JSON.stringify(parsed))
+        debug(
+          'billsAsset.create',
+          `wrote ${parsed.length} bills to ${fileName}`,
+        )
+        bills.push(...parsed)
+        totalCount += parsed.length
+        offset += CONGRESS_API_PAGE_SIZE_LIMIT
+        pageNum++
+        debug(
+          'billsAsset.create',
+          `added ${parsed.length} bills, total count is ${totalCount}`,
+        )
+      } while (totalCount < billsCount)
+      debug(
+        'billsAsset.create',
+        `done fetching bills, total count is ${totalCount}`,
+      )
+      return bills
+    },
+  readMetadata:
+    (chamber, congress) =>
+    async ({ count }) => {
+      const expectedPageFiles = Array(
+        Math.floor(count / CONGRESS_API_PAGE_SIZE_LIMIT),
+      )
+        .fill(null)
+        .map((_, i) => `./data/bills/${congress}-${chamber}-page-${i + 1}.json`)
+      const pageStatuses = expectedPageFiles.map((f) => {
+        const file = f
+        const status = existsSync(file) ? 'complete' : 'incomplete'
+        return { file, status }
+      })
+      return { pageStatuses, expectedPageFiles }
+    },
 }
 
 export const reportAsset: Asset<
@@ -476,7 +511,7 @@ export const reportAsset: Asset<
     return
   },
   read: async () => '',
-  create: () => async () => '',
+  create: () => () => async () => '',
 }
 
 export type AssetNameOf<T extends AnyAsset> = T['name']

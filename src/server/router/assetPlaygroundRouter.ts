@@ -78,6 +78,22 @@ export const assetPlaygroundRouter = createRouter()
       })
     },
   })
+  .subscription('bills-asset-progress', {
+    resolve({ ctx }) {
+      return new trpc.Subscription((emit) => {
+        const queueEvents = ctx.queue.congressAPIAssetQueueEvents
+        const handleProgress: QueueEventsListener['progress'] = async ({
+          data,
+        }) => {
+          emit.data(data)
+        }
+        queueEvents.on('progress', handleProgress)
+        return () => {
+          queueEvents.off('progress', handleProgress)
+        }
+      })
+    },
+  })
   .query('get-bills-count-asset-state', {
     input: z.object({
       chamber: z.nativeEnum(Chamber),
@@ -85,10 +101,7 @@ export const assetPlaygroundRouter = createRouter()
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      const billsCount = await billsCountAsset.read(chamber, congress)
-      return {
-        billsCount,
-      }
+      return await billsCountAsset.readMetadata?.(chamber, congress)()
     },
   })
   .query('get-bills-asset-state', {
@@ -98,28 +111,19 @@ export const assetPlaygroundRouter = createRouter()
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      // console.log('get bills asset', chamber, congress)
-      // const t0 = Date.now()
-      const bills = await billsAsset.read(chamber, congress, null, null)
       const billsCount = await billsCountAsset.readMetadata?.(
         chamber,
         congress,
       )()
-      if (billsCount == null) throw new Error('billsCount is null')
-      const data = await billsAsset.readMetadata?.(
+      if (billsCount == null) {
+        throw new Error('billsCount is null')
+      }
+      return await billsAsset.readMetadata?.(
         chamber,
         congress,
         null,
         null,
       )(billsCount)
-      if (data == null)
-        throw new Error('unable to read metadata for bills asset')
-      // const t1 = Date.now()
-      // console.log(`reading bills asset took ${t1 - t0} ms`)
-      return {
-        billsCount: bills.length,
-        ...data,
-      }
     },
   })
 
