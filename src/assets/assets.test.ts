@@ -1,6 +1,6 @@
+import { FlowJob } from 'bullmq'
 import type { AnyAsset, Asset, JobQueueName } from './assets.types'
 import { getFlowForJobList, getJobGraphForAsset, sortJobGraph } from './engine'
-import { FlowJob } from 'bullmq'
 
 const membersCountAsset = getAssetExample(
   'membersCount',
@@ -21,17 +21,17 @@ const billsCountAsset = getAssetExample(
   'congress-api-asset-queue',
   [],
 )
-const actionsAsset = getAssetExample('actions', 'congress-api-asset-queue', [
+const billAsset = getAssetExample('actions', 'congress-api-asset-queue', [
   billsCountAsset,
 ])
-const billsAsset = getAssetExample('bills', 'congress-api-asset-queue', [
+const billListAsset = getAssetExample('bills', 'congress-api-asset-queue', [
   billsCountAsset,
 ])
 const reportAsset = getAssetExample('report', 'local-asset-queue', [
   bioguidesAsset,
   membersAsset,
-  actionsAsset,
-  billsAsset,
+  billAsset,
+  billListAsset,
 ])
 
 describe('getJobGraphForAsset', () => {

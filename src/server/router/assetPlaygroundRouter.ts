@@ -1,7 +1,11 @@
+import { Chamber } from '.prisma/client'
+import * as trpc from '@trpc/server'
+import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
+import { z } from 'zod'
 import {
   AssetName,
-  billsAsset,
   billsCountAsset,
+  billsListAsset,
   getAssetForName,
   getAssetNames,
 } from '../../assets/assetDefinitions'
@@ -17,10 +21,6 @@ import {
 } from '../../workers/types'
 import { materializeValidator } from '../../workers/validators'
 import { createRouter } from './context'
-import { Chamber } from '.prisma/client'
-import * as trpc from '@trpc/server'
-import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
-import { z } from 'zod'
 
 const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
 type AssetJobChangeEvent = {
@@ -118,7 +118,7 @@ export const assetPlaygroundRouter = createRouter()
       if (billsCount == null) {
         throw new Error('billsCount is null')
       }
-      return await billsAsset.readMetadata?.(
+      return await billsListAsset.readMetadata?.(
         chamber,
         congress,
         null,

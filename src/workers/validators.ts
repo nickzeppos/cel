@@ -1,6 +1,6 @@
-import { isAssetName } from '../assets/assetDefinitions'
 import { Chamber, Step } from '.prisma/client'
 import { z } from 'zod'
+import { isAssetName } from '../assets/assetDefinitions'
 
 // TODO: next time we change any typing around args
 // we should refactor to derive all args types from this
@@ -90,7 +90,7 @@ export const allMemberResponseValidator = z.object({
 
 export type AllMemberResponse = z.infer<typeof allMemberResponseValidator>
 
-export const allBillValidator = z.object({
+export const billListValidator = z.object({
   congress: z.number().int(),
   latestAction: z.object({
     actionDate: z.string(),
@@ -106,10 +106,10 @@ export const allBillValidator = z.object({
   url: z.string().url(),
 })
 
-export type AllBill = z.infer<typeof allBillValidator>
+export type AllBill = z.infer<typeof billListValidator>
 
 export const allBillResponseValidator = z.object({
-  bills: z.array(allBillValidator),
+  bills: z.array(billListValidator),
   pagination: paginationValidator,
   request: requestValidator,
 })
@@ -252,6 +252,8 @@ export const billResponseValidator = z.object({
   pagination: paginationValidator.optional(),
   request: requestValidator,
 })
+
+
 
 export const billActionsResponseValidator = z.object({
   actions: z.array(
