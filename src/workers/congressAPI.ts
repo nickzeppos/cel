@@ -1,7 +1,7 @@
 // import fetch from 'isomorphic-fetch'
-import { sleep } from '../utils/fp'
 import IORedis from 'ioredis'
 import fetch, { Headers, Request, Response } from 'node-fetch'
+import { sleep } from '../utils/fp'
 
 const API_KEY = process.env.CONGRESS_GOV_API_KEY ?? ''
 const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''

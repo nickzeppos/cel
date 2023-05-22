@@ -9,21 +9,24 @@ import {
   writeFileSync,
 } from 'fs'
 import { z } from 'zod'
-import { billsAssetMetadataValidator } from '../utils/validators'
+import { billAssetMetadataValidator, billsListAssetMetadataValidator } from '../utils/validators'
 import {
   fetchCongressAPI,
   throttledFetchCongressAPI,
 } from '../workers/congressAPI'
 import {
-  AllBill,
   AllMember,
+  Bill,
+  BillList,
   Member,
-  allBillResponseValidator,
   allMemberResponseValidator,
   allMemberValidator,
+  billActionsResponseValidator,
+  billDetailResponseValidator,
+  billListResponseValidator,
   billListValidator,
   memberResponseValidator,
-  memberValidator,
+  memberValidator
 } from '../workers/validators'
 import { AnyAsset, Asset } from './assets.types'
 
@@ -316,7 +319,7 @@ export const billsCountAsset: Asset<
     const res = await throttledFetchCongressAPI(url, { limit: 1 })
     debug('billsCountAsset.create', `done fetching ${url}`)
     const json = await res.json()
-    return allBillResponseValidator.parse(json).pagination.count
+    return billListResponseValidator.parse(json).pagination.count
   },
   readMetadata: (chamber, congress) => async () => {
     const fileName = `./data/${billsCountAsset.name}-${congress}-${chamber}.json`
@@ -336,64 +339,44 @@ export const billsCountAsset: Asset<
   },
 }
 
-export const billAsset: Asset<
-  number,
-  [],
-  [typeof billsCountAsset],
-  unknown
-> = {
-  name: 'actions',
-  queue: 'congress-api-asset-queue',
-  deps: [billsCountAsset],
-  refreshPeriod: ONE_DAY_REFRESH,
-  policy: () => async () => {
-    return false
-    // policy: (chamber, congress) => async (billsCount) => {
-    // go through billsAsset pages, get all bill numbers
-    // maybe we should create a bill numbers asset? billsCount not actually helpful here
-    // should have an actions page for each bill number
-    // write meta file with new update date and an array containing action pages to fetch
-    // each bill requires at least one actions request
-
-    // bill//{congress}/{billType}/{billNumber}/actions
-    // format: 'json'
-    // offset: integer
-    // limit: 250
-  },
-  write: () => async () => {
-    return
-  },
-  read: async () => 0,
-  create: () => () => async () => 0,
+function billsListMetaFile(
+  chamber: Chamber,
+  congress: number
+) {
+  return `data/bills/${congress}-${chamber}-meta.json`
 }
-
+function billsListFile(
+  chamber: Chamber,
+  congress: number,
+  page: number
+) {
+  return `data/bills/${congress}-${chamber}-page-${page}.json`
+}
 export const billsListAsset: Asset<
-  Array<AllBill>,
+  Array<BillList>,
   [Chamber, number, number | null | undefined, number | null | undefined],
   [typeof billsCountAsset],
   {
     pageStatuses: { file: string; status: string }[]
   }
 > = {
-  name: 'bills',
+  name: 'billsList',
   queue: 'congress-api-asset-queue',
   deps: [billsCountAsset],
   refreshPeriod: ONE_DAY_REFRESH,
   policy: (chamber, congress) => async (billsCount) => {
-    const fileBase = `./data/${billsListAsset.name}/${congress}-${chamber}`
-    const metaFile = `${fileBase}-meta.json`
-    const pageFile = (num: number) => `${fileBase}-page-${num}.json`
     const pagesToFetch = Array(
       Math.floor(billsCount / CONGRESS_API_PAGE_SIZE_LIMIT),
     )
       .fill(null)
       .map((_, i) => {
-        const file = pageFile(i + 1)
+        const file = billsListFile(chamber, congress, i + 1)
         return existsSync(file) ? null : i + 1
       })
       .filter(isNotNull)
 
-    debug('billsAsset.policy', `writing ${metaFile}`)
+    const metaFile = billsListMetaFile(chamber, congress)
+    debug('billsListAsset.policy', `writing ${metaFile}`)
     writeFileSyncWithDir(
       metaFile,
       JSON.stringify({
@@ -421,7 +404,7 @@ export const billsListAsset: Asset<
         })
         .safeParse(JSON.parse(rawFile))
       if (!fileBills.success) {
-        error('billsAsset.create', `failed to parse ${file}`)
+        error('billsListAsset.create', `failed to parse ${file}`)
         continue
       }
       bills.push(...fileBills.data.bills)
@@ -433,7 +416,7 @@ export const billsListAsset: Asset<
       (chamber, congress) =>
         async (billsCount) => {
           debug(
-            'billsAsset.create',
+            'billsListAsset.create',
             `creating ${billsCount} bills with args ${chamber}, ${congress}`,
           )
 
@@ -446,7 +429,7 @@ export const billsListAsset: Asset<
           const metaFileRaw = readFileSync(metaFile, 'utf8')
           const metaFileJSON = JSON.parse(metaFileRaw)
 
-          const metadata = billsAssetMetadataValidator.safeParse(metaFileJSON)
+          const metadata = billsListAssetMetadataValidator.safeParse(metaFileJSON)
           if (!metadata.success) {
             throw new Error(`failed to parse meta file: ${metaFile}`)
           }
@@ -458,7 +441,7 @@ export const billsListAsset: Asset<
           const billType = chamber === 'HOUSE' ? 'hr' : 's'
           const writeFilePromises = []
           debug(
-            'billsAsset.create',
+            'billsListAsset.create',
             `we need to fetch pages ${metadata.data.pagesToFetch.join(', ')}`,
           )
           for (const pageNumber of metadata.data.pagesToFetch) {
@@ -470,7 +453,7 @@ export const billsListAsset: Asset<
               file: fileName,
               status: 'fetching',
             })
-            debug('billsAsset.create', `fetching ${url}`)
+            debug('billsListAsset.create', `fetching ${url}`)
             const res = await throttledFetchCongressAPI(url, {
               offset,
               limit: CONGRESS_API_PAGE_SIZE_LIMIT,
@@ -480,13 +463,13 @@ export const billsListAsset: Asset<
               file: fileName,
               status: 'complete',
             })
-            debug('billsAsset.create', `done fetching ${url}`)
+            debug('billsListAsset.create', `done fetching ${url}`)
             const writeStream = createWriteStream(fileName)
             res.body.pipe(writeStream)
             writeFilePromises.push(
               new Promise<void>((resolve) => {
                 writeStream.on('finish', () => {
-                  debug('billsAsset.create', `wrote ${fileName}`)
+                  debug('billsListAsset.create', `wrote ${fileName}`)
                   resolve()
                 })
               }),
@@ -494,7 +477,7 @@ export const billsListAsset: Asset<
           }
           await Promise.all(writeFilePromises)
           debug(
-            'billsAsset.create',
+            'billsListAsset.create',
             `done writing files, added ${writeFilePromises.length} pages`,
           )
           // TODO: return void once we fix the create API
@@ -506,6 +489,97 @@ export const billsListAsset: Asset<
         pageStatuses: getBillsPageStatuses(chamber, congress, count),
       }),
 }
+function billMetaFile(chamber: Chamber, congress: number) { return `data/bills/${congress}-${chamber}-meta.json` }
+function billFile(
+  chamber: Chamber,
+  congress: number,
+  billNumber: number | string
+) {
+  return `data/bills/${congress}-${chamber}-${billNumber}.json`
+}
+export const billAsset: Asset<
+  Bill[],
+  [Chamber, number],
+  [typeof billsListAsset],
+  unknown
+> = {
+  name: 'actions',
+  queue: 'congress-api-asset-queue',
+  deps: [billsListAsset],
+  refreshPeriod: ONE_DAY_REFRESH,
+  policy: (chamber, congress) => async (billsList: Array<BillList>) => {
+    const missingBillNumbers = billsList.map(({ number }) =>
+      existsSync(billFile(chamber, congress, number)) ? null : number
+    ).filter(isNotNull)
+
+    const metaFile = billMetaFile(chamber, congress)
+    debug('billsAsset.policy', `writing ${metaFile}`)
+    writeFileSyncWithDir(
+      metaFile,
+      JSON.stringify({
+        lastPolicyRunTime: new Date().getTime(),
+        missingBillNumbers,
+      }),
+    )
+    return missingBillNumbers.length === 0
+
+  },
+  write: () => async () => {
+    return
+  },
+  read: async () => {
+    throw new Error('not implemented')
+  },
+  create:
+    ({ emit }) =>
+      (chamber, congress) =>
+        async () => {
+          // read the meta file
+          const metaFile = billMetaFile(chamber, congress)
+          const metaFileExists = existsSync(metaFile)
+          if (!metaFileExists) {
+            throw new Error(`expected meta file to exist: ${metaFile}`)
+          }
+          const metaFileRaw = readFileSync(metaFile, 'utf8')
+          const metaFileJSON = JSON.parse(metaFileRaw)
+
+          const metadata = billAssetMetadataValidator.safeParse(metaFileJSON)
+          if (!metadata.success) {
+            throw new Error(`failed to parse meta file: ${metaFile}`)
+          }
+
+          // for each missing bill number
+          const { missingBillNumbers } = metadata.data
+          const billType = chamber === 'HOUSE' ? 'hr' : 's'
+          for (const billNumber of missingBillNumbers) {
+            // fetch the detail page
+            const detailRes = await throttledFetchCongressAPI(`/bill/${congress}/${billType}/${billNumber}`)
+            const billDetailResponse = billDetailResponseValidator.safeParse(await detailRes.json())
+            if (!billDetailResponse.success) {
+              error('billAsset.create', `invalid bill detail response ${chamber} ${congress} ${billNumber}`)
+              continue
+            }
+            // fetch first actions page
+            const actionsRes = await throttledFetchCongressAPI(`/bill/${congress}/${billType}/${billNumber}/actions?limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`)
+            const billActionsResponse = billActionsResponseValidator.safeParse(await actionsRes.json())
+            if (!billActionsResponse.success) {
+              error('billAsset.create', `invalid bill actions response ${chamber} ${congress} ${billNumber}`)
+              continue
+            }
+            const { data } = billActionsResponse
+            if (data.pagination?.count ?? 0 > 250) {
+              error('billAsset.create',)
+            }
+            data.pagination?.
+            /// fetch other action pages
+          }
+
+          // combine them all into one json
+          // write that file
+          return
+        }
+}
+
 function getBillsPageStatuses(
   chamber: Chamber,
   congress: number,
