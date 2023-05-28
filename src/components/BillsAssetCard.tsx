@@ -1,5 +1,3 @@
-import { trpc } from '../utils/trpc'
-import { pageStatusValidator } from '../utils/validators'
 import { Chamber } from '.prisma/client'
 import {
   detectOverflow,
@@ -11,6 +9,8 @@ import {
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
+import { trpc } from '../utils/trpc'
+import { pageStatusValidator } from '../utils/validators'
 
 interface Props {
   chamber: Chamber
@@ -62,9 +62,8 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
             current.map((existingPageStatus) =>
               existingPageStatus.file === newPageStatus.file
                 ? {
-                    ...existingPageStatus,
-                    status: newPageStatus.status,
-                  }
+                  ...existingPageStatus, status: newPageStatus.status,
+                }
                 : existingPageStatus,
             ),
           )

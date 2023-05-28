@@ -3,6 +3,7 @@ import { JobState } from 'bullmq'
 import clsx from 'clsx'
 import { DependencyList, useEffect, useRef } from 'react'
 import { AssetName } from '../assets/assetDefinitions'
+import BillAssetCard from './BillAssetCard'
 import BillsAssetCard from './BillsAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
 
@@ -40,7 +41,11 @@ export default function AssetGraphTiles({
         <AssetGraphTile name="report" state={states?.['report']} />
         <AssetGraphTile />
         <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
-        <AssetGraphTile name="bill" state={states?.['bill']} />
+        <AssetGraphTile name="bill" state={states?.['bill']} >
+          {chamber != null && congress != null ? (
+            <BillAssetCard chamber={chamber} congress={congress} />
+          ) : null}
+        </AssetGraphTile>
         <AssetGraphTile name="billList" state={states?.['billList']}>
           {chamber != null && congress != null ? (
             <BillsAssetCard chamber={chamber} congress={congress} />

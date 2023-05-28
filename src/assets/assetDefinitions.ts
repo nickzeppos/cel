@@ -559,6 +559,7 @@ export const billAsset: Asset<
               error('billAsset.create', `invalid bill detail response ${chamber} ${congress} ${billNumber}`)
               continue
             }
+
             // fetch first actions page
             const actionsRes = await throttledFetchCongressAPI(`/bill/${congress}/${billType}/${billNumber}/actions?limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`)
             const billActionsResponse = billActionsResponseValidator.safeParse(await actionsRes.json())
@@ -568,15 +569,20 @@ export const billAsset: Asset<
             }
             const { data } = billActionsResponse
             if (data.pagination?.count ?? 0 > 250) {
-              error('billAsset.create',)
+              error('billAsset.create', `there are more than 250 actions for ${chamber} ${congress} ${billNumber}`)
             }
-            data.pagination?.
-            /// fetch other action pages
+
+            // combine them all into one json
+            const billData: Bill = {
+              detail: billDetailResponse.data.bill,
+              actions: data.actions,
+            }
+            // write that file
+            writeFileSyncWithDir(billFile(chamber, congress, billNumber), JSON.stringify(billData))
           }
 
-          // combine them all into one json
-          // write that file
-          return
+          // dummy return value to satisfy asset API
+          return []
         }
 }
 
