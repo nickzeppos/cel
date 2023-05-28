@@ -14,3 +14,8 @@ export const pageStatusValidator = z.object({
   file: z.string(),
   status: z.string(),
 })
+
+export const bioguidesAssetMetadataValidator = z.object({
+  missingBioguides: z.array(z.string()),
+  lastPolicyRunTime: z.number(),
+})

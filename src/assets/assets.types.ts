@@ -28,12 +28,12 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>, M> = {
   name: string
   queue: JobQueueName
   deps: D
-  refreshPeriod: number
+  // refreshPeriod: number
   policy: (
     ...args: A
   ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<boolean>
   // TODO: deprecate write
-  write: (...args: A) => (data: T) => Promise<void>
+  // write: (...args: A) => (data: T) => Promise<void>
   read: (...args: A) => Promise<T>
   // TODO: create should return void
   create: (
