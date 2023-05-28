@@ -1,6 +1,6 @@
-import { trpc } from '../utils/trpc'
 import { Chamber } from '.prisma/client'
 import clsx from 'clsx'
+import { trpc } from '../utils/trpc'
 
 interface Props {
   chamber: Chamber
@@ -11,6 +11,7 @@ export default function BillsCountAssetCard({ chamber, congress }: Props) {
     'asset-playground.get-bills-count-asset-state',
     { chamber, congress },
   ])
+  console.log(assetState)
   return (
     <div className="flex flex-col items-center w-full">
       <div
@@ -19,10 +20,10 @@ export default function BillsCountAssetCard({ chamber, congress }: Props) {
           'text-4xl text-neutral-200',
         )}
       >
-        {assetState.data?.count ?? 0}
+        {assetState.data?.fileExists ? '✅' : '❌'}
       </div>
       <div className="text-sm text-neutral-500">
-        Bills in {congress} {chamber}
+        Bill count file for {congress} {chamber}
       </div>
     </div>
   )

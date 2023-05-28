@@ -4,12 +4,12 @@ import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 import {
   AssetName,
-  billsCountAsset,
-  billsListAsset,
   getAssetForName,
   getAssetNames,
 } from '../../assets/assetDefinitions'
 import { JobQueueName, isQueueName } from '../../assets/assets.types'
+import { billsCountAsset } from '../../assets/billsCount.asset'
+import { billsListAsset } from '../../assets/billsList.asset'
 import { materialize } from '../../assets/engine'
 import {
   CongressAPIAssetJobData,
@@ -101,7 +101,7 @@ export const assetPlaygroundRouter = createRouter()
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      return await billsCountAsset.readMetadata?.(chamber, congress)()
+      return await billsCountAsset.readMetadata?.(chamber, congress)
     },
   })
   .query('get-bills-asset-state', {
@@ -111,19 +111,12 @@ export const assetPlaygroundRouter = createRouter()
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      const billsCount = await billsCountAsset.readMetadata?.(
-        chamber,
-        congress,
-      )()
-      if (billsCount == null) {
-        throw new Error('billsCount is null')
-      }
       return await billsListAsset.readMetadata?.(
         chamber,
         congress,
         null,
         null,
-      )(billsCount)
+      )
     },
   })
 

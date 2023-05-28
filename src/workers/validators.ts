@@ -32,6 +32,7 @@ export const termJobDataValidator = z.object({
   bioguide: z.string(),
 })
 const requestValidator = z.object({
+  billType: billTypeLowercaseValidator.optional(),
   congress: z.string().optional(),
   contentType: z.string(),
   format: z.string(),

@@ -1,6 +1,6 @@
+import { FlowJob } from 'bullmq'
 import type { AnyAsset, Asset, JobQueueName } from './assets.types'
 import { getFlowForJobList, getJobGraphForAsset, sortJobGraph } from './engine'
-import { FlowJob } from 'bullmq'
 
 const membersCountAsset = getAssetExample(
   'membersCount',
@@ -259,6 +259,6 @@ function getAssetExample<D extends AnyAsset[]>(
     deps,
     policy: () => async () => false,
     read: async () => 'data',
-    create: () => () => async () => 'data',
+    create: () => () => async () => { },
   }
 }

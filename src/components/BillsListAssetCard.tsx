@@ -10,24 +10,29 @@ import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { trpc } from '../utils/trpc'
-import { pageStatusValidator } from '../utils/validators'
+import { StoredAssetStatus } from '../workers/types'
+
+// duplicate from billsList.asset.ts
+// to avoid depending on workers folder
+const storedAssetStatusValidator = z.enum(['PENDING', 'PASS', 'FAIL', 'FETCHING'])
+const pageStatusValidator = z.object({
+  pageNumber: z.number(),
+  filename: z.string(),
+  status: storedAssetStatusValidator,
+})
+type PageStatus = z.infer<typeof pageStatusValidator>
 
 interface Props {
   chamber: Chamber
   congress: number
 }
-export default function BillsAssetCard({ chamber, congress }: Props) {
+export default function BillsListAssetCard({ chamber, congress }: Props) {
   const assetState = trpc.useQuery([
     'asset-playground.get-bills-asset-state',
     { chamber, congress },
   ])
-  const pageCount = assetState.data?.pageStatuses.length ?? 'unknown'
-  const [pageStatuses, setPageStatuses] = useState<
-    {
-      file: string
-      status: string
-    }[]
-  >([])
+  const pageCount = assetState.data?.pageStatuses?.length ?? 'unknown'
+  const [pageStatuses, setPageStatuses] = useState<PageStatus[]>([])
   useEffect(() => {
     setPageStatuses(assetState.data?.pageStatuses ?? [])
   }, [assetState.data?.pageStatuses])
@@ -49,7 +54,7 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
             console.error('invalid data', pageStatuses.error)
             return
           }
-          setPageStatuses(pageStatuses.data.pageStatuses)
+          setPageStatuses(pageStatuses.data?.pageStatuses ?? [])
           break
         case 'billsAssetPageStatus':
           const pageStatus = pageStatusValidator.safeParse(data)
@@ -60,7 +65,7 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
           const newPageStatus = pageStatus.data
           setPageStatuses((current) =>
             current.map((existingPageStatus) =>
-              existingPageStatus.file === newPageStatus.file
+              existingPageStatus.filename === newPageStatus.filename
                 ? {
                   ...existingPageStatus, status: newPageStatus.status,
                 }
@@ -86,22 +91,22 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
         <div className="text-sm text-neutral-500">pages of bill metadata</div>
       </div>
       <div className="flex flex-1 w-full gap-[2px]">
-        {pageStatuses.map(({ file, status }) => (
+        {pageStatuses.map(({ filename, status }) => (
           <FileStatus
-            key={file}
-            file={file}
+            key={filename}
+            file={filename}
             status={status}
             onHover={() =>
-              setHoverItems((current) => new Set(current).add(file))
+              setHoverItems((current) => new Set(current).add(filename))
             }
             onUnhover={() =>
               setHoverItems((current) => {
                 const next = new Set(current)
-                next.delete(file)
+                next.delete(filename)
                 return next
               })
             }
-            isFaded={hoverItems.size > 0 && !hoverItems.has(file)}
+            isFaded={hoverItems.size > 0 && !hoverItems.has(filename)}
           />
         ))}
       </div>
@@ -109,13 +114,13 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
   )
 }
 
-function getColor(status: string) {
+function getColor(status: StoredAssetStatus) {
   switch (status) {
-    case 'complete':
+    case 'PASS':
       return 'bg-green-600'
-    case 'incomplete':
+    case 'FAIL':
       return 'bg-red-600'
-    case 'fetching':
+    case 'FETCHING':
       return 'bg-blue-600'
     default:
       return 'bg-neutral-600'
@@ -130,7 +135,7 @@ function FileStatus({
   onUnhover,
 }: {
   file: string
-  status: string
+  status: StoredAssetStatus
   isFaded: boolean
   onHover: () => void
   onUnhover: () => void

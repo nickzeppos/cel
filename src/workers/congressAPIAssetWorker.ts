@@ -1,11 +1,12 @@
+import { Job } from 'bullmq'
+import { format } from 'date-fns'
 import { getAssetForName } from '../assets/assetDefinitions'
+import { AnyAsset } from '../assets/assets.types'
 import {
   CongressAPIAssetJobData,
   CongressAPIAssetJobName,
   CongressAPIAssetJobResponse,
 } from './types'
-import { Job } from 'bullmq'
-import { format } from 'date-fns'
 
 export default async function execute(
   job: Job<

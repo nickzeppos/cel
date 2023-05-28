@@ -28,19 +28,19 @@ export type Asset<T, A extends Array<unknown>, D extends Array<AnyAsset>, M> = {
   name: string
   queue: JobQueueName
   deps: D
+  // true => skip create, false => run create
   policy: (
     ...args: A
   ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<boolean>
   read: (...args: A) => Promise<T>
-  // TODO: create should return void
   create: (
     ctx: EngineContext,
   ) => (
     ...args: A
-  ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<T>
+  ) => <DD extends DataTypesOf<D>>(...depsData: DD) => Promise<void>
   readMetadata?: (
     ...args: A
-  ) => <DMD extends MetaDataTypesOf<D>>(...depsMetaData: DMD) => Promise<M>
+  ) => Promise<M | null>
 }
 
 export type JobID = number

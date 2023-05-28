@@ -1,4 +1,7 @@
+import { Chamber, Step } from '.prisma/client'
+import { z } from 'zod'
 import { AssetName } from '../assets/assetDefinitions'
+import { AnyAsset, DataTypeOf } from '../assets/assets.types'
 import {
   billJobDataValidator,
   billTypeLowercaseValidator,
@@ -9,8 +12,6 @@ import {
   termJobDataValidator,
   termResponseValidator,
 } from './validators'
-import { Chamber, Step } from '.prisma/client'
-import { z } from 'zod'
 
 export interface TestJobData {
   color: string
@@ -103,10 +104,10 @@ export type AssetJobName = 'asset-job'
 //   'assetName'
 // >
 export type CongressAPIAssetJobData = [
-  Chamber | null | undefined,
-  number | null | undefined,
-  number | null | undefined,
-  number | null | undefined,
+  Chamber | null | undefined, // chamber
+  number | null | undefined, // congress
+  number | null | undefined, // min bill num
+  number | null | undefined, // max bill num
 ]
 
 export interface CongressAPIAssetJobResponse {
@@ -123,3 +124,8 @@ export interface LocalAssetJobResponse {
   message: string
 }
 export type LocalAssetJobName = 'report'
+
+export const storedAssetStatusValidator = z.enum(['PENDING', 'PASS', 'FAIL', 'FETCHING'])
+export type StoredAssetStatus = z.infer<typeof storedAssetStatusValidator>
+export type StoredBillAsset = { billNumber: number, status: StoredAssetStatus }
+

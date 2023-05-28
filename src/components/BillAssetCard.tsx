@@ -36,10 +36,9 @@ export default function BillAssetCard({ chamber, congress }: Props) {
       {buckets.map((props, i) => <BillBucketStatus key={i} {...props} />)}
     </div>
   </div>
-
 }
 
-interface BillBucketStatusProps {
+interface BucketProps {
   bucketSize: number
   processedCount: number
   successCount: number
@@ -48,10 +47,10 @@ function BillBucketStatus({
   bucketSize,
   processedCount,
   successCount,
-}: BillBucketStatusProps) {
-  const L = '60%'
-  const C = (processedCount / bucketSize) * 0.24
-  const H = processedCount === 0 ? 0 : hueScale(successCount / (processedCount))
+}: BucketProps) {
+  const L = lightnessScale(processedCount / bucketSize)
+  const C = chromaScale(processedCount / bucketSize)
+  const H = processedCount > 0 ? hueScale(successCount / processedCount) : 0
   return <div className={`h-[25px]`}
     style={{
       width: BUCKET_WIDTH,
@@ -60,8 +59,27 @@ function BillBucketStatus({
   </div>
 }
 
+
+// denormalize a number from 0-1 
+
+function lightnessScale(value: number): number {
+  // 0 -> .3
+  // 1 -> .7
+  return .3 + (value * .4)
+}
+
 function hueScale(value: number): number {
   // 0 -> 34
   // 1 -> 145.26
   return 34 + (value * 111.26)
+}
+
+function chromaScale(value: number): number {
+  // 0 -> 0
+  // 1 -> 0.24
+  return value * 0.24
+}
+
+function BucketWithHeight(props: BucketProps) {
+  return <div>bucket 2. only hue varies. height of bar varies.</div>
 }
