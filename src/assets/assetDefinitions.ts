@@ -3,10 +3,7 @@ import {
   billsListAssetMetadataValidator,
   bioguidesAssetMetadataValidator,
 } from '../utils/validators'
-import {
-  fetchCongressAPI,
-  throttledFetchCongressAPI,
-} from '../workers/congressAPI'
+import { throttledFetchCongressAPI } from '../workers/congressAPI'
 import {
   AllMember,
   Bill,
@@ -23,14 +20,13 @@ import {
 } from '../workers/validators'
 import { AnyAsset, Asset } from './assets.types'
 import { Chamber } from '.prisma/client'
-import { format, formatDistance } from 'date-fns'
+import { format } from 'date-fns'
 import {
   createWriteStream,
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
-  write,
   writeFileSync,
 } from 'fs'
 import { z } from 'zod'
@@ -324,12 +320,21 @@ export const billsCountAsset: Asset<
       'billsCountAsset.create',
       `writing ${billsCountFile(chamber, congress)}`,
     )
+
     writeFileSyncWithDir(
       billsCountFile(chamber, congress),
       JSON.stringify(json.pagination.count),
     )
 
-    //
+    // write meta file
+    writeFileSyncWithDir(
+      billsCountMetaFile(chamber, congress),
+      JSON.stringify({
+        lastPolicyRunTime: new Date().getTime(),
+      }),
+    )
+
+    // returning to satisfy API, eventually void return
     return billListResponseValidator.parse(json).pagination.count
   },
   readMetadata: (chamber, congress) => async () => {
@@ -390,11 +395,6 @@ export const billsListAsset: Asset<
 
     return pagesToFetch.length === 0
   },
-  // write: (chamber, congress) => async (bills) => {
-  //   const fileName = `./data/${billsListAsset.name}/${congress}-${chamber}.json`
-  //   // call writeFileSync with an option to create folders that don't exist
-  //   writeFileSyncWithDir(fileName, JSON.stringify(bills))
-  // },
   read: async (chamber, congress) => {
     const pattern = new RegExp(`${congress}-${chamber}-page-(\d+)\.json`)
     const files = readdirSync(`./data/bills/`).filter(pattern.test)
@@ -529,9 +529,6 @@ export const billAsset: Asset<
     )
     return missingBillNumbers.length === 0
   },
-  // write: () => async () => {
-  //   return
-  // },
   read: async () => {
     throw new Error('not implemented')
   },
@@ -640,9 +637,6 @@ export const reportAsset: Asset<
   queue: 'local-asset-queue',
   deps: [bioguidesAsset, membersAsset, billsListAsset, billAsset],
   policy: ALWAYS_FETCH_POLICY,
-  // write: () => async () => {
-  //   return
-  // },
   read: async () => '',
   create: () => () => async () => '',
 }

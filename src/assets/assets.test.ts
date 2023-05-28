@@ -257,11 +257,7 @@ function getAssetExample<D extends AnyAsset[]>(
     name,
     queue,
     deps,
-    // refreshPeriod: 0,
     policy: () => async () => false,
-    // write: () => async () => {
-    //   return
-    // },
     read: async () => 'data',
     create: () => () => async () => 'data',
   }
