@@ -1,7 +1,3 @@
-import { Chamber } from '.prisma/client'
-import clsx from 'clsx'
-import { NextPage } from 'next'
-import { useState } from 'react'
 import AdminHeader from '../components/AdminHeader'
 import AssetGraphTiles, {
   AssetJobSummaryMap,
@@ -11,6 +7,10 @@ import Button from '../components/Button'
 import Selector from '../components/Selector'
 import { ChamberToDisplay } from '../server/chambress'
 import { trpc } from '../utils/trpc'
+import { Chamber } from '.prisma/client'
+import clsx from 'clsx'
+import { NextPage } from 'next'
+import { useState } from 'react'
 
 const CHAMBERS: Chamber[] = ['HOUSE', 'SENATE']
 // numbers from 93 to 117 as strings, but reversed
@@ -30,7 +30,7 @@ const AssetPlayground: NextPage = () => {
   const [states, setStates] = useState<AssetJobSummaryMap>({
     report: getAssetJobSummary('report'),
     bill: getAssetJobSummary('bill'),
-    billList: getAssetJobSummary('billList'),
+    billsList: getAssetJobSummary('billsList'),
     members: getAssetJobSummary('members'),
     membersCount: getAssetJobSummary('membersCount'),
     billsCount: getAssetJobSummary('billsCount'),

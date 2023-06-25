@@ -1,11 +1,11 @@
-import { Chamber } from '.prisma/client'
-import { JobState } from 'bullmq'
-import clsx from 'clsx'
-import { DependencyList, useEffect, useRef } from 'react'
 import { AssetName } from '../assets/assetDefinitions'
 import BillsListAssetCard from './BillAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
 import BillsAssetCard from './BillsListAssetCard'
+import { Chamber } from '.prisma/client'
+import { JobState } from 'bullmq'
+import clsx from 'clsx'
+import { DependencyList, useEffect, useRef } from 'react'
 
 export type AssetJobSummaryMap = Record<AssetName, AssetJobSummary>
 
@@ -41,12 +41,12 @@ export default function AssetGraphTiles({
         <AssetGraphTile name="report" state={states?.['report']} />
         <AssetGraphTile />
         <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
-        <AssetGraphTile name="bill" state={states?.['bill']} >
+        <AssetGraphTile name="bill" state={states?.['bill']}>
           {chamber != null && congress != null ? (
             <BillsListAssetCard chamber={chamber} congress={congress} />
           ) : null}
         </AssetGraphTile>
-        <AssetGraphTile name="billList" state={states?.['billList']}>
+        <AssetGraphTile name="billsList" state={states?.['billsList']}>
           {chamber != null && congress != null ? (
             <BillsAssetCard chamber={chamber} congress={congress} />
           ) : null}
