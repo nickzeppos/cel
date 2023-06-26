@@ -1,15 +1,18 @@
-import { Chamber } from '.prisma/client'
+import { AnyAsset, Asset } from './src/assets/assets.types'
+import { billsCountAsset } from './src/assets/billsCount.asset'
+import { billsListAsset } from './src/assets/billsList.asset'
 import {
-  existsSync,
-  readFileSync,
-  readdirSync
-} from 'fs'
-import { z } from 'zod'
-import { billAssetMetadataValidator, bioguidesAssetMetadataValidator } from '../utils/validators'
+  debug,
+  error,
+  isNotNull,
+  writeFileSyncWithDir,
+} from './src/assets/utils'
 import {
-  throttledFetchCongressAPI
-} from '../workers/congressAPI'
-import { StoredBillAsset } from '../workers/types'
+  billAssetMetadataValidator,
+  bioguidesAssetMetadataValidator,
+} from './src/utils/validators'
+import { throttledFetchCongressAPI } from './src/workers/congressAPI'
+import { StoredBillAsset } from './src/workers/types'
 import {
   AllMember,
   Bill,
@@ -20,12 +23,11 @@ import {
   billActionsResponseValidator,
   billDetailResponseValidator,
   memberResponseValidator,
-  memberValidator
-} from '../workers/validators'
-import { AnyAsset, Asset } from './assets.types'
-import { billsCountAsset } from './billsCount.asset'
-import { billsListAsset } from './billsList.asset'
-import { debug, error, isNotNull, writeFileSyncWithDir } from './utils'
+  memberValidator,
+} from './src/workers/validators'
+import { Chamber } from '.prisma/client'
+import { existsSync, readFileSync, readdirSync } from 'fs'
+import { z } from 'zod'
 
 // Policy constants
 export const CONGRESS_API_PAGE_SIZE_LIMIT = 250
@@ -115,7 +117,8 @@ export const membersAsset: Asset<
 
     do {
       console.log(
-        `Fetching members ${totalCount} - ${totalCount + limit > membersCount ? membersCount : totalCount + limit
+        `Fetching members ${totalCount} - ${
+          totalCount + limit > membersCount ? membersCount : totalCount + limit
         }`,
       )
       // fetch with throttled fetchCongressAPI
@@ -206,40 +209,40 @@ export const bioguidesAsset: Asset<
   },
   create:
     ({ emit }) =>
-      () =>
-        // TODO: Unused deps right now because of how we're using members in the policy now to determine missing data
-        async (_members) => {
-          const metaFile = bioguideMetaFile()
-          const metaFileExists = existsSync(metaFile)
-          if (!metaFileExists) {
-            throw new Error(`expected meta file to exist: ${metaFile}`)
-          }
-          const metaFileRaw = readFileSync(metaFile, 'utf8')
-          const metaFileJSON = JSON.parse(metaFileRaw)
-          const metaFileParsed =
-            bioguidesAssetMetadataValidator.safeParse(metaFileJSON)
-          if (!metaFileParsed.success) {
-            throw new Error(`failed to parse bioguides meta file`)
-          }
-          const { missingBioguides } = metaFileParsed.data
-          let bioguides: Array<Member> = []
+    () =>
+    // TODO: Unused deps right now because of how we're using members in the policy now to determine missing data
+    async (_members) => {
+      const metaFile = bioguideMetaFile()
+      const metaFileExists = existsSync(metaFile)
+      if (!metaFileExists) {
+        throw new Error(`expected meta file to exist: ${metaFile}`)
+      }
+      const metaFileRaw = readFileSync(metaFile, 'utf8')
+      const metaFileJSON = JSON.parse(metaFileRaw)
+      const metaFileParsed =
+        bioguidesAssetMetadataValidator.safeParse(metaFileJSON)
+      if (!metaFileParsed.success) {
+        throw new Error(`failed to parse bioguides meta file`)
+      }
+      const { missingBioguides } = metaFileParsed.data
+      let bioguides: Array<Member> = []
 
-          for (const bioguide of missingBioguides) {
-            debug('bioguidesAsset.create', `fetching ${bioguide}`)
-            const res = await throttledFetchCongressAPI(`/member/${bioguide}`)
-            debug('bioguidesAsset.create', `parsing ${bioguide}`)
-            const { json } = await res.json()
-            const bioguideMemberResponse = memberResponseValidator.safeParse(json)
-            if (!bioguideMemberResponse.success) {
-              throw new Error(`failed to parse response for ${bioguide}`)
-            }
-            const { member } = bioguideMemberResponse.data
+      for (const bioguide of missingBioguides) {
+        debug('bioguidesAsset.create', `fetching ${bioguide}`)
+        const res = await throttledFetchCongressAPI(`/member/${bioguide}`)
+        debug('bioguidesAsset.create', `parsing ${bioguide}`)
+        const { json } = await res.json()
+        const bioguideMemberResponse = memberResponseValidator.safeParse(json)
+        if (!bioguideMemberResponse.success) {
+          throw new Error(`failed to parse response for ${bioguide}`)
+        }
+        const { member } = bioguideMemberResponse.data
 
-            // write data file
-            debug('bioguidesAsset.create', `writing ${bioguideFile(bioguide)}`)
-            writeFileSyncWithDir(bioguideFile(bioguide), JSON.stringify(member))
-          }
-        },
+        // write data file
+        debug('bioguidesAsset.create', `writing ${bioguideFile(bioguide)}`)
+        writeFileSyncWithDir(bioguideFile(bioguide), JSON.stringify(member))
+      }
+    },
 }
 
 function billMetaFile(chamber: Chamber, congress: number) {
@@ -257,7 +260,7 @@ export const billAsset: Asset<
   [Chamber, number],
   [typeof billsListAsset],
   {
-    areAllDepsComplete: boolean,
+    areAllDepsComplete: boolean
     files: StoredBillAsset[]
   }
 > = {
@@ -287,82 +290,81 @@ export const billAsset: Asset<
   },
   create:
     ({ emit }) =>
-      (chamber, congress) =>
-        async () => {
-          // read the meta file
-          const metaFile = billMetaFile(chamber, congress)
-          const metaFileExists = existsSync(metaFile)
-          if (!metaFileExists) {
-            throw new Error(`expected meta file to exist: ${metaFile}`)
-          }
-          const metaFileRaw = readFileSync(metaFile, 'utf8')
-          const metaFileJSON = JSON.parse(metaFileRaw)
+    (chamber, congress) =>
+    async () => {
+      // read the meta file
+      const metaFile = billMetaFile(chamber, congress)
+      const metaFileExists = existsSync(metaFile)
+      if (!metaFileExists) {
+        throw new Error(`expected meta file to exist: ${metaFile}`)
+      }
+      const metaFileRaw = readFileSync(metaFile, 'utf8')
+      const metaFileJSON = JSON.parse(metaFileRaw)
 
-          const metadata = billAssetMetadataValidator.safeParse(metaFileJSON)
-          if (!metadata.success) {
-            throw new Error(`failed to parse meta file: ${metaFile}`)
-          }
+      const metadata = billAssetMetadataValidator.safeParse(metaFileJSON)
+      if (!metadata.success) {
+        throw new Error(`failed to parse meta file: ${metaFile}`)
+      }
 
-          // for each missing bill number
-          const { missingBillNumbers } = metadata.data
-          const billType = chamber === 'HOUSE' ? 'hr' : 's'
-          for (const billNumber of missingBillNumbers) {
-            // fetch the detail page
-            const detailRes = await throttledFetchCongressAPI(
-              `/bill/${congress}/${billType}/${billNumber}`,
-            )
-            const billDetailResponse = billDetailResponseValidator.safeParse(
-              await detailRes.json(),
-            )
-            if (!billDetailResponse.success) {
-              error(
-                'billAsset.create',
-                `invalid bill detail response ${chamber} ${congress} ${billNumber}`,
-              )
-              continue
-            }
+      // for each missing bill number
+      const { missingBillNumbers } = metadata.data
+      const billType = chamber === 'HOUSE' ? 'hr' : 's'
+      for (const billNumber of missingBillNumbers) {
+        // fetch the detail page
+        const detailRes = await throttledFetchCongressAPI(
+          `/bill/${congress}/${billType}/${billNumber}`,
+        )
+        const billDetailResponse = billDetailResponseValidator.safeParse(
+          await detailRes.json(),
+        )
+        if (!billDetailResponse.success) {
+          error(
+            'billAsset.create',
+            `invalid bill detail response ${chamber} ${congress} ${billNumber}`,
+          )
+          continue
+        }
 
-            // fetch first actions page
-            const actionsRes = await throttledFetchCongressAPI(
-              `/bill/${congress}/${billType}/${billNumber}/actions?limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`,
-            )
-            const billActionsResponse = billActionsResponseValidator.safeParse(
-              await actionsRes.json(),
-            )
-            if (!billActionsResponse.success) {
-              error(
-                'billAsset.create',
-                `invalid bill actions response ${chamber} ${congress} ${billNumber}`,
-              )
-              continue
-            }
-            const { data } = billActionsResponse
-            if (data.pagination?.count ?? 0 > 250) {
-              error(
-                'billAsset.create',
-                `there are more than 250 actions for ${chamber} ${congress} ${billNumber}`,
-              )
-            }
+        // fetch first actions page
+        const actionsRes = await throttledFetchCongressAPI(
+          `/bill/${congress}/${billType}/${billNumber}/actions?limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`,
+        )
+        const billActionsResponse = billActionsResponseValidator.safeParse(
+          await actionsRes.json(),
+        )
+        if (!billActionsResponse.success) {
+          error(
+            'billAsset.create',
+            `invalid bill actions response ${chamber} ${congress} ${billNumber}`,
+          )
+          continue
+        }
+        const { data } = billActionsResponse
+        if (data.pagination?.count ?? 0 > 250) {
+          error(
+            'billAsset.create',
+            `there are more than 250 actions for ${chamber} ${congress} ${billNumber}`,
+          )
+        }
 
-            // combine them all into one json
-            const billData: Bill = {
-              detail: billDetailResponse.data.bill,
-              actions: data.actions,
-            }
-            // write that file
-            writeFileSyncWithDir(
-              billFile(chamber, congress, billNumber),
-              JSON.stringify(billData),
-            )
-          }
-        },
+        // combine them all into one json
+        const billData: Bill = {
+          detail: billDetailResponse.data.bill,
+          actions: data.actions,
+        }
+        // write that file
+        writeFileSyncWithDir(
+          billFile(chamber, congress, billNumber),
+          JSON.stringify(billData),
+        )
+      }
+    },
   readMetadata: async (chamber, congress) => {
     return {
       areAllDepsComplete: true,
       files: [],
     }
-
-  }
+  },
 }
 
 export const reportAsset: Asset<
@@ -381,7 +383,7 @@ export const reportAsset: Asset<
   deps: [bioguidesAsset, membersAsset, billsListAsset, billAsset],
   policy: ALWAYS_FETCH_POLICY,
   read: async () => '',
-  create: () => () => async () => { },
+  create: () => () => async () => {},
 }
 
 export type AssetNameOf<T extends AnyAsset> = T['name']

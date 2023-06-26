@@ -1,6 +1,4 @@
-import { Chamber, Step } from '.prisma/client'
-import { z } from 'zod'
-import { AssetName } from '../assets/assetDefinitions'
+import { AssetName } from '../../assetDefinitions'
 import { AnyAsset, DataTypeOf } from '../assets/assets.types'
 import {
   billJobDataValidator,
@@ -12,6 +10,8 @@ import {
   termJobDataValidator,
   termResponseValidator,
 } from './validators'
+import { Chamber, Step } from '.prisma/client'
+import { z } from 'zod'
 
 export interface TestJobData {
   color: string
@@ -125,7 +125,11 @@ export interface LocalAssetJobResponse {
 }
 export type LocalAssetJobName = 'report'
 
-export const storedAssetStatusValidator = z.enum(['PENDING', 'PASS', 'FAIL', 'FETCHING'])
+export const storedAssetStatusValidator = z.enum([
+  'PENDING',
+  'PASS',
+  'FAIL',
+  'FETCHING',
+])
 export type StoredAssetStatus = z.infer<typeof storedAssetStatusValidator>
-export type StoredBillAsset = { billNumber: number, status: StoredAssetStatus }
-
+export type StoredBillAsset = { billNumber: number; status: StoredAssetStatus }

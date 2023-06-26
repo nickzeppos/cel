@@ -1,6 +1,6 @@
+import { isAssetName } from '../../assetDefinitions'
 import { Chamber, Step } from '.prisma/client'
 import { z } from 'zod'
-import { isAssetName } from '../assets/assetDefinitions'
 
 // TODO: next time we change any typing around args
 // we should refactor to derive all args types from this

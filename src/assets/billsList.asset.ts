@@ -1,17 +1,32 @@
-import { Chamber } from "@prisma/client";
-import { createWriteStream, existsSync, readdirSync } from "fs";
-import { z } from "zod";
-import { throttledFetchCongressAPI } from "../workers/congressAPI";
-import { StoredAssetStatus, storedAssetStatusValidator } from "../workers/types";
-import { BillList, billListResponseValidator, billListValidator } from "../workers/validators";
-import { CONGRESS_API_PAGE_SIZE_LIMIT } from "./assetDefinitions";
-import { Asset } from "./assets.types";
-import { billsCountAsset } from "./billsCount.asset";
-import { getWriteMeta, debug as logDebug, error as logError, warn as logWarn, readUtf8File } from "./utils";
+import { CONGRESS_API_PAGE_SIZE_LIMIT } from '../../assetDefinitions'
+import { throttledFetchCongressAPI } from '../workers/congressAPI'
+import { StoredAssetStatus, storedAssetStatusValidator } from '../workers/types'
+import {
+  BillList,
+  billListResponseValidator,
+  billListValidator,
+} from '../workers/validators'
+import { Asset } from './assets.types'
+import { billsCountAsset } from './billsCount.asset'
+import {
+  getWriteMeta,
+  debug as logDebug,
+  error as logError,
+  warn as logWarn,
+  readUtf8File,
+} from './utils'
+import { Chamber } from '@prisma/client'
+import { createWriteStream, existsSync, readdirSync } from 'fs'
+import { z } from 'zod'
 
 const ASSET_NAME = 'billsList'
 type AssetData = Array<BillList>
-type AssetArgs = [Chamber, number, number | null | undefined, number | null | undefined]
+type AssetArgs = [
+  Chamber,
+  number,
+  number | null | undefined,
+  number | null | undefined,
+]
 type AssetDeps = [typeof billsCountAsset]
 const pageStatusValidator = z.object({
   pageNumber: z.number(),
@@ -41,7 +56,12 @@ function getMetaFilename(chamber: Chamber, congress: number) {
 function getFilename(chamber: Chamber, congress: number, page: number) {
   return `data/bills/${congress}-${chamber}-page-${page}.json`
 }
-const writeMeta = getWriteMeta(getMetaFilename, DEFAULT_META, metaValidator.parse, ASSET_NAME)
+const writeMeta = getWriteMeta(
+  getMetaFilename,
+  DEFAULT_META,
+  metaValidator.parse,
+  ASSET_NAME,
+)
 
 function getBillsPageStatuses(
   chamber: Chamber,
@@ -55,7 +75,11 @@ function getBillsPageStatuses(
       const filename = getFilename(chamber, congress, pageNumber)
       let status: StoredAssetStatus = existsSync(filename) ? 'FAIL' : 'PENDING'
       try {
-        if (billListResponseValidator.safeParse(JSON.parse(readUtf8File(filename))).success) {
+        if (
+          billListResponseValidator.safeParse(
+            JSON.parse(readUtf8File(filename)),
+          ).success
+        ) {
           status = 'PASS'
         } else {
           warn(`Bills list page failed to parse: ${filename}`)
@@ -67,118 +91,116 @@ function getBillsPageStatuses(
     })
 }
 
-export const billsListAsset: Asset<
-  AssetData,
-  AssetArgs,
-  AssetDeps,
-  AssetMeta
-> = {
-  name: ASSET_NAME,
-  queue: 'congress-api-asset-queue',
-  deps: [billsCountAsset],
-  policy: (chamber, congress) => async (billsCount) => {
-    const pageStatuses = getBillsPageStatuses(
-      chamber, congress, billsCount
-    )
-    writeMeta(chamber, congress, {
-      pageStatuses,
-      lastChecked: Date.now(),
-    })
-    return pageStatuses.every(({ status }) => status === 'PASS')
-  },
-  read: async (chamber, congress) => {
-    const pattern = new RegExp(`${congress}-${chamber}-page-(\d+)\.json`)
-    const files = readdirSync(`./data/bills/`).filter(pattern.test)
-    const bills = []
-    for (const file of files) {
-      const rawFile = readUtf8File(file)
-      const fileBills = z.object({ bills: z.array(billListValidator) }).safeParse(JSON.parse(rawFile))
-      if (!fileBills.success) {
-        error(`failed to parse ${file}`)
-        continue
+export const billsListAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> =
+  {
+    name: ASSET_NAME,
+    queue: 'congress-api-asset-queue',
+    deps: [billsCountAsset],
+    policy: (chamber, congress) => async (billsCount) => {
+      const pageStatuses = getBillsPageStatuses(chamber, congress, billsCount)
+      writeMeta(chamber, congress, {
+        pageStatuses,
+        lastChecked: Date.now(),
+      })
+      return pageStatuses.every(({ status }) => status === 'PASS')
+    },
+    read: async (chamber, congress) => {
+      const pattern = new RegExp(`${congress}-${chamber}-page-(\d+)\.json`)
+      const files = readdirSync(`./data/bills/`).filter(pattern.test)
+      const bills = []
+      for (const file of files) {
+        const rawFile = readUtf8File(file)
+        const fileBills = z
+          .object({ bills: z.array(billListValidator) })
+          .safeParse(JSON.parse(rawFile))
+        if (!fileBills.success) {
+          error(`failed to parse ${file}`)
+          continue
+        }
+        bills.push(...fileBills.data.bills)
       }
-      bills.push(...fileBills.data.bills)
-    }
-    return bills
-  },
-  create:
-    ({ emit }) =>
+      return bills
+    },
+    create:
+      ({ emit }) =>
       (chamber, congress) =>
-        async (billsCount) => {
-          const billType = chamber === 'HOUSE' ? 'hr' : 's'
-          debug(
-            `creating ${billsCount} bills with args ${chamber}, ${congress}`,
-          )
+      async (billsCount) => {
+        const billType = chamber === 'HOUSE' ? 'hr' : 's'
+        debug(`creating ${billsCount} bills with args ${chamber}, ${congress}`)
 
-          // read the pages we need to fetch from the meta.json
-          const metaFile = getMetaFilename(chamber, congress)
-          const metaFileExists = existsSync(metaFile)
-          if (!metaFileExists) {
-            throw new Error(`expected meta file to exist: ${metaFile}`)
-          }
-          const metadata = metaValidator.safeParse(JSON.parse(readUtf8File(metaFile)))
-          if (!metadata.success) {
-            throw new Error(`failed to parse meta file: ${metaFile}`)
-          }
-          const { data: meta } = metadata
-          // TODO: maybe just do this in the policy and cache a record
-          // of file => status in the meta file
-          emit({ type: 'billsAssetAllPagesStatus', pageStatuses: meta.pageStatuses })
-          const pagesToFetch = (meta.pageStatuses ?? [])
-            .filter(({ status }) => status !== 'PASS')
-            .map(({ status, ...page }) => page)
-          const writeFilePromises = []
-          debug(
-            `we need to fetch pages ${pagesToFetch.map(({ pageNumber }) => pageNumber).join(', ')}`,
-          )
-          for (const { pageNumber, filename } of pagesToFetch) {
-            const offset = (pageNumber - 1) * CONGRESS_API_PAGE_SIZE_LIMIT
-            const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
-            emit({
-              type: 'billsAssetPageStatus',
-              file: filename,
-              status: 'FETCHING',
-            })
-            debug(`fetching ${url}`)
-            const res = await throttledFetchCongressAPI(url, {
-              offset,
-              limit: CONGRESS_API_PAGE_SIZE_LIMIT,
-            })
-            emit({
-              type: 'billsAssetPageStatus',
-              file: filename,
-              status: 'PASS',
-            })
-            debug(`done fetching ${url}`)
-            const writeStream = createWriteStream(filename)
-            res.body.pipe(writeStream)
-            writeFilePromises.push(
-              new Promise<void>((resolve) => {
-                writeStream.on('finish', () => {
-                  debug(`wrote ${filename}`)
-                  resolve()
-                })
-              }),
-            )
-          }
-          await Promise.all(writeFilePromises)
-          debug(
-            `done writing files, added ${writeFilePromises.length} pages`,
-          )
-          const pageStatuses = getBillsPageStatuses(
-            chamber, congress, billsCount
-          )
-          writeMeta(chamber, congress, {
-            pageStatuses,
-            lastChecked: Date.now(),
+        // read the pages we need to fetch from the meta.json
+        const metaFile = getMetaFilename(chamber, congress)
+        const metaFileExists = existsSync(metaFile)
+        if (!metaFileExists) {
+          throw new Error(`expected meta file to exist: ${metaFile}`)
+        }
+        const metadata = metaValidator.safeParse(
+          JSON.parse(readUtf8File(metaFile)),
+        )
+        if (!metadata.success) {
+          throw new Error(`failed to parse meta file: ${metaFile}`)
+        }
+        const { data: meta } = metadata
+        // TODO: maybe just do this in the policy and cache a record
+        // of file => status in the meta file
+        emit({
+          type: 'billsAssetAllPagesStatus',
+          pageStatuses: meta.pageStatuses,
+        })
+        const pagesToFetch = (meta.pageStatuses ?? [])
+          .filter(({ status }) => status !== 'PASS')
+          .map(({ status, ...page }) => page)
+        const writeFilePromises = []
+        debug(
+          `we need to fetch pages ${pagesToFetch
+            .map(({ pageNumber }) => pageNumber)
+            .join(', ')}`,
+        )
+        for (const { pageNumber, filename } of pagesToFetch) {
+          const offset = (pageNumber - 1) * CONGRESS_API_PAGE_SIZE_LIMIT
+          const url = `/bill/${congress}/${billType}?offset=${offset}&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
+          emit({
+            type: 'billsAssetPageStatus',
+            file: filename,
+            status: 'FETCHING',
           })
-        },
-  readMetadata:
-    async (chamber, congress) => {
+          debug(`fetching ${url}`)
+          const res = await throttledFetchCongressAPI(url, {
+            offset,
+            limit: CONGRESS_API_PAGE_SIZE_LIMIT,
+          })
+          emit({
+            type: 'billsAssetPageStatus',
+            file: filename,
+            status: 'PASS',
+          })
+          debug(`done fetching ${url}`)
+          const writeStream = createWriteStream(filename)
+          res.body.pipe(writeStream)
+          writeFilePromises.push(
+            new Promise<void>((resolve) => {
+              writeStream.on('finish', () => {
+                debug(`wrote ${filename}`)
+                resolve()
+              })
+            }),
+          )
+        }
+        await Promise.all(writeFilePromises)
+        debug(`done writing files, added ${writeFilePromises.length} pages`)
+        const pageStatuses = getBillsPageStatuses(chamber, congress, billsCount)
+        writeMeta(chamber, congress, {
+          pageStatuses,
+          lastChecked: Date.now(),
+        })
+      },
+    readMetadata: async (chamber, congress) => {
       try {
-        return metaValidator.parse(JSON.parse(readUtf8File(getMetaFilename(chamber, congress))))
+        return metaValidator.parse(
+          JSON.parse(readUtf8File(getMetaFilename(chamber, congress))),
+        )
       } catch (e) {
         return null
       }
-    }
-}
+    },
+  }

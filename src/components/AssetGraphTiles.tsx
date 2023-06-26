@@ -1,4 +1,4 @@
-import { AssetName } from '../assets/assetDefinitions'
+import { AssetName } from '../../assetDefinitions'
 import BillsListAssetCard from './BillAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
 import BillsAssetCard from './BillsListAssetCard'
