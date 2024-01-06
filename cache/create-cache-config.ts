@@ -9,12 +9,13 @@
  *
  */
 // IMPORTS
-import { BillType, CacheConfig, sleep } from './utils'
+import { BillType, CacheConfig } from './types'
 import assert from 'assert'
 import dotenv from 'dotenv'
 import { writeFileSync } from 'fs'
 import fetch, { Headers, Request, Response } from 'node-fetch'
 import path, { basename } from 'path'
+import { sleep } from 'react-query/types/core/utils'
 
 // ENV + CONSTS
 const envPath = path.join(__dirname, '.env')

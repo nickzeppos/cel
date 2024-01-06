@@ -9,21 +9,8 @@ const CACHE_HEALTH_REPORT_PATH =
 const CACHE_CONFIG_PATH =
   process.env.CACHE_CONFIG_PATH || './data/cache-config.json'
 
-export type CacheConfig = {
-  header: {
-    date: Date
-    script: string
-  }
-  bills: Array<{
-    congress: number
-    billType: BillType
-    count: number
-  }>
-}
-
-export type BillType = 'hr' | 's'
 // FUNCS
-// create a directory if it doesn't exist, recursively if necessary
+// create a directory if it doesn't exist, always recursively
 export function ensureDirectoryExists(path: string) {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true })
@@ -35,7 +22,7 @@ export function listDirsInCache(path?: string): string[] {
   const CACHE_PATH =
     path !== undefined ? `${ROOT_CACHE_PATH}/${path}` : `${ROOT_CACHE_PATH}`
   return readdirSync(CACHE_PATH, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory()) // dirent is "directory entry", type Dirent
+    .filter((dirent) => dirent.isDirectory()) // dirent stands "directory entry", type Dirent
     .map((dirent) => dirent.name)
 }
 
@@ -47,8 +34,8 @@ export function preReportRun(): 200 | 400 {
 
   // check for existence of cache config
   if (!existsSync(CACHE_CONFIG_PATH)) {
-    console.log(
-      `No cache config found at ${CACHE_CONFIG_PATH}. Run scripts/create-cache-config.ts first.`,
+    console.error(
+      `No cache config found at ${CACHE_CONFIG_PATH}. Run create-cache-config.ts first.`,
     )
     return 400
   }
