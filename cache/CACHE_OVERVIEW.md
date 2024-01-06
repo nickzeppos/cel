@@ -1,8 +1,13 @@
 # Cache Overview
 
-### TODO
+## TODO
+
+### questions to answer
 
 - should `generate-cache-health-report.ts` auto generate a config file if none exists? currently it does not, just prompts to run `create-cache-config.ts`
+
+### actions to take
+
 - `generate-cache-health-report.ts` needs to pivot on current or full arg
 - `generate-cache-health-report.ts` needs to output a `.txt` file for consumption by `consume-health-report-instructions.ts`
 - Implement `consume-health-report-instructions.ts`

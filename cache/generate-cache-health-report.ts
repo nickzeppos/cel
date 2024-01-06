@@ -15,7 +15,8 @@
  *  3. Failures. For each audit fail, log identying information for later fetching.
  */
 // IMPORTS
-import { BillType, CacheConfig, listDirsInCache, preReportRun } from './utils'
+import { BillType, CacheConfig } from './types'
+import { listDirsInCache, preReportRun } from './utils'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 
 // ENV + CONSTS

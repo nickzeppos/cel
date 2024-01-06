@@ -43,17 +43,18 @@ assert(
 const API_KEY_1 = process.env.CONGRESS_GOV_API_KEY_1
 const API_KEY_2 = process.env.CONGRESS_GOV_API_KEY_2
 
-console.log('-- ENV --')
-console.log('ROOT_CACHE_PATH', ROOT_CACHE_PATH)
-console.log('CACHE_CONFIG_PATH', CACHE_CONFIG_PATH)
-console.log('API_BASE_URL', API_BASE_URL)
-console.log('API_KEY_1', API_KEY_1)
-console.log('API_KEY_2', API_KEY_2)
-console.log('CURRENT_CONGRESS', CURRENT_CONGRESS)
-console.log('----------')
+// console.log('-- ENV --')
+// console.log('ROOT_CACHE_PATH', ROOT_CACHE_PATH)
+// console.log('CACHE_CONFIG_PATH', CACHE_CONFIG_PATH)
+// console.log('API_BASE_URL', API_BASE_URL)
+// console.log('API_KEY_1', API_KEY_1)
+// console.log('API_KEY_2', API_KEY_2)
+// console.log('CURRENT_CONGRESS', CURRENT_CONGRESS)
+// console.log('----------')
 
 // FUNCS
 
+// Range of integers, inclusive
 function makeCongressRange(first: string, last: string): Array<number> {
   const firstNumber = parseInt(first)
   const lastNumber = parseInt(last)
@@ -63,10 +64,6 @@ function makeCongressRange(first: string, last: string): Array<number> {
   }
   return range
 }
-// given a route, fetch + return response
-// retry 5 times, sleep 5s between each retry
-// if all 5 retries fail, return null
-// use apiKeyManager to control which key is used
 
 // key manager
 const apiKeyManager = {
@@ -82,6 +79,8 @@ const apiKeyManager = {
     return key
   },
 }
+
+// Fetcher
 async function fetchRouteWithKey(route: string): Promise<Response> {
   const apiKey = apiKeyManager.getNextKey()
   const req = new Request(route, {
@@ -132,16 +131,12 @@ async function main() {
   // FOR EACH CONGRESS BETWEEN FIRST AND CURRENT
   const congresses = makeCongressRange(FIRST_CONGRESS, CURRENT_CONGRESS)
   for (const congress of congresses) {
-    console.log(`fetching bill count for congress ${congress}`)
+    console.log(`fetching bill counts for congress ${congress}`)
     // FOR EACH BILL TYPE
     for (const billType of billTypes) {
-      console.log(`fetching bill count for bill type ${billType}`)
       // FETCH BILL COUNT
       const count = await fetchBillCount(congress, billType)
       // ADD TO CONFIG
-      console.log(
-        `adding bill count ${count} for congress ${congress} and bill type ${billType}`,
-      )
       cacheConfigToWrite.bills.push({
         congress: congress,
         billType: billType,
@@ -150,7 +145,6 @@ async function main() {
     }
   }
   // WRITE CONFIG
-  console.log(`writing config to ${CACHE_CONFIG_PATH}`)
   const cacheConfigString = JSON.stringify(cacheConfigToWrite, null, 2)
   writeFileSync(CACHE_CONFIG_PATH, cacheConfigString)
 }
