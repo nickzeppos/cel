@@ -46,4 +46,4 @@ yarn-error.log*
 
 # data
 /data
-/scripts/data
+/cache/data
