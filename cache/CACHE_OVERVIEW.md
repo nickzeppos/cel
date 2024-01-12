@@ -8,8 +8,6 @@
 
 ### actions to take
 
-- `generate-cache-health-report.ts` needs to pivot on current or full arg
-- `generate-cache-health-report.ts` needs to output a `.txt` file for consumption by `consume-health-report-instructions.ts`
 - Implement `consume-health-report-instructions.ts`
 - Specify shape of `meta.json`
 - Bundle everything up in a main() script

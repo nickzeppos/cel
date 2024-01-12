@@ -265,6 +265,9 @@ function auditFullCache(config: CacheConfig): void {
   writeFileSync(reportPath, reportString)
 }
 // MAIN
+
+const auditType = process.argv[2] || 'current' // default current
+
 function main() {
   console.log('-- MAIN')
   // If we don't have a cache directory
@@ -280,10 +283,12 @@ function main() {
     readFileSync(CACHE_CONFIG_PATH, 'utf8'),
   ) as CacheConfig
 
-  // audit the current cache
-  // auditCurrentCache(config)
-  // audit the cache
-  auditFullCache(config)
+  // audit
+  if (auditType === 'current') {
+    auditCurrentCache(config)
+  } else if (auditType === 'full') {
+    auditFullCache(config)
+  }
 
   // write the report
   // const reportName = `cache-health-report-${Date.now()}.json`
