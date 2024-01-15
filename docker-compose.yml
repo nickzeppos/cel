@@ -44,7 +44,7 @@ services:
       - CONGRESS_GOV_API_BASE_URL
     volumes:
       - .:/app
-    command: yarn nodemon --watch src/workers --watch src/assets --ext .ts --signal SIGTERM --exec "tsc --project /app/src/workers/tsconfig.json && node /app/.workers/workers/index.js"
+    command: yarn nodemon --watch src/workers --watch src/assets --ext .ts --signal SIGTERM --exec "tsc --project /app/src/workers/tsconfig.json && node /app/.workers/src/workers/index.js"
     depends_on:
       - cel-cache
   cel-cache:
