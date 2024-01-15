@@ -15,7 +15,7 @@ import {
   LocalAssetJobName,
   LocalAssetJobResponse,
 } from '../../workers/types'
-import { materializeValidator } from '../../workers/validators'
+import { materializeValidator } from '../../workers/validators.materialize'
 import { createRouter } from './context'
 import { Chamber } from '.prisma/client'
 import * as trpc from '@trpc/server'
