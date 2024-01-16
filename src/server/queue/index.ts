@@ -28,51 +28,44 @@ const connection = {
 cleanup()
 setup()
 
-export function cleanup() {
-  if (globalThis.testQueue != null) {
-    globalThis.testQueue.close()
-    globalThis.testQueue = undefined
+export async function cleanup() {
+  async function closeQueue(
+    queue: null | undefined | Queue<any, any, any>,
+    _queueName: string,
+  ) {
+    if (queue != null) {
+      await queue.close()
+      // console.log(`🔽 Queue ${queueName} closed`)
+      return undefined
+    }
+    return queue
   }
-  if (globalThis.billQueue != null) {
-    globalThis.billQueue.close()
-    globalThis.billQueue = undefined
+  async function closeQueueEvents(
+    queueEvents: QueueEvents | null | undefined,
+    _queueName: string,
+  ) {
+    if (queueEvents != null) {
+      await queueEvents.close()
+      // console.log(`🔽 QueueEvents ${queueName} closed`)
+      return undefined
+    }
+    return queueEvents
   }
-  if (globalThis.testQueueEvents != null) {
-    globalThis.testQueueEvents.close()
-    globalThis.testQueueEvents = undefined
-  }
-  if (globalThis.billQueueEvents != null) {
-    globalThis.billQueueEvents.close()
-    globalThis.billQueueEvents = undefined
-  }
-  if (globalThis.termQueueEvents != null) {
-    globalThis.termQueueEvents.close()
-    globalThis.termQueueEvents = undefined
-  }
-  if (globalThis.assetQueue != null) {
-    globalThis.assetQueue.close()
-    globalThis.assetQueue = undefined
-  }
-  if (globalThis.assetQueueEvents != null) {
-    globalThis.assetQueueEvents.close()
-    globalThis.assetQueueEvents = undefined
-  }
-  if (globalThis.congressAPIAssetQueue != null) {
-    globalThis.congressAPIAssetQueue.close()
-    globalThis.congressAPIAssetQueue = undefined
-  }
-  if (globalThis.congressAPIAssetQueueEvents != null) {
-    globalThis.congressAPIAssetQueueEvents.close()
-    globalThis.congressAPIAssetQueueEvents = undefined
-  }
-  if (globalThis.localAssetQueue != null) {
-    globalThis.localAssetQueue.close()
-    globalThis.localAssetQueue = undefined
-  }
-  if (globalThis.localAssetQueueEvents != null) {
-    globalThis.localAssetQueueEvents.close()
-    globalThis.localAssetQueueEvents = undefined
-  }
+  await closeQueue(globalThis.testQueue, 'test-queue')
+  await closeQueue(globalThis.billQueue, 'bill-queue')
+  await closeQueue(globalThis.termQueue, 'term-queue')
+  await closeQueue(globalThis.assetQueue, 'asset-queue')
+  await closeQueue(globalThis.congressAPIAssetQueue, 'congress-api-asset-queue')
+  await closeQueue(globalThis.localAssetQueue, 'local-asset-queue')
+  await closeQueueEvents(globalThis.testQueueEvents, 'test-queue')
+  await closeQueueEvents(globalThis.billQueueEvents, 'bill-queue')
+  await closeQueueEvents(globalThis.termQueueEvents, 'term-queue')
+  await closeQueueEvents(globalThis.assetQueueEvents, 'asset-queue')
+  await closeQueueEvents(
+    globalThis.congressAPIAssetQueueEvents,
+    'congress-api-asset-queue',
+  )
+  await closeQueueEvents(globalThis.localAssetQueueEvents, 'local-asset-queue')
 }
 
 function setup() {
