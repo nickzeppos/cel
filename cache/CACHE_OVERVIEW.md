@@ -7,7 +7,7 @@
 - should `generate-cache-health-report.ts` auto generate a config file if none exists? currently it does not, just prompts to run `create-cache-config.ts`
 
 ### actions to take
-
+- Switch output of `generate-health-report.ts` to a .txt file
 - Implement `consume-health-report-instructions.ts`
 - Specify shape of `meta.json`
 - Bundle everything up in a main() script
