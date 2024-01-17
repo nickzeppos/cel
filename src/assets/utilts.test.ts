@@ -1,5 +1,5 @@
 import { AllMember } from '../workers/validators'
-import { servedIncludes1973 } from './utils'
+import { servedIncludes1973, withRootCachePath } from './utils'
 
 describe('servedIncludes1973', () => {
   const served: AllMember['served'] = {
@@ -44,5 +44,14 @@ describe('servedIncludes1973', () => {
       },
     ]
     expect(servedIncludes1973(served)).toBe(true)
+  })
+})
+
+describe('withRootCachePath', () => {
+  it('should return a function that prepends the root cache path to the first argument', () => {
+    const makeFileName = (a: string, b: string, c: string) => `${a}/${b}/${c}`
+    const makeFileNameWithRootCachePath = withRootCachePath(makeFileName)
+    const fileName = makeFileNameWithRootCachePath('a', 'b', 'c')
+    expect(fileName).toBe('./data/a/b/c')
   })
 })
