@@ -49,9 +49,9 @@ describe('servedIncludes1973', () => {
 
 describe('withRootCachePath', () => {
   it('should return a function that prepends the root cache path to the first argument', () => {
-    const makeFileName = (a: string, b: string, c: string) => `${a}/${b}/${c}`
-    const makeFileNameWithRootCachePath = withRootCachePath(makeFileName)
-    const fileName = makeFileNameWithRootCachePath('a', 'b', 'c')
+    const makeFilePath = (a: string, b: string, c: string) => `${a}/${b}/${c}`
+    const makeFilePathWithRootCachePath = withRootCachePath(makeFilePath)
+    const fileName = makeFilePathWithRootCachePath('a', 'b', 'c')
     expect(fileName).toBe('./data/a/b/c')
   })
 })

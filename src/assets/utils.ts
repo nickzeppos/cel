@@ -98,10 +98,10 @@ export function getWriteMeta<M>(
 // Parameters<T> to extract the type of the arguments of T, helping us infer the type of the returned
 // function based on the arguments of the original function, T
 export function withRootCachePath<T extends (...args: any[]) => string>(
-  getFileName: T,
+  makeFilePath: T,
 ): (...funcArgs: Parameters<T>) => string {
   return (...args: Parameters<T>): string => {
-    const path = getFileName(...args)
+    const path = makeFilePath(...args)
     return `${ROOT_CACHE_PATH}/${path}`
   }
 }
