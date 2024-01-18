@@ -14,6 +14,7 @@ import {
   error as logError,
   warn as logWarn,
   readUtf8File,
+  withRootCachePath,
 } from './utils'
 import { Chamber } from '@prisma/client'
 import { createWriteStream, existsSync, readdirSync } from 'fs'
@@ -50,14 +51,19 @@ function error(message: string): void {
 function warn(message: string): void {
   logWarn(ASSET_NAME, message)
 }
-function getMetaFilename(chamber: Chamber, congress: number) {
-  return `data/bills/${congress}-${chamber}-meta.json`
+
+function makeFileName(chamber: Chamber, congress: number, pageNumber: number) {
+  return `${ASSET_NAME}/${congress}/${chamber}/page-${pageNumber}.json`
 }
-function getFilename(chamber: Chamber, congress: number, page: number) {
-  return `data/bills/${congress}-${chamber}-page-${page}.json`
+function makeMetaFileName(chamber: Chamber, congress: number) {
+  return `${ASSET_NAME}/${congress}/${chamber}-meta.json`
 }
+
+const makeFile = withRootCachePath(makeFileName)
+const makeMetaFile = withRootCachePath(makeMetaFileName)
+
 const writeMeta = getWriteMeta(
-  getMetaFilename,
+  makeMetaFile,
   DEFAULT_META,
   metaValidator.parse,
   ASSET_NAME,
@@ -72,7 +78,7 @@ function getBillsPageStatuses(
     .fill(null)
     .map((_, i) => {
       const pageNumber = i + 1
-      const filename = getFilename(chamber, congress, pageNumber)
+      const filename = makeFile(chamber, congress, pageNumber)
       let status: StoredAssetStatus = existsSync(filename) ? 'FAIL' : 'PENDING'
       try {
         if (
@@ -98,10 +104,14 @@ export const billsListAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> =
     deps: [billsCountAsset],
     policy: (chamber, congress) => async (billsCount) => {
       const pageStatuses = getBillsPageStatuses(chamber, congress, billsCount)
-      writeMeta(chamber, congress, {
-        pageStatuses,
-        lastChecked: Date.now(),
-      })
+      writeMeta(
+        {
+          pageStatuses,
+          lastChecked: Date.now(),
+        },
+        chamber,
+        congress,
+      )
       return pageStatuses.every(({ status }) => status === 'PASS')
     },
     read: async (chamber, congress) => {
@@ -129,7 +139,7 @@ export const billsListAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> =
         debug(`creating ${billsCount} bills with args ${chamber}, ${congress}`)
 
         // read the pages we need to fetch from the meta.json
-        const metaFile = getMetaFilename(chamber, congress)
+        const metaFile = makeMetaFile(chamber, congress)
         const metaFileExists = existsSync(metaFile)
         if (!metaFileExists) {
           throw new Error(`expected meta file to exist: ${metaFile}`)
@@ -189,15 +199,19 @@ export const billsListAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> =
         await Promise.all(writeFilePromises)
         debug(`done writing files, added ${writeFilePromises.length} pages`)
         const pageStatuses = getBillsPageStatuses(chamber, congress, billsCount)
-        writeMeta(chamber, congress, {
-          pageStatuses,
-          lastChecked: Date.now(),
-        })
+        writeMeta(
+          {
+            pageStatuses,
+            lastChecked: Date.now(),
+          },
+          chamber,
+          congress,
+        )
       },
     readMetadata: async (chamber, congress) => {
       try {
         return metaValidator.parse(
-          JSON.parse(readUtf8File(getMetaFilename(chamber, congress))),
+          JSON.parse(readUtf8File(makeMetaFile(chamber, congress))),
         )
       } catch (e) {
         return null
