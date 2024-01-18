@@ -295,27 +295,29 @@ export const committeeActivitiesValidator = z.object({
   name: z.string(),
 })
 
+export const billCommitteesValidator = z.array(
+  z.object({
+    activities: z.array(committeeActivitiesValidator),
+    chamber: shortChamberNameValidator,
+    name: z.string(),
+    subcommittees: z
+      .array(
+        z.object({
+          activities: z.array(committeeActivitiesValidator),
+          name: z.string(),
+          systemCode: z.string(),
+          url: z.string().url(),
+        }),
+      )
+      .optional(),
+    systemCode: z.string(),
+    type: z.string(), // TODO: enummable, i.e. Standing, Select. Just not sure of extent of vals
+    url: z.string().url(),
+  }),
+)
+
 export const billCommitteesResponseValidator = z.object({
-  committees: z.array(
-    z.object({
-      activities: z.array(committeeActivitiesValidator),
-      chamber: shortChamberNameValidator,
-      name: z.string(),
-      subcommittees: z
-        .array(
-          z.object({
-            activities: z.array(committeeActivitiesValidator),
-            name: z.string(),
-            systemCode: z.string(),
-            url: z.string().url(),
-          }),
-        )
-        .optional(),
-      systemCode: z.string(),
-      type: z.string(), // TODO: enummable, i.e. Standing, Select. Just not sure of extent of vals
-      url: z.string().url(),
-    }),
-  ),
+  committees: billCommitteesValidator,
   error: z.string().optional(),
   pagination: paginationValidator.optional(),
   request: requestValidator,
