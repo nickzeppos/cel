@@ -1,5 +1,11 @@
 import { AllMember } from '../workers/validators'
-import { servedIncludes1973, withRootCachePath } from './utils'
+import {
+  isValidJSON,
+  makeRange,
+  safeParseJSON,
+  servedIncludes1973,
+  withRootCachePath,
+} from './utils'
 
 describe('servedIncludes1973', () => {
   const served: AllMember['served'] = {
@@ -53,5 +59,40 @@ describe('withRootCachePath', () => {
     const makeFilePathWithRootCachePath = withRootCachePath(makeFilePath)
     const fileName = makeFilePathWithRootCachePath('a', 'b', 'c')
     expect(fileName).toBe('./data/a/b/c')
+  })
+})
+
+describe('safeParseJSON', () => {
+  it('should return the parsed JSON if the input is valid JSON', () => {
+    const validJSON = '{"a": "b"}'
+    const { data, error } = safeParseJSON(validJSON)
+    expect(error).toBeNull()
+    expect(data).toEqual({ a: 'b' })
+  })
+  it('should return null data and syntax error if the input is not valid JSON', () => {
+    const invalidJSON = 'a'
+    const { data, error } = safeParseJSON(invalidJSON)
+    expect(error).toBeInstanceOf(SyntaxError)
+    expect(data).toBeNull()
+  })
+})
+
+describe('isValidJSON', () => {
+  it('should return true if the input is valid JSON', () => {
+    const validJSON = '{"a": "b"}'
+    expect(isValidJSON(validJSON)).toBe(true)
+  })
+  it('should return false if the input is not valid JSON', () => {
+    const invalidJSON = 'a'
+    expect(isValidJSON(invalidJSON)).toBe(false)
+  })
+})
+
+describe('makeRange', () => {
+  it('should return an array of integers from first to last, inclusive', () => {
+    expect(makeRange(1, 3)).toEqual([1, 2, 3])
+  })
+  it('should return empty array if first is greater than last', () => {
+    expect(makeRange(3, 1)).toEqual([])
   })
 })

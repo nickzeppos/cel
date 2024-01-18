@@ -1,5 +1,4 @@
 import { AllMember } from '../workers/validators'
-import { Chamber } from '@prisma/client'
 import { format } from 'date-fns'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
@@ -7,6 +6,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 const ROOT_CACHE_PATH = './data'
 
 // utils
+
+// Range of integers, inclusive
+export function makeRange(first: number, last: number): Array<number> {
+  return Array.from({ length: last - first + 1 }, (_, i) => i + first)
+}
+
 export function servedIncludes1973(served: AllMember['served']): boolean {
   if (served.Senate) {
     if (
@@ -63,16 +68,19 @@ export function readUtf8File(filename: string): string {
   return readFileSync(filename, 'utf8')
 }
 
-export function getWriteMeta<M>(
-  getMetaFilename: (chamber: Chamber, congress: number) => string,
+export function getWriteMeta<M, A extends unknown[]>(
+  getMetaFilename: (...args: A) => string,
   DEFAULT: M,
   validate: (data: unknown) => M,
   logKey: string,
-): (chamber: Chamber, congress: number, updates: Partial<M>) => void {
-  return function (chamber: Chamber, congress: number, updates: Partial<M>) {
-    const filename = getMetaFilename(chamber, congress)
+): (updates: Partial<M>, ...args: A) => void {
+  // return a function that
+  return function (updates: Partial<M>, ...args: A) {
+    // calculates metadata filename
+    const filename = getMetaFilename(...args)
     let meta = { ...DEFAULT }
     try {
+      // tries to read existing metadata file
       const data = readUtf8File(filename)
       meta = validate(JSON.parse(data))
     } catch (e) {
@@ -82,6 +90,7 @@ export function getWriteMeta<M>(
       )
     }
     console.log('==============updates', updates)
+    // updates metadata
     meta = {
       ...meta,
       ...updates,
@@ -89,6 +98,7 @@ export function getWriteMeta<M>(
     // Object.assign(meta, updates)
     console.log('==============meta', meta)
     debug(logKey, `Writing meta ${filename}`)
+    // writes new metadata file
     writeFileSyncWithDir(filename, JSON.stringify(meta))
   }
 }
@@ -104,4 +114,32 @@ export function withRootCachePath<T extends (...args: any[]) => string>(
     const path = makeFilePath(...args)
     return `${ROOT_CACHE_PATH}/${path}`
   }
+}
+
+// given args a, b, return a/b.json
+export function makeJSONFilePath<T extends any[]>(...args: T): string {
+  return `${args.join('/')}.json`
+}
+
+// Given some possibly valid JSON content, try parsing.
+// If successful, return { data, error = null }
+// If unsuccessful, return { data = null, error }
+export function safeParseJSON(
+  content: string,
+): { data: unknown; error: null } | { data: null; error: SyntaxError | Error } {
+  try {
+    return { data: JSON.parse(content), error: null }
+  } catch (e) {
+    // I know SyntaxError is what is thrown on invalid JSON, so I'm handling that specifically.
+    if (e instanceof SyntaxError) {
+      return { data: null, error: e }
+    }
+    // TODO: casting... I guess I can be more specific just idk for now
+    return { data: null, error: e as Error }
+  }
+}
+
+// Given some possibly valid JSON content, try parsing. Return true if successful, false otherwise.
+export function isValidJSON(content: string): boolean {
+  return safeParseJSON(content).data !== null
 }
