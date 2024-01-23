@@ -5,7 +5,7 @@ services:
     build: .
     environment:
       - DB_URL
-      - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_KEY_1
       - CONGRESS_GOV_API_KEY_2
       - CONGRESS_GOV_API_BASE_URL
     volumes:
@@ -23,7 +23,7 @@ services:
       dockerfile: ws.Dockerfile
     environment:
       - DB_URL
-      - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_KEY_1
       - CONGRESS_GOV_API_KEY_2
       - CONGRESS_GOV_API_BASE_URL
     volumes:
@@ -42,7 +42,7 @@ services:
       dockerfile: w.Dockerfile
     environment:
       - DB_URL
-      - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_KEY_1
       - CONGRESS_GOV_API_KEY_2
       - CONGRESS_GOV_API_BASE_URL
     volumes:

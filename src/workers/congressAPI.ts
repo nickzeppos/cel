@@ -3,7 +3,8 @@ import { sleep } from '../utils/fp'
 import IORedis from 'ioredis'
 import fetch, { Headers, Request, Response } from 'node-fetch'
 
-const API_KEY = process.env.CONGRESS_GOV_API_KEY_2 ?? ''
+const API_KEY_1 = process.env.CONGRESS_GOV_API_KEY_1 ?? ''
+const API_KEY_2 = process.env.CONGRESS_GOV_API_KEY_2 ?? ''
 const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''
 const client = new IORedis({
   host: process.env.TEST ? 'localhost' : 'cel-cache',
@@ -14,6 +15,22 @@ const client = new IORedis({
 
 const KEY = 'last-congress-api-call'
 
+// key manager
+interface ApiKeyManager {
+  apiKeys: Array<string>
+  switch: number
+  getNextKey(): string
+}
+const apiKeyManager: ApiKeyManager = {
+  apiKeys: [API_KEY_1, API_KEY_2],
+  switch: 0,
+  getNextKey(): string {
+    const key = this.apiKeys[this.switch]
+    this.switch = this.switch == 0 ? 1 : 0
+    return key
+  },
+}
+
 export function fetchCongressAPI(
   route: string,
   params: Record<string, string | number> = {},
@@ -21,21 +38,22 @@ export function fetchCongressAPI(
   const searchParams = new URLSearchParams(
     Object.fromEntries(Object.entries(params).map(([k, v]) => [k, `${v}`])),
   )
+  const apiKey = apiKeyManager.getNextKey()
   const req = new Request(
     `${API_BASE_URL}${route}?${searchParams.toString()}`,
     {
       method: 'get',
       headers: new Headers({
         accept: 'application/json',
-        'x-api-key': `${API_KEY}`,
+        'x-api-key': `${apiKey}`,
       }),
     },
   )
-  console.log(`fetching ${req.url}`)
+  console.log(`fetching ${req.url} with key ${apiKey}`)
   return fetch(req)
 }
 
-const THROTTLE_TIMEOUT = 5000
+const THROTTLE_TIMEOUT = 2500
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const throttle = <R, T extends (...args: Array<any>) => Promise<R>>(
   func: T,

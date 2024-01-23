@@ -2,16 +2,15 @@
  * Bills Asset: a collection of bills specified by chamber and congress (e.g., the 117th Senate).
  * Policy: Provided a count of bills:
  *  - Generate a range from 1 to the count
- *  - For each bill number in the range, ensure the bill file:
- *   - exists
- *   - is valid JSON
- *   - contains the expected keys (bill, actions, committees)
+ *  - For each bill number in the range, ensure the bill file, in sequence:
+ *   (1) exists
+ *   (2) is valid JSON
+ *   (3) contains the expected keys (bill, actions, committees)
+ *   (4) the length of the actions array equals the count provided in the bill property
  *  - If any of the above are false, the policy is violated
- *  -
  **/
 // Imports
 import { CONGRESS_API_PAGE_SIZE_LIMIT } from '../../assetDefinitions'
-import { sleep } from '../../cache/utils'
 import { throttledFetchCongressAPI } from '../workers/congressAPI'
 import {
   billActionsResponseValidator,
@@ -213,6 +212,7 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
           offset: 0,
           limit: CONGRESS_API_PAGE_SIZE_LIMIT,
         })
+
         const billResJSON = await billRes.json()
         const { bill } = billDetailResponseValidator.parse(billResJSON)
 
