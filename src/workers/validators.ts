@@ -207,7 +207,8 @@ export const billDetailValidator = z.object({
         district: z.number().optional(),
       }),
     )
-    .length(1),
+    .length(1)
+    .optional(),
   subjects: z
     .object({
       count: z.number(),
