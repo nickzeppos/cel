@@ -1,27 +1,15 @@
 import { AnyAsset, Asset } from './src/assets/assets.types'
+import { billsAsset } from './src/assets/bills.asset'
 import { billsCountAsset } from './src/assets/billsCount.asset'
 import { billsListAsset } from './src/assets/billsList.asset'
-import {
-  debug,
-  error,
-  isNotNull,
-  writeFileSyncWithDir,
-} from './src/assets/utils'
-import {
-  billAssetMetadataValidator,
-  bioguidesAssetMetadataValidator,
-} from './src/utils/validators'
+import { debug, isNotNull, writeFileSyncWithDir } from './src/assets/utils'
+import { bioguidesAssetMetadataValidator } from './src/utils/validators'
 import { throttledFetchCongressAPI } from './src/workers/congressAPI'
-import { StoredBillAsset } from './src/workers/types'
 import {
   AllMember,
-  Bill,
-  BillList,
   Member,
   allMemberResponseValidator,
   allMemberValidator,
-  billActionsResponseValidator,
-  billDetailResponseValidator,
   memberResponseValidator,
   memberValidator,
 } from './src/workers/validators'
@@ -255,136 +243,136 @@ function billFile(
 ) {
   return `data/bills/${congress}-${chamber}-${billNumber}.json`
 }
-export const billAsset: Asset<
-  Bill[],
-  [Chamber, number],
-  [typeof billsListAsset],
-  {
-    areAllDepsComplete: boolean
-    files: StoredBillAsset[]
-  }
-> = {
-  name: 'actions',
-  queue: 'congress-api-asset-queue',
-  deps: [billsListAsset],
-  policy: (chamber, congress) => async (billsList: Array<BillList>) => {
-    const missingBillNumbers = billsList
-      .map(({ number }) =>
-        existsSync(billFile(chamber, congress, number)) ? null : number,
-      )
-      .filter(isNotNull)
+// // export const billAsset: Asset<
+// //   Bill[],
+// //   [Chamber, number],
+// //   [typeof billsListAsset],
+// //   {
+// //     areAllDepsComplete: boolean
+// //     files: StoredBillAsset[]
+// //   }
+// // > = {
+// //   name: 'actions',
+// //   queue: 'congress-api-asset-queue',
+// //   deps: [billsListAsset],
+// //   policy: (chamber, congress) => async (billsList: Array<BillList>) => {
+// //     const missingBillNumbers = billsList
+// //       .map(({ number }) =>
+// //         existsSync(billFile(chamber, congress, number)) ? null : number,
+// //       )
+// //       .filter(isNotNull)
 
-    const metaFile = billMetaFile(chamber, congress)
-    debug('billsAsset.policy', `writing ${metaFile}`)
-    writeFileSyncWithDir(
-      metaFile,
-      JSON.stringify({
-        lastPolicyRunTime: new Date().getTime(),
-        missingBillNumbers,
-      }),
-    )
-    return missingBillNumbers.length === 0
-  },
-  read: async () => {
-    throw new Error('not implemented')
-  },
-  create:
-    ({ emit }) =>
-    (chamber, congress) =>
-    async () => {
-      // read the meta file
-      const metaFile = billMetaFile(chamber, congress)
-      const metaFileExists = existsSync(metaFile)
-      if (!metaFileExists) {
-        throw new Error(`expected meta file to exist: ${metaFile}`)
-      }
-      const metaFileRaw = readFileSync(metaFile, 'utf8')
-      const metaFileJSON = JSON.parse(metaFileRaw)
+// //     const metaFile = billMetaFile(chamber, congress)
+// //     debug('billsAsset.policy', `writing ${metaFile}`)
+// //     writeFileSyncWithDir(
+// //       metaFile,
+// //       JSON.stringify({
+// //         lastPolicyRunTime: new Date().getTime(),
+// //         missingBillNumbers,
+// //       }),
+// //     )
+// //     return missingBillNumbers.length === 0
+// //   },
+// //   read: async () => {
+// //     throw new Error('not implemented')
+// //   },
+// //   create:
+// //     ({ emit }) =>
+// //     (chamber, congress) =>
+// //     async () => {
+// //       // read the meta file
+// //       const metaFile = billMetaFile(chamber, congress)
+// //       const metaFileExists = existsSync(metaFile)
+// //       if (!metaFileExists) {
+// //         throw new Error(`expected meta file to exist: ${metaFile}`)
+// //       }
+// //       const metaFileRaw = readFileSync(metaFile, 'utf8')
+// //       const metaFileJSON = JSON.parse(metaFileRaw)
 
-      const metadata = billAssetMetadataValidator.safeParse(metaFileJSON)
-      if (!metadata.success) {
-        throw new Error(`failed to parse meta file: ${metaFile}`)
-      }
+// //       const metadata = billAssetMetadataValidator.safeParse(metaFileJSON)
+// //       if (!metadata.success) {
+// //         throw new Error(`failed to parse meta file: ${metaFile}`)
+// //       }
 
-      // for each missing bill number
-      const { missingBillNumbers } = metadata.data
-      const billType = chamber === 'HOUSE' ? 'hr' : 's'
-      for (const billNumber of missingBillNumbers) {
-        // fetch the detail page
-        const detailRes = await throttledFetchCongressAPI(
-          `/bill/${congress}/${billType}/${billNumber}`,
-        )
-        const billDetailResponse = billDetailResponseValidator.safeParse(
-          await detailRes.json(),
-        )
-        if (!billDetailResponse.success) {
-          error(
-            'billAsset.create',
-            `invalid bill detail response ${chamber} ${congress} ${billNumber}`,
-          )
-          continue
-        }
+// //       // for each missing bill number
+// //       const { missingBillNumbers } = metadata.data
+// //       const billType = chamber === 'HOUSE' ? 'hr' : 's'
+// //       for (const billNumber of missingBillNumbers) {
+// //         // fetch the detail page
+// //         const detailRes = await throttledFetchCongressAPI(
+// //           `/bill/${congress}/${billType}/${billNumber}`,
+// //         )
+// //         const billDetailResponse = billDetailResponseValidator.safeParse(
+// //           await detailRes.json(),
+// //         )
+// //         if (!billDetailResponse.success) {
+// //           error(
+// //             'billAsset.create',
+// //             `invalid bill detail response ${chamber} ${congress} ${billNumber}`,
+// //           )
+// //           continue
+// //         }
 
-        // fetch first actions page
-        const actionsRes = await throttledFetchCongressAPI(
-          `/bill/${congress}/${billType}/${billNumber}/actions?limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`,
-        )
-        const billActionsResponse = billActionsResponseValidator.safeParse(
-          await actionsRes.json(),
-        )
-        if (!billActionsResponse.success) {
-          error(
-            'billAsset.create',
-            `invalid bill actions response ${chamber} ${congress} ${billNumber}`,
-          )
-          continue
-        }
-        const { data } = billActionsResponse
-        if (data.pagination?.count ?? 0 > 250) {
-          error(
-            'billAsset.create',
-            `there are more than 250 actions for ${chamber} ${congress} ${billNumber}`,
-          )
-        }
+// //         // fetch first actions page
+// //         const actionsRes = await throttledFetchCongressAPI(
+// //           `/bill/${congress}/${billType}/${billNumber}/actions?limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`,
+// //         )
+// //         const billActionsResponse = billActionsResponseValidator.safeParse(
+// //           await actionsRes.json(),
+// //         )
+// //         if (!billActionsResponse.success) {
+// //           error(
+// //             'billAsset.create',
+// //             `invalid bill actions response ${chamber} ${congress} ${billNumber}`,
+// //           )
+// //           continue
+// //         }
+// //         const { data } = billActionsResponse
+// //         if (data.pagination?.count ?? 0 > 250) {
+// //           error(
+// //             'billAsset.create',
+// //             `there are more than 250 actions for ${chamber} ${congress} ${billNumber}`,
+// //           )
+// //         }
 
-        // combine them all into one json
-        const billData: Bill = {
-          detail: billDetailResponse.data.bill,
-          actions: data.actions,
-        }
-        // write that file
-        writeFileSyncWithDir(
-          billFile(chamber, congress, billNumber),
-          JSON.stringify(billData),
-        )
-      }
-    },
-  readMetadata: async (chamber, congress) => {
-    return {
-      areAllDepsComplete: true,
-      files: [],
-    }
-  },
-}
+// //         // combine them all into one json
+// //         const billData: Bill = {
+// //           detail: billDetailResponse.data.bill,
+// //           actions: data.actions,
+// //         }
+// //         // write that file
+// //         writeFileSyncWithDir(
+// //           billFile(chamber, congress, billNumber),
+// //           JSON.stringify(billData),
+// //         )
+// //       }
+// //     },
+// //   readMetadata: async (chamber, congress) => {
+// //     return {
+// //       areAllDepsComplete: true,
+// //       files: [],
+// //     }
+// //   },
+// // }
 
-export const reportAsset: Asset<
-  string,
-  [],
-  [
-    typeof bioguidesAsset,
-    typeof membersAsset,
-    typeof billsListAsset,
-    typeof billAsset,
-  ],
-  unknown
-> = {
-  name: 'report',
-  queue: 'local-asset-queue',
-  deps: [bioguidesAsset, membersAsset, billsListAsset, billAsset],
-  policy: ALWAYS_FETCH_POLICY,
-  read: async () => '',
-  create: () => () => async () => {},
-}
+// export const reportAsset: Asset<
+//   string,
+//   [],
+//   [
+//     typeof bioguidesAsset,
+//     typeof membersAsset,
+//     typeof billsListAsset,
+//     typeof billAsset,
+//   ],
+//   unknown
+// > = {
+//   name: 'report',
+//   queue: 'local-asset-queue',
+//   deps: [bioguidesAsset, membersAsset, billsListAsset, billAsset],
+//   policy: ALWAYS_FETCH_POLICY,
+//   read: async () => '',
+//   create: () => () => async () => {},
+// }
 
 export type AssetNameOf<T extends AnyAsset> = T['name']
 
@@ -393,15 +381,16 @@ const allAssets = {
   members: membersAsset,
   bioguides: bioguidesAsset,
   billsCount: billsCountAsset,
-  bill: billAsset,
+  bills: billsAsset,
   billsList: billsListAsset,
-  report: reportAsset,
+  // report: reportAsset,
 } as const
 
 export type AssetName = keyof typeof allAssets
 
 export function getAssetForName(name: AssetName): AnyAsset {
   const asset = allAssets[name]
+
   if (asset == null) {
     console.error(`No asset with name ${name}`)
   }

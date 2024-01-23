@@ -41,8 +41,7 @@ export const assetPlaygroundRouter = createRouter()
     async resolve({ input }) {
       const { assetName, ...restOfInput } = input
       const args = Object.values(restOfInput).filter((x) => x != null)
-      materialize(getAssetForName(assetName), args)
-      return
+      return await materialize(getAssetForName(assetName), args)
     },
   })
   .subscription('on-change', {

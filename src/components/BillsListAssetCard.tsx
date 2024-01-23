@@ -1,3 +1,5 @@
+import { trpc } from '../utils/trpc'
+import { StoredAssetStatus } from '../workers/types'
 import { Chamber } from '.prisma/client'
 import {
   detectOverflow,
@@ -9,12 +11,15 @@ import {
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
-import { trpc } from '../utils/trpc'
-import { StoredAssetStatus } from '../workers/types'
 
 // duplicate from billsList.asset.ts
 // to avoid depending on workers folder
-const storedAssetStatusValidator = z.enum(['PENDING', 'PASS', 'FAIL', 'FETCHING'])
+const storedAssetStatusValidator = z.enum([
+  'PENDING',
+  'PASS',
+  'FAIL',
+  'FETCHING',
+])
 const pageStatusValidator = z.object({
   pageNumber: z.number(),
   filename: z.string(),
@@ -38,7 +43,7 @@ export default function BillsListAssetCard({ chamber, congress }: Props) {
   }, [assetState.data?.pageStatuses])
   trpc.useSubscription(['asset-playground.bills-asset-progress'], {
     onNext: (data) => {
-      console.log('bills asset updated', data)
+      // console.log('bills asset updated', data)
       if (typeof data !== 'object' || data == null || !('type' in data)) {
         console.warn('unknown subscription event', data)
         return
@@ -67,8 +72,9 @@ export default function BillsListAssetCard({ chamber, congress }: Props) {
             current.map((existingPageStatus) =>
               existingPageStatus.filename === newPageStatus.filename
                 ? {
-                  ...existingPageStatus, status: newPageStatus.status,
-                }
+                    ...existingPageStatus,
+                    status: newPageStatus.status,
+                  }
                 : existingPageStatus,
             ),
           )

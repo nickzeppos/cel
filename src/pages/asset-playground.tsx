@@ -24,12 +24,12 @@ const AssetPlayground: NextPage = () => {
 
   const [chamber, setChamber] = useState<Chamber>('HOUSE')
   const [congress, setCongress] = useState<string>('117')
-  const [asset, setAsset] = useState<typeof ASSETS[number]>('bill')
+  const [asset, setAsset] = useState<(typeof ASSETS)[number]>('bills')
   const [minBillNum, setMinBillNum] = useState<number | null>(1)
   const [maxBillNum, setMaxBillNum] = useState<number | null>(10)
   const [states, setStates] = useState<AssetJobSummaryMap>({
-    report: getAssetJobSummary('report'),
-    bill: getAssetJobSummary('bill'),
+    // report: getAssetJobSummary('report'),
+    bills: getAssetJobSummary('bills'),
     billsList: getAssetJobSummary('billsList'),
     members: getAssetJobSummary('members'),
     membersCount: getAssetJobSummary('membersCount'),
@@ -43,7 +43,7 @@ const AssetPlayground: NextPage = () => {
   })
   trpc.useSubscription(['asset-playground.on-change'], {
     onNext: (data) => {
-      console.log('on change', data)
+      // console.log('on change', data)
       setStates((currentStates) => ({
         ...currentStates,
         [data.assetName]: {

@@ -38,10 +38,10 @@ export default function AssetGraphTiles({
       <div className="text-2xl font-bold ">Jobs</div>
       <div className="grid grid-cols-3 grid-rows-4 gap-4">
         <AssetGraphTile />
-        <AssetGraphTile name="report" state={states?.['report']} />
+        {/* <AssetGraphTile name="report" state={states?.['report']} /> */}
         <AssetGraphTile />
         <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
-        <AssetGraphTile name="bill" state={states?.['bill']}>
+        <AssetGraphTile name="bills" state={states?.['bills']}>
           {chamber != null && congress != null ? (
             <BillAssetCard chamber={chamber} congress={congress} />
           ) : null}

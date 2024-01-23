@@ -1,9 +1,9 @@
 // import fetch from 'isomorphic-fetch'
+import { sleep } from '../utils/fp'
 import IORedis from 'ioredis'
 import fetch, { Headers, Request, Response } from 'node-fetch'
-import { sleep } from '../utils/fp'
 
-const API_KEY = process.env.CONGRESS_GOV_API_KEY ?? ''
+const API_KEY = process.env.CONGRESS_GOV_API_KEY_2 ?? ''
 const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''
 const client = new IORedis({
   host: process.env.TEST ? 'localhost' : 'cel-cache',
@@ -31,11 +31,11 @@ export function fetchCongressAPI(
       }),
     },
   )
+  console.log(`fetching ${req.url}`)
   return fetch(req)
 }
 
-const THROTTLE_TIMEOUT =
-  Number.parseInt(process.env.THROTTLE_TIMEOUT ?? '0') ?? 5000
+const THROTTLE_TIMEOUT = 5000
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const throttle = <R, T extends (...args: Array<any>) => Promise<R>>(
   func: T,

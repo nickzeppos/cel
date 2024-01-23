@@ -99,7 +99,7 @@ export const billsCountAsset: Asset<
   readMetadata: async (...args) => {
     try {
       return metaValidator.parse(
-        JSON.parse(readUtf8File(makeMetaFileName(...args))),
+        JSON.parse(readUtf8File(getMetaFileName(...args))),
       )
     } catch (e) {
       return null
