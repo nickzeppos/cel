@@ -6,6 +6,7 @@ services:
     environment:
       - DB_URL
       - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_KEY_2
       - CONGRESS_GOV_API_BASE_URL
     volumes:
       - .:/app
@@ -23,6 +24,7 @@ services:
     environment:
       - DB_URL
       - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_KEY_2
       - CONGRESS_GOV_API_BASE_URL
     volumes:
       - .:/app
@@ -41,6 +43,7 @@ services:
     environment:
       - DB_URL
       - CONGRESS_GOV_API_KEY
+      - CONGRESS_GOV_API_KEY_2
       - CONGRESS_GOV_API_BASE_URL
     volumes:
       - .:/app
