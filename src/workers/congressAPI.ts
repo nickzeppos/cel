@@ -16,12 +16,7 @@ const client = new IORedis({
 const KEY = 'last-congress-api-call'
 
 // key manager
-interface ApiKeyManager {
-  apiKeys: Array<string>
-  switch: number
-  getNextKey(): string
-}
-const apiKeyManager: ApiKeyManager = {
+const apiKeyManager = {
   apiKeys: [API_KEY_1, API_KEY_2],
   switch: 0,
   getNextKey(): string {
