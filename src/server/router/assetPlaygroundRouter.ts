@@ -4,6 +4,7 @@ import {
   getAssetNames,
 } from '../../../assetDefinitions'
 import { JobQueueName, isQueueName } from '../../assets/assets.types'
+import { billsAsset } from '../../assets/bills.asset'
 import { billsCountAsset } from '../../assets/billsCount.asset'
 import { billsListAsset } from '../../assets/billsList.asset'
 import { materialize } from '../../assets/engine'
@@ -103,7 +104,7 @@ export const assetPlaygroundRouter = createRouter()
       return await billsCountAsset.readMetadata?.(chamber, congress)
     },
   })
-  .query('get-bills-asset-state', {
+  .query('get-bills-list-asset-state', {
     input: z.object({
       chamber: z.nativeEnum(Chamber),
       congress: z.number().min(93).max(117),
@@ -111,6 +112,18 @@ export const assetPlaygroundRouter = createRouter()
     async resolve({ input }) {
       const { chamber, congress } = input
       return await billsListAsset.readMetadata?.(chamber, congress, null, null)
+    },
+  })
+  .query('get-bills-asset-state', {
+    input: z.object({
+      chamber: z.nativeEnum(Chamber),
+      congress: z.number().min(93).max(117),
+    }),
+    async resolve({ input }) {
+      const { chamber, congress } = input
+      const meta = await billsAsset.readMetadata?.(chamber, congress)
+      const count = await billsCountAsset.read(chamber, congress)
+      return { meta, count }
     },
   })
 

@@ -32,7 +32,7 @@ import {
   writeFileSyncWithDir,
 } from './utils'
 import { Chamber } from '@prisma/client'
-import { existsSync, readdirSync } from 'fs'
+import { existsSync, readdirSync, writeFileSync } from 'fs'
 import { z } from 'zod'
 
 const ASSET_NAME = 'bills'
@@ -233,6 +233,7 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
           limit: CONGRESS_API_PAGE_SIZE_LIMIT,
         })
         const committeesResJSON = await committeesRes.json()
+
         const { committees } =
           billCommitteesResponseValidator.parse(committeesResJSON)
 

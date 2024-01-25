@@ -33,7 +33,7 @@ interface Props {
 }
 export default function BillsListAssetCard({ chamber, congress }: Props) {
   const assetState = trpc.useQuery([
-    'asset-playground.get-bills-asset-state',
+    'asset-playground.get-bills-list-asset-state',
     { chamber, congress },
   ])
   const pageCount = assetState.data?.pageStatuses?.length ?? 'unknown'
