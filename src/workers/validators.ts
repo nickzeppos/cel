@@ -298,7 +298,15 @@ export const committeeActivitiesValidator = z.object({
 
 export const billCommitteesValidator = z.array(
   z.object({
-    activities: z.array(committeeActivitiesValidator),
+    // it seems like activities is optional in some cases (e.g., HR-8255)
+    // I have only observed it has happening with cross-chamber subcommittee attention,
+    // e.g., HR-8255 received attention (i.e., has a defined activities propety) from the
+    // Senate Appropriations Subcommittee on Energy and Water Development, but no activities
+    // from the committee in the whole. In practice, this leaves the activities property at the
+    // first level (i.e., at the ocmmittee object level) undefined, but defined in the subcommittee
+    // TODO: It's maybe possible to conceive of this as a refinement, where the activities property is optional
+    // iff the committee object chamber value is of the opposite of the bill's chamber of introduction
+    activities: z.array(committeeActivitiesValidator).optional(),
     chamber: shortChamberNameValidator,
     name: z.string(),
     subcommittees: z
