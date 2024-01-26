@@ -135,7 +135,8 @@ export function safeParseJSON(
       return { data: null, error: e }
     }
     // TODO: casting... I guess I can be more specific just idk for now
-    return { data: null, error: e as Error }
+    // It's probably more appropriate to throw here, since if I don't get a syntax error I actually don't know what's going on
+    throw e
   }
 }
 
