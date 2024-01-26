@@ -55,6 +55,8 @@ describe('servedIncludes1973', () => {
 
 describe('withRootCachePath', () => {
   it('should return a function that prepends the root cache path to the first argument', () => {
+    // Test written without actually importing ROOT_CACHE_PATH, so this would fail if
+    // value of ROOT_CACHE_PATH deviates from ./data to something new
     const makeFilePath = (a: string, b: string, c: string) => `${a}/${b}/${c}`
     const makeFilePathWithRootCachePath = withRootCachePath(makeFilePath)
     const fileName = makeFilePathWithRootCachePath('a', 'b', 'c')
@@ -63,7 +65,7 @@ describe('withRootCachePath', () => {
 })
 
 describe('safeParseJSON', () => {
-  it('should return the parsed JSON if the input is valid JSON', () => {
+  it('should return the parsed JSON and null error if the input is valid JSON', () => {
     const validJSON = '{"a": "b"}'
     const { data, error } = safeParseJSON(validJSON)
     expect(error).toBeNull()
