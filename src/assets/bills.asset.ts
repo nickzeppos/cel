@@ -262,7 +262,6 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
     },
 
   readMetadata: async (chamber, congress) => {
-    console.log('readMetadata')
     return metaValidator.parse(readUtf8File(getMetaFileName(chamber, congress)))
   },
 }
