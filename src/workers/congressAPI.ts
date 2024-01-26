@@ -44,7 +44,6 @@ export function fetchCongressAPI(
       }),
     },
   )
-  console.log(`fetching ${req.url} with key ${apiKey}`)
   return fetch(req)
 }
 
