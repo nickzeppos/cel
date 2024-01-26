@@ -134,8 +134,8 @@ export function safeParseJSON(
     if (e instanceof SyntaxError) {
       return { data: null, error: e }
     }
-    // TODO: casting... I guess I can be more specific just idk for now
-    // It's probably more appropriate to throw here, since if I don't get a syntax error I actually don't know what's going on
+    // It's probably more appropriate to throw here, since if I don't get a syntax error either: I don't know what's going on, or
+    // something has changed in the try that means something other than a syntax error can happen.
     throw e
   }
 }
