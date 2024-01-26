@@ -32,7 +32,7 @@ import {
   writeFileSyncWithDir,
 } from './utils'
 import { Chamber } from '@prisma/client'
-import { existsSync, readdirSync, writeFileSync } from 'fs'
+import { existsSync, readdirSync } from 'fs'
 import { z } from 'zod'
 
 const ASSET_NAME = 'bills'
@@ -79,11 +79,12 @@ function makeDirName(chamber: Chamber, congress: number) {
   return `${ASSET_NAME}/${congress}/${chamber}`
 }
 const getDirName = withRootCachePath(makeDirName)
+
 function listFiles(chamber: Chamber, congress: number): string[] {
   const dir = getDirName(chamber, congress)
   return readdirSync(dir, { withFileTypes: true })
     .filter((dirent) => dirent.isFile())
-    .map((dirent) => dirent.name)
+    .map((dirent) => `${dir}/${dirent.name}`)
 }
 
 // Loggers
@@ -184,9 +185,9 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
   },
   read: async (chamber, congress) =>
     listFiles(chamber, congress) // list files in dir specified by chamber and congress
-      .filter((fileName) => !fileName.includes('meta')) // filter meta
       .map(readUtf8File) // read
-      .map((file) => assetDataValidator.parse(file)), // parse
+      .map((file) => JSON.parse(file))
+      .map((json) => assetDataValidator.parse(json)), // parse
   create:
     ({ emit }) =>
     (chamber, congress) =>
@@ -248,6 +249,16 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
         writeFileSyncWithDir(fileName, JSON.stringify(billData), 'utf8')
       }
       // write metadata
+      writeMeta(
+        {
+          // TODO: Right now just set missing bill numbers to empty after loop, but this should probably be an accumulated list of bill numbers that failed during the loop.
+          // One quick way to do this would be to go from schema.parse() to safe parse, then accumulate on !success
+          missingBillNumbers: [],
+          lastCreated: Date.now(),
+        },
+        chamber,
+        congress,
+      )
     },
 
   readMetadata: async (chamber, congress) => {
