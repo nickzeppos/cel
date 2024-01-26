@@ -11,11 +11,16 @@
 *What is its policy?*
 - Does the file exist?
 
-*What is its metadata?*
+*What is its unique metadata?*
 - Does the file exist?
 
 *How is it created?*
 - 1 request to congress.gov API
+
+*Associated endpoint(s)*
+- `/bill/{congress}/{billType}` 
+
+
 
 ## bills
 `bills.asset.ts`
@@ -33,11 +38,25 @@
   3. Does the file have the expected keys `bill`, `actions`, and `committee`?
   4. Does the `actions` property have the proper count of actions, as specified by the `bill` property?
 
-*What is its metadata?* 
+*What is its unique metadata?* 
 - An array containing each bill number that fails the policy.
 
 *How is it created?* 
 - `>= 4` requests to congress.gov API for each bill that fails policy
+
+*Associated endpoint(s)*
+- `/bill/{congress}/{billType}/{billNumber}` 
+- `/bill/{congress}/{billType}/{billNumber}/actions` 
+- `/bill/{congress}/{billType}/{billNumber}/committees` 
+
+## billsList
+**Note: 1/2024: Deprecated since congress.gov API exposes bill endpoints for reserved bills. No longer necessary to construct a bill list before getting bills, just have to know count.** 
+
+`billsList.asset.ts`  
+
+*What is it?*
+  - A list of all bill numbers in a given `congress` and `chamber`. Previously used to construct the range of bill numbers over which bills were fetched.
+
 
 
 ## Hooking up UI and asset queue events
