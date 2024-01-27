@@ -31,74 +31,79 @@ setup()
 export async function cleanup() {
   async function closeQueue(
     queue: null | undefined | Queue<any, any, any>,
-    _queueName: string,
+    queueName: string,
   ) {
     if (queue != null) {
       await queue.close()
-      // console.log(`🔽 Queue ${queueName} closed`)
+      console.log(`🔽 Queue ${queueName} closed`)
       return undefined
     }
     return queue
   }
   async function closeQueueEvents(
     queueEvents: QueueEvents | null | undefined,
-    _queueName: string,
+    queueName: string,
   ) {
     if (queueEvents != null) {
       await queueEvents.close()
-      // console.log(`🔽 QueueEvents ${queueName} closed`)
+      console.log(`🔽 QueueEvents ${queueName} closed`)
       return undefined
     }
     return queueEvents
   }
-  await closeQueue(globalThis.testQueue, 'test-queue')
-  await closeQueue(globalThis.billQueue, 'bill-queue')
-  await closeQueue(globalThis.termQueue, 'term-queue')
-  await closeQueue(globalThis.assetQueue, 'asset-queue')
-  await closeQueue(globalThis.congressAPIAssetQueue, 'congress-api-asset-queue')
-  await closeQueue(globalThis.localAssetQueue, 'local-asset-queue')
-  await closeQueueEvents(globalThis.testQueueEvents, 'test-queue')
-  await closeQueueEvents(globalThis.billQueueEvents, 'bill-queue')
-  await closeQueueEvents(globalThis.termQueueEvents, 'term-queue')
-  await closeQueueEvents(globalThis.assetQueueEvents, 'asset-queue')
-  await closeQueueEvents(
+  closeQueue(globalThis.testQueue, 'test-queue')
+  closeQueue(globalThis.billQueue, 'bill-queue')
+  closeQueue(globalThis.termQueue, 'term-queue')
+  closeQueue(globalThis.assetQueue, 'asset-queue')
+  closeQueue(globalThis.congressAPIAssetQueue, 'congress-api-asset-queue')
+  closeQueue(globalThis.localAssetQueue, 'local-asset-queue')
+  closeQueueEvents(globalThis.testQueueEvents, 'test-queue')
+  closeQueueEvents(globalThis.billQueueEvents, 'bill-queue')
+  closeQueueEvents(globalThis.termQueueEvents, 'term-queue')
+  closeQueueEvents(globalThis.assetQueueEvents, 'asset-queue')
+  closeQueueEvents(
     globalThis.congressAPIAssetQueueEvents,
     'congress-api-asset-queue',
   )
   await closeQueueEvents(globalThis.localAssetQueueEvents, 'local-asset-queue')
 }
 
-function setup() {
+export function setup() {
+  console.log('🔼 Setting up test-queue')
   globalThis.testQueue = new Queue<TestJobData, TestJobResponse, TestJobName>(
     'test-queue',
     {
       connection,
     },
   )
+  console.log('🔼 Setting up bill-queue events')
   globalThis.billQueueEvents = new QueueEvents('bill-queue', {
     connection,
   })
-
+  console.log('🔼 Setting up bill-queue')
   globalThis.billQueue = new Queue<BillJobData, BillJobResponse, BillJobName>(
     'bill-queue',
     {
       connection,
     },
   )
+  console.log('🔼 Setting up test-queue events')
   globalThis.testQueueEvents = new QueueEvents('test-queue', {
     connection,
   })
-
+  console.log('🔼 Setting up term-queue')
   globalThis.termQueue = new Queue<TermJobData, TermJobResponse, TermJobName>(
     'term-queue',
     {
       connection,
     },
   )
+  console.log('🔼 Setting up term-queue events')
   globalThis.termQueueEvents = new QueueEvents('term-queue', {
     connection,
   })
 
+  console.log('🔼 Setting up asset-queue')
   globalThis.assetQueue = new Queue<
     AssetJobData,
     AssetJobResponse,
@@ -106,8 +111,11 @@ function setup() {
   >('asset-queue', {
     connection,
   })
+
+  console.log('🔼 Setting up asset-queue events')
   globalThis.assetQueueEvents = new QueueEvents('asset-queue', { connection })
 
+  console.log('🔼 Setting up congress-api-asset-queue')
   globalThis.congressAPIAssetQueue = new Queue<
     CongressAPIAssetJobData,
     CongressAPIAssetJobResponse,
@@ -118,11 +126,14 @@ function setup() {
       groupKey: 'congress-api-rate-limit',
     },
   })
+
+  console.log('🔼 Setting up congress-api-asset-queue events')
   globalThis.congressAPIAssetQueueEvents = new QueueEvents(
     'congress-api-asset-queue',
     { connection },
   )
 
+  console.log('🔼 Setting up local-asset-queue')
   globalThis.localAssetQueue = new Queue<
     LocalAssetJobData,
     LocalAssetJobResponse,
@@ -130,6 +141,8 @@ function setup() {
   >('local-asset-queue', {
     connection,
   })
+
+  console.log('🔼 Setting up local-asset-queue events')
   globalThis.localAssetQueueEvents = new QueueEvents('local-asset-queue', {
     connection,
   })
