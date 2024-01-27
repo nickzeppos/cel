@@ -15,9 +15,9 @@ wss.on('connection', (ws) => {
 })
 console.log('🔼 WebSocket Server listening on ws://localhost:3030')
 
-process.on('SIGTERM', async () => {
+process.on('SIGTERM', () => {
   console.log('🔽 SIGTERM')
   handler.broadcastReconnectNotification()
   wss.close()
-  await cleanup()
+  cleanup()
 })
