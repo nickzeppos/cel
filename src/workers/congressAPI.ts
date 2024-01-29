@@ -20,9 +20,10 @@ const apiKeyManager = {
   apiKeys: [API_KEY_1, API_KEY_2],
   switch: 0,
   getNextKey(): string {
-    const key = this.apiKeys[this.switch]
+    const nextKey = this.apiKeys[this.switch]
     this.switch = this.switch == 0 ? 1 : 0
-    return key
+    if (nextKey === undefined) throw new Error('No API keys available')
+    return nextKey
   },
 }
 
