@@ -1,3 +1,4 @@
+import { billsCountAssetEmitValidator } from '../assets/assets.validators'
 import { trpc } from '../utils/trpc'
 import { Chamber } from '.prisma/client'
 import clsx from 'clsx'
@@ -26,28 +27,16 @@ export default function BillsCountAssetCard({ chamber, congress }: Props) {
     }
   }, [assetMetadataQuery.status, assetMetadataQuery.data?.fileExists])
 
-  trpc.useSubscription(['asset-playground.congress-api-asset-queue-progress'], {
+  trpc.useSubscription(['asset-playground.billsCount-asset-progress'], {
     onNext: (data) => {
-      console.log('cdg api asset queue progress')
-      if (
-        typeof data !== 'object' ||
-        data == null ||
-        !('status' in data) ||
-        !('type' in data) ||
-        data.type !== 'billsCount' ||
-        typeof data.status !== 'string'
-      ) {
-        return
-      }
-      console.log(`[billsCount] subscription event. status: ${data.status}`)
-      switch (data.status) {
-        case 'FETCHING': {
-          setAssetMetadata({
-            fileExists: false,
-          })
-          break
-        }
-        case 'DONE': {
+      console.log('billsCount asset progress subscription event')
+      const parsed = billsCountAssetEmitValidator.safeParse(data)
+      if (!parsed.success) return
+      console.log(
+        `[billsCount] subscription event. status: ${parsed.data.status}`,
+      )
+      switch (parsed.data.status) {
+        case 'PASS': {
           assetMetadataQuery.refetch()
           break
         }

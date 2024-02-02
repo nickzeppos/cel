@@ -4,6 +4,7 @@ import {
   getAssetNames,
 } from '../../../assetDefinitions'
 import { JobQueueName, isQueueName } from '../../assets/assets.types'
+import { billsCountAssetEmitValidator } from '../../assets/assets.validators'
 import { billsAsset } from '../../assets/bills.asset'
 import { billsCountAsset } from '../../assets/billsCount.asset'
 import { billsListAsset } from '../../assets/billsList.asset'
@@ -86,14 +87,17 @@ export const assetPlaygroundRouter = createRouter()
       })
     },
   })
-  // Progress events subscription
-  .subscription('congress-api-asset-queue-progress', {
+  // Asset progress events
+  .subscription('billsCount-asset-progress', {
     resolve({ ctx }) {
       return new trpc.Subscription((emit) => {
         const queueEvents = ctx.queue.congressAPIAssetQueueEvents
         const handleProgress: QueueEventsListener['progress'] = async ({
           data,
         }) => {
+          // check type for billsCount
+          const parsed = billsCountAssetEmitValidator.safeParse(data)
+          if (!parsed.success) return
           emit.data(data)
         }
         queueEvents.on('progress', handleProgress)
