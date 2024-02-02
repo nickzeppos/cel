@@ -23,8 +23,14 @@ import * as trpc from '@trpc/server'
 import { JobState, Queue, QueueEvents, QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
-const EVENTS = ['active', 'added', 'waiting', 'completed', 'failed'] as const
-type AssetJobChangeEvent = {
+export const EVENTS = [
+  'active',
+  'added',
+  'waiting',
+  'completed',
+  'failed',
+] as const
+export type AssetJobChangeEvent = {
   assetName: AssetName
   jobState: JobState | 'unknown'
   childJobName: AssetName | null | undefined
@@ -37,6 +43,7 @@ export const assetPlaygroundRouter = createRouter()
       return getAssetNames()
     },
   })
+  // engine runner endpoint, materializes an asset with given args
   .mutation('materialize', {
     input: materializeValidator,
     async resolve({ input }) {
@@ -45,6 +52,7 @@ export const assetPlaygroundRouter = createRouter()
       return await materialize(getAssetForName(assetName), args)
     },
   })
+  // Job events subscription
   .subscription('on-change', {
     resolve({ ctx }) {
       return new trpc.Subscription<AssetJobChangeEvent>((emit) => {
@@ -78,7 +86,8 @@ export const assetPlaygroundRouter = createRouter()
       })
     },
   })
-  .subscription('bills-asset-progress', {
+  // Progress events subscription
+  .subscription('congress-api-asset-queue-progress', {
     resolve({ ctx }) {
       return new trpc.Subscription((emit) => {
         const queueEvents = ctx.queue.congressAPIAssetQueueEvents
@@ -94,7 +103,8 @@ export const assetPlaygroundRouter = createRouter()
       })
     },
   })
-  .query('get-bills-count-asset-state', {
+  // Asset metadata queries
+  .query('get-bills-count-asset-metadata', {
     input: z.object({
       chamber: z.nativeEnum(Chamber),
       congress: z.number().min(93).max(117),
@@ -104,7 +114,7 @@ export const assetPlaygroundRouter = createRouter()
       return await billsCountAsset.readMetadata?.(chamber, congress)
     },
   })
-  .query('get-bills-list-asset-state', {
+  .query('get-bills-list-asset-metadata', {
     input: z.object({
       chamber: z.nativeEnum(Chamber),
       congress: z.number().min(93).max(117),
@@ -114,16 +124,15 @@ export const assetPlaygroundRouter = createRouter()
       return await billsListAsset.readMetadata?.(chamber, congress, null, null)
     },
   })
-  .query('get-bills-asset-state', {
+  .query('get-bills-asset-metadata', {
     input: z.object({
       chamber: z.nativeEnum(Chamber),
       congress: z.number().min(93).max(117),
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      const meta = await billsAsset.readMetadata?.(chamber, congress)
-      const count = await billsCountAsset.read(chamber, congress)
-      return { meta, count }
+      // const count = await billsCountAsset.read(chamber, congress)
+      return await billsAsset.readMetadata?.(chamber, congress)
     },
   })
 
@@ -173,18 +182,23 @@ function setupAssetJobChangeHandlers<
 
   const handlers: Partial<QueueEventsListener> = {
     async active({ jobId }) {
+      console.log('active')
       await getAndEmitJob(jobId)
     },
     async added({ jobId }) {
+      console.log('added')
       await getAndEmitJob(jobId)
     },
     async waiting({ jobId }) {
+      console.log('waiting')
       await getAndEmitJob(jobId)
     },
     async completed({ jobId }) {
+      console.log('completed')
       await getAndEmitJob(jobId)
     },
     async failed({ jobId }) {
+      console.log('failed')
       await getAndEmitJob(jobId)
     },
   }

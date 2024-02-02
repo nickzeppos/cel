@@ -75,27 +75,32 @@ export const billsCountAsset: Asset<
   },
   read: async (...args) =>
     z.number().parse(parseInt(readUtf8File(getFileName(...args)))),
-  create: () => (chamber, congress) => async () => {
-    const billType = chamber === 'HOUSE' ? 'hr' : 's'
-    const url = `/bill/${congress}/${billType}`
-    debug(`fetching ${url}`)
-    const res = await throttledFetchCongressAPI(url, { limit: 1 })
-    debug(`done fetching ${url}`)
-    const json = await res.json()
-    debug(`writing ${getFileName(chamber, congress)}`)
-    writeFileSyncWithDir(
-      getFileName(chamber, congress),
-      JSON.stringify(json.pagination.count),
-    )
-    writeMeta(
-      {
-        fileExists: true,
-        lastCreated: Date.now(),
-      },
-      chamber,
-      congress,
-    )
-  },
+  create:
+    ({ emit }) =>
+    (chamber, congress) =>
+    async () => {
+      const billType = chamber === 'HOUSE' ? 'hr' : 's'
+      const url = `/bill/${congress}/${billType}`
+      debug(`fetching ${url}`)
+      emit({ type: 'billsCount', status: 'FETCHING' })
+      const res = await throttledFetchCongressAPI(url, { limit: 1 })
+      debug(`done fetching ${url}`)
+      const json = await res.json()
+      debug(`writing ${getFileName(chamber, congress)}`)
+      writeFileSyncWithDir(
+        getFileName(chamber, congress),
+        JSON.stringify(json.pagination.count),
+      )
+      writeMeta(
+        {
+          fileExists: true,
+          lastCreated: Date.now(),
+        },
+        chamber,
+        congress,
+      )
+      emit({ type: 'billsCount', status: 'DONE' })
+    },
   readMetadata: async (...args) => {
     try {
       return metaValidator.parse(

@@ -59,6 +59,62 @@
 
 
 
+
+# `/asset-playground` state, subscriptions, etc.
+On first render, here's what `trpc` is doing:  
+
+**on-change subscription**
+- setting up a listener to the `on-change` subscription, in `asset.playground.tsx`
+  - events that are emitted from the `on-change` subscription are distinct from the progress events we control inside an asset's `create` method
+  - events emitted from `on-change` are used to (re)set the `states` state, in `asset.playground.tsx`, defined as follows:
+  ```ts
+  // components/AssetGraphTiles.tsx
+  // states is of type AssetJobSummaryMap
+  type AssetJobSummaryMap = Record<AssetName, AssetJobSummary>
+
+  interface AssetJobSummary {
+    name: AssetName
+    state: JobState | 'unknown'
+    childJobName: AssetName | null
+  }
+  ```
+  - `states` (along with selector args, e.g., `congress`, `chamber`), are passed to `AssetGraphTiles`
+  - `AssetGraphTiles` uses `states` to render job events concerning each asset, e.g.
+  ```ts
+  // components/AssetGraphTiles.tsx
+  const AssetGraphTiles(states) = {
+    ...
+    return (
+      ...
+    <AssetGraphTile name="billsCount" state={states?.['billsCount']}>
+    )
+  }
+  ```
+  - an `AssetGraphTile` itself takes destructured `state`, and renders
+  information regarding the state of the job related to the asset, e.g., progressing from `waiting` to `active`. Also contains some color and animation logic, and places `children` prop at the bottom of the tile.
+  - This is the end of the line for our `states` data
+- in the `children` of a given `AssetGraphTile`, we have our asset cards (e.g., `BillCountAssetCard`).
+- asset cards themselves are responsible for rendering more data about the asset and its state. 
+- as such, this is where we have our second important bit of trpc to talk about...  
+
+**asset metadata queries**
+  - In each asset card, we have a have a `useQuery` corresponding to that asset's `readMetadata` method, e.g.
+  ```ts
+  // components/BillsCountAssetCard.tsx
+    const assetMetadata = trpc.useQuery([
+    'asset-playground.get-bills-count-asset-metadata',
+    { chamber, congress },
+  ])
+  ```
+  - asset metadata has two functions, then: 
+    - render information about the asset on an asset card
+    - house instructions written by the asset `policy`, to inform the `create`.
+    - This is helpful because the contents of an asset card depend on asset `policy` says about the asset, and whether or not `create` has to be run
+  - `readMetadata` will return `null` if the metadata file doesn't exist, or cannot be validated
+  - 
+
+
+
 ## Hooking up UI and asset queue events
 Working through bills asset, want to hook up the asset tile on the playground page to what's actually going on. Seems like I have to proceed as follows:
 
@@ -66,10 +122,9 @@ Working through bills asset, want to hook up the asset tile on the playground pa
 - emit events from asset create method. I can characterize these on a bill by bill basis, or I can conceive of a representation of progress that might be more meaningful to the UI
 - set up a subscription in the asset playground router (looks like there is one already in there for bills list, called bills-asset-progress, that i can use)
 - set up state and subscription in the component
-
 ## Describing how job progress is updated, events emitted, etc., for my own edification:
 **NOTE: I'm going to avoid talking about both the websocket server and the setting up of queues here, just focus on how we're handling events, provided these are set up and working with the router and its context.**
-- An asset may, in its create method, use the `emit` method. `emit` is part of `EngineContext` type.
+- An asset may, in its `create` method, use the `emit` method. `emit` is part of `EngineContext` type.
 ```ts
 // assets/assets.types.ts
 export interface EngineContext {
@@ -112,7 +167,7 @@ createRouter()
       })
     },
 ```
-- We can then broadcast the progress events to the listeners in the client, via `useSubscription`
+- We can set up listeners to the subscription int he client, via `useSubscription`
 ```ts
 // deprecated, but see, e.g., components/BillListAssetCard.tsx
 trpc.useSubscription('asset-progress', {

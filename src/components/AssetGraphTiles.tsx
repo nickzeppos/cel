@@ -1,11 +1,10 @@
 import { AssetName } from '../../assetDefinitions'
-import BillsAssetCard from './BillAssetCard'
+import BillsAssetCard from './BillsAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
-import BillsListAssetCard from './BillsListAssetCard'
 import { Chamber } from '.prisma/client'
 import { JobState } from 'bullmq'
 import clsx from 'clsx'
-import { DependencyList, useEffect, useRef } from 'react'
+import { DependencyList, useEffect, useRef, useState } from 'react'
 
 export type AssetJobSummaryMap = Record<AssetName, AssetJobSummary>
 
@@ -46,11 +45,11 @@ export default function AssetGraphTiles({
             <BillsAssetCard chamber={chamber} congress={congress} />
           ) : null}
         </AssetGraphTile>
-        <AssetGraphTile name="billsList" state={states?.['billsList']}>
-          {chamber != null && congress != null ? (
+        {/* <AssetGraphTile name="billsList" state={states?.['billsList']}> */}
+        {/* {chamber != null && congress != null ? (
             <BillsListAssetCard chamber={chamber} congress={congress} />
-          ) : null}
-        </AssetGraphTile>
+          ) : null} */}
+        {/* </AssetGraphTile> */}
         <AssetGraphTile name="members" state={states?.['members']} />
         <AssetGraphTile />
         <AssetGraphTile />
@@ -91,7 +90,6 @@ function AssetGraphTile({ name, state, children }: AssetGraphTileProps) {
   const isNotEmpty = name !== undefined && state != null
   const ref = useRef<HTMLDivElement>(null)
   useAnimation(ref.current, 'animate-flashBorder', 500, [state?.state])
-
   return (
     <div
       ref={ref}

@@ -28,13 +28,14 @@ const AssetPlayground: NextPage = () => {
   const [minBillNum, setMinBillNum] = useState<number | null>(1)
   const [maxBillNum, setMaxBillNum] = useState<number | null>(10)
   const [states, setStates] = useState<AssetJobSummaryMap>({
-    // report: getAssetJobSummary('report'),
     bills: getAssetJobSummary('bills'),
-    billsList: getAssetJobSummary('billsList'),
     members: getAssetJobSummary('members'),
     membersCount: getAssetJobSummary('membersCount'),
     billsCount: getAssetJobSummary('billsCount'),
     bioguides: getAssetJobSummary('bioguides'),
+
+    // report: getAssetJobSummary('report'),
+    // billsList: getAssetJobSummary('billsList'),
   })
   const materialize = trpc.useMutation(['asset-playground.materialize'], {
     onSuccess: (data) => {
@@ -43,7 +44,7 @@ const AssetPlayground: NextPage = () => {
   })
   trpc.useSubscription(['asset-playground.on-change'], {
     onNext: (data) => {
-      // console.log('on change', data)
+      console.log('on change', data)
       setStates((currentStates) => ({
         ...currentStates,
         [data.assetName]: {

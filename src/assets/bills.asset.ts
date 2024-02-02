@@ -47,12 +47,14 @@ type AssetArgs = [Chamber, number]
 type AssetDeps = [typeof billsCountAsset]
 const metaValidator = z.object({
   missingBillNumbers: z.array(z.number()),
+  fullCount: z.number(),
   lastChecked: z.number().optional(),
   lastCreated: z.number().optional(),
 })
 type AssetMeta = z.infer<typeof metaValidator>
 const DEFAULT_META: AssetMeta = {
   missingBillNumbers: [],
+  fullCount: 0,
 }
 
 // Path manipulation functions
@@ -174,6 +176,7 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
     writeMeta(
       {
         missingBillNumbers,
+        fullCount: billsCount,
         lastChecked: Date.now(),
       },
       chamber,
@@ -206,6 +209,11 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
       const baseURL = `/bill/${congress}/${billType}`
       // for each missing bill number
       for (const billNumber of missingBillNumbers) {
+        emit({
+          type: 'bills',
+          billNumber: billNumber,
+          status: 'FETCHING',
+        })
         // fetch bill details
         debug(`fetching bill details for ${congress}-${billType}-${billNumber}`)
         const billURL = `${baseURL}/${billNumber}?offset=0&limit=${CONGRESS_API_PAGE_SIZE_LIMIT}`
@@ -247,6 +255,11 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
         const fileName = getFileName(chamber, congress, billNumber)
         debug(`writing ${fileName}`)
         writeFileSyncWithDir(fileName, JSON.stringify(billData), 'utf8')
+        emit({
+          type: 'bills',
+          billNumber: billNumber,
+          status: 'SUCCESS',
+        })
       }
       // write metadata
       writeMeta(
@@ -254,6 +267,7 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
           // TODO: Right now just set missing bill numbers to empty after loop, but this should probably be an accumulated list of bill numbers that failed during the loop.
           // One quick way to do this would be to go from schema.parse() to safe parse, then accumulate on !success
           missingBillNumbers: [],
+          fullCount: billsCount,
           lastCreated: Date.now(),
         },
         chamber,

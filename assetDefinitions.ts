@@ -382,7 +382,7 @@ const allAssets = {
   bioguides: bioguidesAsset,
   billsCount: billsCountAsset,
   bills: billsAsset,
-  billsList: billsListAsset,
+  // billsList: billsListAsset,
   // report: reportAsset,
 } as const
 
