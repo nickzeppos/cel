@@ -17,5 +17,9 @@ export const billsAssetEmitValidator = z.object({
   billStatuses: z.record(storedAssetStatusValidator),
 })
 
-export type BillsAssetEmitEvent = z.infer<typeof billsAssetEmitValidator>
+export const membersCountAssetEmitValidator = z.object({
+  type: z.literal('membersCount'),
+  status: storedAssetStatusValidator,
+})
+
 export type StoredAssetStatus = z.infer<typeof storedAssetStatusValidator>
