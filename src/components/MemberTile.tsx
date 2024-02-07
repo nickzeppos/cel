@@ -1,5 +1,5 @@
 import { trpc } from '../utils/trpc'
-import { Member, Term } from '@prisma/client'
+import { Member } from '.prisma/client'
 import React from 'react'
 
 interface Props {
@@ -20,7 +20,7 @@ export default function MemberTile({
     { bioguideId: member.bioguideId },
   ])
   const tileBackground =
-    terms.data?.length! > 0 ? 'bg-emerald-900/[0.2]' : 'bg-red-900/[0.2]'
+    (terms.data?.length ?? 0) > 0 ? 'bg-emerald-900/[0.2]' : 'bg-red-900/[0.2]'
   return (
     <div
       className={`flex bg-neutral-800 border-black border-r border-b ${

@@ -13,3 +13,6 @@ export function TETry<T>(f: Lazy<Promise<T>>) {
 export function ETry<T>(f: Lazy<T>) {
   return E.tryCatch(f, errorIdentity)
 }
+
+export const sleep = async (ms: number) =>
+  await new Promise((resolve) => setTimeout(resolve, ms))

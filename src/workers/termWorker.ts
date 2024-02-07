@@ -1,15 +1,8 @@
 import { prisma } from '../server/db/client'
 import { fetchCongressAPI } from './congressAPI'
-import {
-  PartyHistory,
-  TermJobData,
-  TermJobName,
-  TermJobResponse,
-  TermResponse,
-} from './types'
+import { TermJobData, TermJobName, TermJobResponse } from './types'
 import { ChamberToEnum } from './utils'
 import { memberResponseValidator } from './validators'
-import { Term } from '@prisma/client'
 import { Job } from 'bullmq'
 
 export default async function (

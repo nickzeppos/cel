@@ -5,63 +5,24 @@ const connection = {
   port: 6379,
 }
 
-console.log(`🦌 ${__dirname}`)
-
-const testWorker = new Worker('test-queue', `${__dirname}/testWorker.js`, {
-  connection,
-  concurrency: 1,
-})
-
-testWorker
-  .on('active', (j) => {
-    console.log(`🐜 ACTIVE`, j.data, j.id)
-  })
-  .on('completed', () => {
-    console.log(`🐜 COMPLETE`)
-  })
-  .on('failed', () => {
-    console.log(`🐜 FAIL`)
-  })
-  .on('paused', () => {
-    console.log(`🐜 PAUSED`)
-  })
-
-const billWorker = new Worker('bill-queue', `${__dirname}/billWorker.js`, {
-  connection,
-  concurrency: 1,
-})
-
-billWorker
-  .on('active', (j) => {
-    console.log(`🐜 ACTIVE`, j.data, j.id)
-  })
-  .on('completed', () => {
-    console.log(`🐜 COMPLETE`)
-  })
-  .on('failed', (job, error) => {
-    console.log(`🐜 FAIL`)
-    console.log(error)
-  })
-  .on('paused', () => {
-    console.log(`🐜 PAUSED`)
-  })
-
-const termWorker = new Worker('term-queue', `${__dirname}/termWorker.js`, {
-  connection,
-  concurrency: 1,
-})
-
-termWorker
-  .on('active', (j) => {
-    console.log(`🐜 ACTIVE`, j.data, j.id)
-  })
-  .on('completed', () => {
-    console.log(`🐜 COMPLETE`)
-  })
-  .on('failed', (job, error) => {
-    console.log(`🐜 FAIL`)
-    console.log(error)
-  })
-  .on('paused', () => {
-    console.log(`🐜 PAUSED`)
-  })
+;(
+  [
+    ['test-queue', `${__dirname}/testWorker.js`],
+    ['bill-queue', `${__dirname}/billWorker.js`],
+    ['term-queue', `${__dirname}/termWorker.js`],
+    ['asset-queue', `${__dirname}/assetWorker.js`],
+    [
+      'congress-api-asset-queue',
+      `${__dirname}/congressAPIAssetWorker.js`,
+      {
+        groupKey: 'congress-api-rate-limit',
+        max: 1,
+        duration: 5000, //ms
+      },
+    ],
+    ['local-asset-queue', `${__dirname}/localAssetWorker.js`],
+  ] as const
+).map(
+  ([queue, file, limiter = undefined]) =>
+    new Worker(queue, file, { connection, concurrency: 1, limiter }),
+)

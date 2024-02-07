@@ -5,6 +5,30 @@ import { QueueEventsListener } from 'bullmq'
 import { z } from 'zod'
 
 export const billQueueRouter = createRouter()
+  .mutation('queue-rate-limit-test', {
+    async resolve({ ctx }) {
+      for (let billNum = 200; billNum <= 300; billNum++) {
+        await ctx.queue.billQueue.add('bill-job', {
+          congress: 117,
+          billType: 'hr',
+          billNum,
+          page: '',
+        })
+        await ctx.queue.billQueue.add('bill-job', {
+          congress: 117,
+          billType: 'hr',
+          billNum,
+          page: 'actions',
+        })
+        await ctx.queue.billQueue.add('bill-job', {
+          congress: 117,
+          billType: 'hr',
+          billNum,
+          page: 'committees',
+        })
+      }
+    },
+  })
   .mutation('add-job', {
     input: billJobDataValidator,
     async resolve({ input, ctx }) {
@@ -87,7 +111,7 @@ export const billQueueRouter = createRouter()
         const onRemoved: QueueEventsListener['removed'] = (job) => {
           emit.data({ id: job.jobId })
         }
-        const onCleaned: QueueEventsListener['cleaned'] = (n) => {
+        const onCleaned: QueueEventsListener['cleaned'] = () => {
           emit.data({ id: '*' })
         }
         const onFailed: QueueEventsListener['failed'] = (job) => {

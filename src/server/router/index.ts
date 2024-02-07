@@ -1,4 +1,5 @@
 // src/server/router/index.ts
+import { assetPlaygroundRouter } from './assetPlaygroundRouter'
 import { billQueueRouter } from './billQueue'
 import { chambressRouter } from './chambress'
 import { congressRouter } from './congress'
@@ -17,6 +18,7 @@ export const appRouter = createRouter()
   .merge('test-queue.', testQueueRouter)
   .merge('bill-queue.', billQueueRouter)
   .merge('term-queue.', termQueueRouter)
+  .merge('asset-playground.', assetPlaygroundRouter)
 
 // export type definition of API
 export type AppRouter = typeof appRouter

@@ -1,8 +1,7 @@
 import AdminHeader from '../components/AdminHeader'
 import { trpc } from '../utils/trpc'
-import { Chambress } from '@prisma/client'
+import { Chambress } from '.prisma/client'
 import { NextPage } from 'next'
-import React from 'react'
 
 const Home: NextPage = () => {
   const chambresses = trpc.useQuery(['chambress.get-all'])

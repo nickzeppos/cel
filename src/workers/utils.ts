@@ -2,7 +2,6 @@ import {
   BillCommitteeData,
   COMMITTEE_FILTERS_PATH,
   ChamberShortNameLowercase,
-  CommitteeActivies,
   FullChamberName,
   IMPORTANT_LIST_PATH,
   NumericStep,
@@ -10,9 +9,9 @@ import {
   RankingPhraseRow,
   RankingPhrases,
   STEP_REGEXES_PATH,
+  StepRegexDictionary,
 } from './types'
-import { StepRegexDictionary } from './types'
-import { Chamber, Importance } from '@prisma/client'
+import { Chamber, Importance } from '.prisma/client'
 import { parse } from 'csv-parse/sync'
 import { readFile } from 'fs/promises'
 

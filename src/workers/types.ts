@@ -1,6 +1,8 @@
+import { AssetName } from '../../assetDefinitions'
+import { AnyAsset, DataTypeOf } from '../assets/assets.types'
 import {
   billJobDataValidator,
-  billTypeValidator,
+  billTypeLowercaseValidator,
   committeeActivitiesValidator,
   fullChamberNameValidator,
   partyHistoryValidator,
@@ -8,6 +10,7 @@ import {
   termJobDataValidator,
   termResponseValidator,
 } from './validators'
+import { Chamber, Step } from '.prisma/client'
 import { z } from 'zod'
 
 export interface TestJobData {
@@ -32,7 +35,7 @@ export interface TermJobResponse {
 }
 export type ChamberShortName = z.infer<typeof shortChamberNameValidator>
 
-export type BillType = z.infer<typeof billTypeValidator>
+export type BillType = z.infer<typeof billTypeLowercaseValidator>
 export type ChamberShortNameLowercase = Lowercase<ChamberShortName>
 export type CommitteeActivies = z.infer<typeof committeeActivitiesValidator>
 
@@ -46,7 +49,10 @@ export const IMPORTANT_LIST_PATH = `${RESOURCE_ROOT}/important`
 export const RANKING_PHRASES_PATH = `${RESOURCE_ROOT}/ranking`
 export const COMMITTEE_FILTERS_PATH = `${RESOURCE_ROOT}/committee`
 export const STEP_REGEXES_PATH = `${RESOURCE_ROOT}/step`
+export const getStepRegexPath = (chamber: Chamber, step: Step): string =>
+  `${STEP_REGEXES_PATH}/${chamber.toLocaleLowerCase()}-${step}.txt`
 
+// need the ordering when calculating terminal step
 export enum NumericStep {
   BILL,
   AIC,
@@ -77,3 +83,53 @@ export interface BillResources {
 
 export type TermResponse = z.infer<typeof termResponseValidator>
 export type PartyHistory = z.infer<typeof partyHistoryValidator>
+
+export interface AssetJobData {
+  chamber: Chamber
+}
+// this needs to be redis-safe!
+export interface AssetJobResponse {
+  message: string
+  // stepRegexes?: Map<Step, string[]>
+  stepRegexes?: string //Map<Step, string[]>
+}
+export type AssetJobName = 'asset-job'
+
+// infer type from materialize input validator, but remove assetName.
+// result is object type with keys of the remaining properties
+// index object type by keys with same omission
+// create array type with values obtained by indexing
+// export type CongressAPIAssetJobData = Omit<
+//   z.infer<typeof materializeValidator>,
+//   'assetName'
+// >
+export type CongressAPIAssetJobData = [
+  Chamber | null | undefined, // chamber
+  number | null | undefined, // congress
+  number | null | undefined, // min bill num
+  number | null | undefined, // max bill num
+]
+
+export interface CongressAPIAssetJobResponse {
+  message: string
+  data: DataTypeOf<AnyAsset>
+}
+
+export type CongressAPIAssetJobName = Exclude<AssetName, LocalAssetJobName>
+export interface LocalAssetJobData {
+  chamber?: Chamber
+  congress?: number
+}
+export interface LocalAssetJobResponse {
+  message: string
+}
+export type LocalAssetJobName = 'report'
+
+export const storedAssetStatusValidator = z.enum([
+  'PENDING',
+  'PASS',
+  'FAIL',
+  'FETCHING',
+])
+export type StoredAssetStatus = z.infer<typeof storedAssetStatusValidator>
+export type StoredBillAsset = { billNumber: number; status: StoredAssetStatus }
