@@ -7,11 +7,13 @@ import { JobQueueName, isQueueName } from '../../assets/assets.types'
 import {
   billsAssetEmitValidator,
   billsCountAssetEmitValidator,
+  membersCountAssetEmitValidator,
 } from '../../assets/assets.validators'
 import { billsAsset } from '../../assets/bills.asset'
 import { billsCountAsset } from '../../assets/billsCount.asset'
 import { billsListAsset } from '../../assets/billsList.asset'
 import { materialize } from '../../assets/engine'
+import { membersCountAsset } from '../../assets/membersCount.asset'
 import {
   CongressAPIAssetJobData,
   CongressAPIAssetJobName,
@@ -43,6 +45,9 @@ type BillsCountAssetJobProgressEvent = z.infer<
   typeof billsCountAssetEmitValidator
 >
 type BillsAssetJobProgressEvent = z.infer<typeof billsAssetEmitValidator>
+type MembersCountAssetJobProgressEvent = z.infer<
+  typeof membersCountAssetEmitValidator
+>
 
 export const assetPlaygroundRouter = createRouter()
   // query to get all asset names
@@ -133,6 +138,27 @@ export const assetPlaygroundRouter = createRouter()
       })
     },
   })
+  .subscription('membersCount-asset-progress', {
+    resolve({ ctx }) {
+      return new trpc.Subscription<MembersCountAssetJobProgressEvent>(
+        (emit) => {
+          const queueEvents = ctx.queue.congressAPIAssetQueueEvents
+          const handledPorogress: QueueEventsListener['progress'] = async ({
+            data,
+          }) => {
+            // check type for membersCount
+            const parsed = membersCountAssetEmitValidator.safeParse(data)
+            if (!parsed.success) return
+            emit.data(parsed.data)
+          }
+          queueEvents.on('progress', handledPorogress)
+          return () => {
+            queueEvents.off('progress', handledPorogress)
+          }
+        },
+      )
+    },
+  })
   // Asset metadata queries
   .query('get-bills-count-asset-metadata', {
     input: z.object({
@@ -163,6 +189,11 @@ export const assetPlaygroundRouter = createRouter()
       const { chamber, congress } = input
       // const count = await billsCountAsset.read(chamber, congress)
       return await billsAsset.readMetadata?.(chamber, congress)
+    },
+  })
+  .query('get-members-count-asset-metadata', {
+    async resolve() {
+      return await membersCountAsset.readMetadata?.()
     },
   })
 

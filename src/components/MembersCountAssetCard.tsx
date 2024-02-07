@@ -1,23 +1,18 @@
 import { trpc } from '../utils/trpc'
-import { Chamber } from '.prisma/client'
 import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 
-interface Props {
-  chamber: Chamber
-  congress: number
-}
-export default function BillsCountAssetCard({ chamber, congress }: Props) {
+interface Props {}
+
+export default function MembersCountAssetCard({}: Props) {
   const [assetMetadata, setAssetMetadata] = useState<{
     fileExists: boolean
   }>({
     fileExists: false,
   })
   const assetMetadataQuery = trpc.useQuery([
-    'asset-playground.get-bills-count-asset-metadata',
-    { chamber, congress },
+    'asset-playground.get-members-count-asset-metadata',
   ])
-
   useEffect(() => {
     if (assetMetadataQuery.status === 'success') {
       setAssetMetadata({
@@ -25,12 +20,10 @@ export default function BillsCountAssetCard({ chamber, congress }: Props) {
       })
     }
   }, [assetMetadataQuery.status, assetMetadataQuery.data?.fileExists])
-
-  trpc.useSubscription(['asset-playground.billsCount-asset-progress'], {
+  trpc.useSubscription(['asset-playground.membersCount-asset-progress'], {
     onNext: (data) => {
-      console.log('billsCount asset progress subscription event')
-
-      console.log(`[billsCount] subscription event. status: ${data.status}`)
+      console.log('membersCount asset progress subscription event')
+      console.log(`[membersCount] subscription event. status: ${data.status}`)
       switch (data.status) {
         case 'COMPLETE': {
           assetMetadataQuery.refetch()
@@ -50,9 +43,7 @@ export default function BillsCountAssetCard({ chamber, congress }: Props) {
       >
         {assetMetadata.fileExists ? '✅' : '❌'}
       </div>
-      <div className="text-sm text-neutral-500">
-        Bill count file for {congress} {chamber}
-      </div>
+      <div className="text-sm text-neutral-500">Members count file</div>
     </div>
   )
 }
