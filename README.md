@@ -57,11 +57,43 @@
 *What is it?*
   - A list of all bill numbers in a given `congress` and `chamber`. Previously used to construct the range of bill numbers over which bills were fetched.
 
+## membersCount
+`membersCount.asset.ts`
 
+*What is it?*
+  - Total number of members, historical and current.
 
+*What is (are) its dependency(ies)?*
+
+*What is its policy?*
+  - Does the file exist?
+
+*What is its unique metadata?*
+
+*How is it created?*
+  - 1 request to congress.gov API
+
+*Associated endpoint(s)*
+  - `/member`
+
+# How to write a new asset
+**Defining asset and associated methods**
+ 1. Define an asset in its own file, in `src/assets` (e.g., `billsCount.asset.ts`).
+ 2. Write validator for asset's `emit`, in `src/assets/assets.validators.ts`.
+
+**How to expose new asset to UI**  
+1. Add the asset to const `allAssets` 
+2. Add asset job summary to states in `asset-playground.tsx`
+3. Add asset graph tile corresponding to asset in `AssetGraphTiles.tsx`, passing in corresponding `states` prop
+4. Add query for asset metadata in router
+5. Add subscription for asset job porgress router
+6. Write asset card using query and subscription
+7. Add asset card to asset graph tile creatd in step 3
 
 # `/asset-playground` state, subscriptions, etc.
 On first render, here's what `trpc` is doing:  
+
+
 
 **on-change subscription**
 - setting up a listener to the `on-change` subscription, in `asset.playground.tsx`
