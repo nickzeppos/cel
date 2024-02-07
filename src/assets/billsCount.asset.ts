@@ -99,7 +99,7 @@ export const billsCountAsset: Asset<
         chamber,
         congress,
       )
-      emit({ type: 'billsCount', status: 'DONE' })
+      emit({ type: 'billsCount', status: 'COMPLETE' })
     },
   readMetadata: async (...args) => {
     try {

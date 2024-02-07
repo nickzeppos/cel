@@ -30,13 +30,10 @@ export default function BillsCountAssetCard({ chamber, congress }: Props) {
   trpc.useSubscription(['asset-playground.billsCount-asset-progress'], {
     onNext: (data) => {
       console.log('billsCount asset progress subscription event')
-      const parsed = billsCountAssetEmitValidator.safeParse(data)
-      if (!parsed.success) return
-      console.log(
-        `[billsCount] subscription event. status: ${parsed.data.status}`,
-      )
-      switch (parsed.data.status) {
-        case 'PASS': {
+
+      console.log(`[billsCount] subscription event. status: ${data.status}`)
+      switch (data.status) {
+        case 'COMPLETE': {
           assetMetadataQuery.refetch()
           break
         }

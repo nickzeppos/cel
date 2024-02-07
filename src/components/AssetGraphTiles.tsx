@@ -115,11 +115,11 @@ function AssetGraphTile({ name, state, children }: AssetGraphTileProps) {
               >
                 {state?.state}
               </div>
-              <div
+              {/* <div
                 className={clsx('text-sm', getTextColorForState(state?.state))}
-              >
-                {state?.childJobName}
-              </div>
+              > */}
+              {/* {state?.childJobName} */}
+              {/* </div> */}
               <div
                 className={clsx(
                   'w-3 h-3 rounded-full',

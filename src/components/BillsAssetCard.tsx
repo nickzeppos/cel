@@ -1,3 +1,4 @@
+import { StoredAssetStatus } from '../assets/assets.validators'
 import { trpc } from '../utils/trpc'
 import { Chamber } from '@prisma/client'
 import { useEffect, useMemo, useState } from 'react'
@@ -8,117 +9,150 @@ interface Props {
 }
 
 export default function BillsAssetCard({ chamber, congress }: Props) {
-  // state
-  const [assetMetadata, setAssetMetadata] = useState<{
-    progressStatus: string | undefined
-    missingBillNumbers: number[] | undefined
-    fullCount: number | undefined
-  }>({
-    progressStatus: undefined,
-    missingBillNumbers: undefined,
-    fullCount: undefined,
-  })
-
   // initial state query
-  const assetMetadataQuery = trpc.useQuery([
+  const assetState = trpc.useQuery([
     'asset-playground.get-bills-asset-metadata',
     { chamber, congress },
   ])
+  const [billStatuses, setBillStatuses] = useState<
+    Record<string, StoredAssetStatus>
+  >({})
 
-  // update state on query success
   useEffect(() => {
-    if (assetMetadataQuery.status === 'success') {
-      setAssetMetadata({
-        progressStatus: undefined,
-        missingBillNumbers: assetMetadataQuery.data?.missingBillNumbers,
-        fullCount: assetMetadataQuery.data?.fullCount,
-      })
+    if (assetState.status == 'success') {
+      setBillStatuses(assetState.data?.billStatuses ?? {})
     }
-  }, [
-    assetMetadataQuery.status,
-    assetMetadataQuery.data?.missingBillNumbers,
-    assetMetadataQuery.data?.fullCount,
-  ])
+  }, [assetState.data?.billStatuses])
 
-  // set up subscription to update state
-  trpc.useSubscription(['asset-playground.congress-api-asset-queue-progress'], {
+  // set up progress subscription
+  trpc.useSubscription(['asset-playground.bills-asset-progress'], {
     onNext: (data) => {
-      console.log('cdg api asset queue progress')
-      if (
-        typeof data !== 'object' ||
-        data == null ||
-        !('status' in data) ||
-        !('type' in data) ||
-        !('billNumber' in data)
-      ) {
-        console.warn('unknown subscription event', data)
-        return
-      }
-      if (typeof data.status !== 'string') {
-        console.warn('unknown subscription event', data)
-        return
-      }
-      if (data.type !== 'bills') {
-        return
-      }
-      switch (data.status) {
-        case 'FETCHING': {
-        }
-      }
+      setBillStatuses(data.billStatuses)
     },
   })
+  const passCount = useMemo(() => {
+    return Object.values(billStatuses).filter((status) => status === 'PASS')
+      .length
+  }, [billStatuses])
 
-  const fullCount = 9403
-  const MAX_WIDTH = 360
-  const BUCKET_WIDTH = 4
-  const BUCKET_GAP = 1
-  const BUCKET_COUNT = Math.floor(
-    (MAX_WIDTH + BUCKET_GAP) / (BUCKET_WIDTH + BUCKET_GAP),
-  )
+  // const buckets = useMemo(() => {
+  //   return new Array(BUCKET_COUNT).fill(0).map((_, i, a) => {
+  //     const bucketSize =
+  //       i === a.length - 1 ? fullCount % BUCKET_COUNT : BUCKET_SIZE
+  //     const processedCount = Math.floor(Math.random() * bucketSize)
+  //     const successCount = Math.floor(Math.random() * processedCount)
+  //     return {
+  //       bucketSize,
+  //       processedCount,
+  //       successCount,
+  //     }
+  //   })
+  // }, [])
 
-  const BUCKET_SIZE = Math.ceil(fullCount / BUCKET_COUNT)
+  const BAR_MAX_WIDTH = 360 // max width of the progress bar
+  const BAR_WIDTH = 4 // width of each bar
+  const BAR_GAP = 1 // gap between each bar
+  const BAR_COUNT = Math.floor(
+    (BAR_MAX_WIDTH + BAR_GAP) / (BAR_WIDTH + BAR_GAP),
+  ) // total number of bars possible
 
-  const buckets = useMemo(() => {
-    return new Array(BUCKET_COUNT).fill(0).map((_, i, a) => {
-      const bucketSize =
-        i === a.length - 1 ? fullCount % BUCKET_COUNT : BUCKET_SIZE
-      const processedCount = Math.floor(Math.random() * bucketSize)
-      const successCount = Math.floor(Math.random() * processedCount)
-      return {
-        bucketSize,
-        processedCount,
-        successCount,
-      }
-    })
-  }, [])
-  return (
-    <div className="flex flex-col items-start w-full h-full gap-1 relative">
-      <div className="flex flex-[2] items-end gap-2">
-        <div className="text-4xl text-neutral-200">0 of {fullCount}</div>
-        <div className="text-sm text-neutral-500">bills</div>
+  // memoizing progress bar objects
+  const progressBars = useMemo(() => {
+    // calculate the total bill count based on bill statuses state
+    const totalBillCount = Object.keys(billStatuses).length
+
+    // calculate the number of bills that should be in each bar
+    const barBillCount = Math.ceil(totalBillCount / BAR_COUNT)
+
+    // create a new array of length BAR_COUNT, to be filled with progress bar objects
+    return (
+      Array(BAR_COUNT)
+        .fill(0)
+        // for each BAR_COUNT element
+        .map((_, i, a) => {
+          // first calculate number of bills that will be in the bar.
+          // normally, it's the barBillCount determined at the top,
+          // but in the case that this is the last bar, it will be set to the remainder
+          // to ensure all bills are accounted for
+          const numberOfBillsInBar =
+            i === a.length - 1 ? totalBillCount % BAR_COUNT : barBillCount
+
+          // calculate start and end indices for bills that will be in this bar
+          const start = i * numberOfBillsInBar
+
+          // end is min of start + number of bills in bar, or the total bill count
+          const end = Math.min(start + numberOfBillsInBar, totalBillCount)
+
+          // use start and end to index into bill statuses state, to get the bills
+          // corresponding to the current bar
+          const billStatusesForBar = Object.values(billStatuses).slice(
+            start,
+            end,
+          )
+
+          // calculate counts of bills in each status in the sliced portion
+          const passCount = billStatusesForBar.filter(
+            (status) => status === 'PASS',
+          ).length
+          const failCount = billStatusesForBar.filter(
+            (status) => status === 'FAIL',
+          ).length
+          const pendingCount = billStatusesForBar.filter(
+            (status) => status === 'PENDING',
+          ).length
+
+          return {
+            passCount,
+            failCount,
+            pendingCount,
+          }
+        })
+    )
+  }, [billStatuses])
+
+  if (!assetState || !assetState.data) {
+    return (
+      <div className="flex flex-col items-start w-full h-full gap-1 relative">
+        <div className="flex flex-[2] items-end gap-2">
+          <div className="text-4xl text-neutral-200"></div>
+          <div className="text-sm text-neutral-500">Waiting on metadata...</div>
+        </div>
       </div>
-      <div className={`flex flex-1 w-full`} style={{ gap: BUCKET_GAP }}>
-        {buckets.map((props, i) => (
-          <BillBucketStatus key={i} {...props} />
-        ))}
+    )
+  } else {
+    return (
+      <div className="flex flex-col items-start w-full h-full gap-1 relative">
+        <div className="flex flex-[2] items-end gap-2">
+          <div className="text-4xl text-neutral-200">
+            {passCount} of {Object.keys(billStatuses).length}
+          </div>
+          <div className="text-sm text-neutral-500">bills</div>
+        </div>
+        <div className="flex flex-1 w-full" style={{ gap: BAR_GAP }}>
+          {progressBars.map((props, i) => (
+            <ProgressBarWithStatus key={i} {...props} />
+          ))}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 }
 
-interface BucketProps {
-  bucketSize: number
-  processedCount: number
-  successCount: number
+interface ProgressBarProps {
+  passCount: number
+  pendingCount: number
+  failCount: number
 }
-function BillBucketStatus({
-  bucketSize,
-  processedCount,
-  successCount,
-}: BucketProps) {
-  const L = lightnessScale(processedCount / bucketSize)
-  const C = chromaScale(processedCount / bucketSize)
-  const H = processedCount > 0 ? hueScale(successCount / processedCount) : 0
+function ProgressBarWithStatus({
+  passCount,
+  pendingCount,
+  failCount,
+}: ProgressBarProps) {
+  const total = passCount + pendingCount + failCount
+  const processedCount = passCount + failCount
+  const L = lightnessScale(processedCount / total)
+  const C = chromaScale(processedCount / total)
+  const H = processedCount > 0 ? hueScale(passCount / processedCount) : 0
   return (
     <div
       className={`h-[25px]`}
@@ -150,6 +184,6 @@ function chromaScale(value: number): number {
   return value * 0.24
 }
 
-function BucketWithHeight(props: BucketProps) {
+function BucketWithHeight(props: ProgressBarProps) {
   return <div>bucket 2. only hue varies. height of bar varies.</div>
 }

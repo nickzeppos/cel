@@ -12,6 +12,7 @@
 // Imports
 import { CONGRESS_API_PAGE_SIZE_LIMIT } from '../../assetDefinitions'
 import { throttledFetchCongressAPI } from '../workers/congressAPI'
+import { StoredAssetStatus } from '../workers/types'
 import {
   billActionsResponseValidator,
   billActionsValidator,
@@ -21,6 +22,7 @@ import {
   billDetailValidator,
 } from '../workers/validators'
 import { Asset } from './assets.types'
+import { storedAssetStatusValidator } from './assets.validators'
 import { billsCountAsset } from './billsCount.asset'
 import {
   getWriteMeta,
@@ -33,7 +35,7 @@ import {
 } from './utils'
 import { Chamber } from '@prisma/client'
 import { existsSync, readdirSync } from 'fs'
-import { z } from 'zod'
+import { record, z } from 'zod'
 
 const ASSET_NAME = 'bills'
 const assetDataValidator = z.object({
@@ -46,15 +48,13 @@ type AssetData = Array<z.infer<typeof assetDataValidator>>
 type AssetArgs = [Chamber, number]
 type AssetDeps = [typeof billsCountAsset]
 const metaValidator = z.object({
-  missingBillNumbers: z.array(z.number()),
-  fullCount: z.number(),
+  billStatuses: z.record(storedAssetStatusValidator),
   lastChecked: z.number().optional(),
   lastCreated: z.number().optional(),
 })
 type AssetMeta = z.infer<typeof metaValidator>
 const DEFAULT_META: AssetMeta = {
-  missingBillNumbers: [],
-  fullCount: 0,
+  billStatuses: {},
 }
 
 // Path manipulation functions
@@ -171,12 +171,18 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
       const path = getFileName(chamber, congress, billNumber)
       return !policyRollup(path)
     })
+    const missingBillNumbersSet = new Set(missingBillNumbers)
+    const billStatuses: Record<number, StoredAssetStatus> = Object.fromEntries(
+      billNumbers.map((billNumber) => [
+        billNumber,
+        missingBillNumbersSet.has(billNumber) ? 'PENDING' : 'PASS',
+      ]),
+    )
 
     // Write metadata
     writeMeta(
       {
-        missingBillNumbers,
-        fullCount: billsCount,
+        billStatuses,
         lastChecked: Date.now(),
       },
       chamber,
@@ -196,9 +202,14 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
     (chamber, congress) =>
     async (billsCount) => {
       // get missing bill numbers from meta file
-      const { missingBillNumbers } = metaValidator.parse(
+      const { billStatuses } = metaValidator.parse(
         JSON.parse(readUtf8File(getMetaFileName(chamber, congress))),
       )
+
+      const missingBillNumbers = Object.keys(billStatuses)
+        .filter((billNumber) => billStatuses[billNumber] === 'PENDING')
+        .map(Number)
+
       debug(
         `Have ${billsCount - missingBillNumbers.length} on file... creating ${
           missingBillNumbers.length
@@ -207,12 +218,14 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
       // make billType from chamber, create base url
       const billType = chamber === 'HOUSE' ? 'hr' : 's'
       const baseURL = `/bill/${congress}/${billType}`
+
       // for each missing bill number
       for (const billNumber of missingBillNumbers) {
+        // set bill status to fetching
+        billStatuses[billNumber] = 'FETCHING'
         emit({
           type: 'bills',
-          billNumber: billNumber,
-          status: 'FETCHING',
+          billStatuses,
         })
         // fetch bill details
         debug(`fetching bill details for ${congress}-${billType}-${billNumber}`)
@@ -255,24 +268,28 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
         const fileName = getFileName(chamber, congress, billNumber)
         debug(`writing ${fileName}`)
         writeFileSyncWithDir(fileName, JSON.stringify(billData), 'utf8')
+        billStatuses[billNumber] = 'PASS'
         emit({
           type: 'bills',
-          billNumber: billNumber,
-          status: 'SUCCESS',
+          billStatuses,
         })
       }
       // write metadata
       writeMeta(
         {
-          // TODO: Right now just set missing bill numbers to empty after loop, but this should probably be an accumulated list of bill numbers that failed during the loop.
-          // One quick way to do this would be to go from schema.parse() to safe parse, then accumulate on !success
-          missingBillNumbers: [],
-          fullCount: billsCount,
+          // TODO: Right now just set missing bill numbers to empty after loop, but this should eventually be an accumulated list of bill numbers that failed during the loop.
+          // I'm just not really doing error handling completely right now, basically just fetching and error handling is sort of handled in the policy.
+
+          billStatuses,
           lastCreated: Date.now(),
         },
         chamber,
         congress,
       )
+      emit({
+        type: 'bills',
+        billStatuses,
+      })
     },
 
   readMetadata: async (chamber, congress) => {

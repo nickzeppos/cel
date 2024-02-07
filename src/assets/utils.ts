@@ -89,14 +89,14 @@ export function getWriteMeta<M, A extends unknown[]>(
         `Unable to load metadata from ${filename}, using default value`,
       )
     }
-    console.log('==============updates', updates)
+    // console.log('==============updates', updates)
     // updates metadata
     meta = {
       ...meta,
       ...updates,
     }
     // Object.assign(meta, updates)
-    console.log('==============meta', meta)
+    // console.log('==============meta', meta)
     debug(logKey, `Writing meta ${filename}`)
     // writes new metadata file
     writeFileSyncWithDir(filename, JSON.stringify(meta))

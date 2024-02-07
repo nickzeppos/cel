@@ -4,7 +4,10 @@ import {
   getAssetNames,
 } from '../../../assetDefinitions'
 import { JobQueueName, isQueueName } from '../../assets/assets.types'
-import { billsCountAssetEmitValidator } from '../../assets/assets.validators'
+import {
+  billsAssetEmitValidator,
+  billsCountAssetEmitValidator,
+} from '../../assets/assets.validators'
 import { billsAsset } from '../../assets/bills.asset'
 import { billsCountAsset } from '../../assets/billsCount.asset'
 import { billsListAsset } from '../../assets/billsList.asset'
@@ -36,6 +39,10 @@ export type AssetJobChangeEvent = {
   jobState: JobState | 'unknown'
   childJobName: AssetName | null | undefined
 }
+type BillsCountAssetJobProgressEvent = z.infer<
+  typeof billsCountAssetEmitValidator
+>
+type BillsAssetJobProgressEvent = z.infer<typeof billsAssetEmitValidator>
 
 export const assetPlaygroundRouter = createRouter()
   // query to get all asset names
@@ -90,7 +97,7 @@ export const assetPlaygroundRouter = createRouter()
   // Asset progress events
   .subscription('billsCount-asset-progress', {
     resolve({ ctx }) {
-      return new trpc.Subscription((emit) => {
+      return new trpc.Subscription<BillsCountAssetJobProgressEvent>((emit) => {
         const queueEvents = ctx.queue.congressAPIAssetQueueEvents
         const handleProgress: QueueEventsListener['progress'] = async ({
           data,
@@ -98,7 +105,26 @@ export const assetPlaygroundRouter = createRouter()
           // check type for billsCount
           const parsed = billsCountAssetEmitValidator.safeParse(data)
           if (!parsed.success) return
-          emit.data(data)
+          emit.data(parsed.data)
+        }
+        queueEvents.on('progress', handleProgress)
+        return () => {
+          queueEvents.off('progress', handleProgress)
+        }
+      })
+    },
+  })
+  .subscription('bills-asset-progress', {
+    resolve({ ctx }) {
+      return new trpc.Subscription<BillsAssetJobProgressEvent>((emit) => {
+        const queueEvents = ctx.queue.congressAPIAssetQueueEvents
+        const handleProgress: QueueEventsListener['progress'] = async ({
+          data,
+        }) => {
+          // check type for bills
+          const parsed = billsAssetEmitValidator.safeParse(data)
+          if (!parsed.success) return
+          emit.data(parsed.data)
         }
         queueEvents.on('progress', handleProgress)
         return () => {
