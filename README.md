@@ -1,4 +1,14 @@
+**CEL**
+# TOC
+1. [Assets](#assets)
+2. [How to write a new asset](#how-to-write-a-new-asset)
+3. [What's in /asset-playground](#asset-playground-state-subscriptions-etc)
+
+
+# Abstract
+TODO: Abstract
 # Assets
+TODO: Intro
 ## billsCount
 `billsCount.asset.ts`
 
@@ -49,14 +59,6 @@
 - `/bill/{congress}/{billType}/{billNumber}/actions` 
 - `/bill/{congress}/{billType}/{billNumber}/committees` 
 
-## billsList
-**NOTE: DEPRECATED. As of 1/2024, Congress.gov API exposes bill endpoints for reserved bills. No longer necessary to construct a bill list before getting bills, just have to know count.** 
-
-`billsList.asset.ts`  
-
-*What is it?*
-  - A list of all bill numbers in a given `congress` and `chamber`. Previously used to construct the range of bill numbers over which bills were fetched.
-
 ## membersCount
 `membersCount.asset.ts`
 
@@ -76,6 +78,16 @@
 *Associated endpoint(s)*
   - `/member`
 
+  
+## billsList
+**NOTE: DEPRECATED. As of 1/2024, Congress.gov API exposes bill endpoints for reserved bills. No longer necessary to construct a bill list before getting bills, just have to know count.** 
+
+`billsList.asset.ts`  
+
+*What is it?*
+  - A list of all bill numbers in a given `congress` and `chamber`. Previously used to construct the range of bill numbers over which bills were fetched.
+
+
 # How to write a new asset
 **Defining asset and associated methods**
  1. Define an asset in its own file, in `src/assets` (e.g., `billsCount.asset.ts`).
@@ -93,12 +105,10 @@
 # `/asset-playground` state, subscriptions, etc.
 On first render, here's what `trpc` is doing:  
 
-
-
 **on-change subscription**
 - setting up a listener to the `on-change` subscription, in `asset.playground.tsx`
   - events that are emitted from the `on-change` subscription are distinct from the progress events we control inside an asset's `create` method
-  - events emitted from `on-change` are used to (re)set the `states` state, in `asset.playground.tsx`, defined as follows:
+  - events emitted from `on-change` are used to (re)set the `states` state, in `asset.playground.tsx`:
   ```ts
   // components/AssetGraphTiles.tsx
   // states is of type AssetJobSummaryMap
@@ -142,19 +152,14 @@ On first render, here's what `trpc` is doing:
     - render information about the asset on an asset card
     - house instructions written by the asset `policy`, to inform the `create`.
     - This is helpful because the contents of an asset card depend on asset `policy` says about the asset, and whether or not `create` has to be run
-  - `readMetadata` will return `null` if the metadata file doesn't exist, or cannot be validated
-  - 
+  - `readMetadata` will return `null` if the metadata file doesn't exist, or cannot be validated  
 
+**asset job progress subscription**
+- in each asset card, we also have a `useSubscription` corresponding to that asset's job progress events
+- these progress events are those we emit from asset's `create` method of the asset
 
-
-## Hooking up UI and asset queue events
-Working through bills asset, want to hook up the asset tile on the playground page to what's actually going on. Seems like I have to proceed as follows:
-
-- modify initial state query to reflect the change i made to metadata (i.e., is missing bill number array)
-- emit events from asset create method. I can characterize these on a bill by bill basis, or I can conceive of a representation of progress that might be more meaningful to the UI
-- set up a subscription in the asset playground router (looks like there is one already in there for bills list, called bills-asset-progress, that i can use)
-- set up state and subscription in the component
-## Describing how job progress is updated, events emitted, etc., for my own edification:
+## Notes section
+### Describing how job progress is updated, events emitted, etc., for my own edification:
 **NOTE: I'm going to avoid talking about both the websocket server and the setting up of queues here, just focus on how we're handling events, provided these are set up and working with the router and its context.**
 - An asset may, in its `create` method, use the `emit` method. `emit` is part of `EngineContext` type.
 ```ts
