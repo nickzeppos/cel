@@ -35,20 +35,6 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
       .length
   }, [billStatuses])
 
-  // const buckets = useMemo(() => {
-  //   return new Array(BUCKET_COUNT).fill(0).map((_, i, a) => {
-  //     const bucketSize =
-  //       i === a.length - 1 ? fullCount % BUCKET_COUNT : BUCKET_SIZE
-  //     const processedCount = Math.floor(Math.random() * bucketSize)
-  //     const successCount = Math.floor(Math.random() * processedCount)
-  //     return {
-  //       bucketSize,
-  //       processedCount,
-  //       successCount,
-  //     }
-  //   })
-  // }, [])
-
   const BAR_MAX_WIDTH = 360 // max width of the progress bar
   const BAR_WIDTH = 4 // width of each bar
   const BAR_GAP = 1 // gap between each bar
@@ -110,7 +96,8 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
     )
   }, [billStatuses])
 
-  if (!assetState || !assetState.data) {
+  // If undefined, we're  loading
+  if (assetState === undefined || assetState.data === undefined) {
     return (
       <div className="flex flex-col items-start w-full h-full gap-1 relative">
         <div className="flex flex-[2] items-end gap-2">
@@ -119,6 +106,17 @@ export default function BillsAssetCard({ chamber, congress }: Props) {
         </div>
       </div>
     )
+    // If null, asset's readMetdata() couldn't find the file, probably doesn't exist yet
+  } else if (assetState.data === null) {
+    return (
+      <div className="flex flex-col items-start w-full h-full gap-1 relative">
+        <div className="flex flex-[2] items-end gap-2">
+          <div className="text-4xl text-neutral-200"></div>
+          <div className="text-sm text-neutral-500">No metadata found</div>
+        </div>
+      </div>
+    )
+    // Else, we have data
   } else {
     return (
       <div className="flex flex-col items-start w-full h-full gap-1 relative">
