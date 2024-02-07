@@ -187,7 +187,6 @@ export const assetPlaygroundRouter = createRouter()
     }),
     async resolve({ input }) {
       const { chamber, congress } = input
-      // const count = await billsCountAsset.read(chamber, congress)
       return await billsAsset.readMetadata?.(chamber, congress)
     },
   })
