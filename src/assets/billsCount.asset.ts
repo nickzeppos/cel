@@ -33,7 +33,7 @@ function debug(message: string): void {
 }
 
 function makeFileName(chamber: Chamber, congress: number) {
-  return `${ASSET_NAME}/${congress}/${chamber}.json`
+  return `${ASSET_NAME}/${congress}/${chamber}.txt`
 }
 
 function makeMetaFileName(chamber: Chamber, congress: number) {

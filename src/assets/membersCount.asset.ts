@@ -27,10 +27,10 @@ function debug(message: string): void {
   logDebug(ASSET_NAME, message)
 }
 function makeFileName() {
-  return `${ASSET_NAME}/membersCount.json`
+  return `${ASSET_NAME}/${ASSET_NAME}.txt`
 }
 function makeMetaFileName() {
-  return `${ASSET_NAME}/membersCount-meta.json`
+  return `${ASSET_NAME}/${ASSET_NAME}-meta.json`
 }
 const getFileName = withRootCachePath(makeFileName)
 const getMetaFileName = withRootCachePath(makeMetaFileName)
