@@ -35,7 +35,7 @@ import {
 } from './utils'
 import { Chamber } from '@prisma/client'
 import { existsSync, readdirSync } from 'fs'
-import { record, z } from 'zod'
+import { z } from 'zod'
 
 const ASSET_NAME = 'bills'
 const assetDataValidator = z.object({
