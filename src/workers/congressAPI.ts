@@ -48,7 +48,7 @@ export function fetchCongressAPI(
   return fetch(req)
 }
 
-const THROTTLE_TIMEOUT = 2500
+export const THROTTLE_TIMEOUT = 2500
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const throttle = <R, T extends (...args: Array<any>) => Promise<R>>(
   func: T,

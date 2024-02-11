@@ -66,12 +66,8 @@ export const allMemberValidator = z.object({
 
 export type AllMember = z.infer<typeof allMemberValidator>
 
-const allMemberWithKeyValidator = z.object({
-  member: allMemberValidator,
-})
-
 export const allMemberResponseValidator = z.object({
-  members: z.array(allMemberWithKeyValidator),
+  members: z.array(allMemberValidator),
   pagination: paginationValidator,
   request: requestValidator,
 })

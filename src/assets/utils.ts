@@ -144,3 +144,9 @@ export function safeParseJSON(
 export function isValidJSON(content: string): boolean {
   return safeParseJSON(content).data !== null
 }
+
+// Given a page number, convert it to the appropriate offset for the API, provided
+// the imported page size limit.
+export function pageNumberToOffset(pageNumber: number, limit: number) {
+  return (pageNumber - 1) * limit
+}

@@ -29,11 +29,11 @@ const AssetPlayground: NextPage = () => {
   const [maxBillNum, setMaxBillNum] = useState<number | null>(10)
   const [states, setStates] = useState<AssetJobSummaryMap>({
     bills: getAssetJobSummary('bills'),
-    members: getAssetJobSummary('members'),
     membersCount: getAssetJobSummary('membersCount'),
     billsCount: getAssetJobSummary('billsCount'),
-    bioguides: getAssetJobSummary('bioguides'),
-
+    allMembers: getAssetJobSummary('allMembers'),
+    // bioguides: getAssetJobSummary('bioguides'),
+    // members: getAssetJobSummary('members'),
     // report: getAssetJobSummary('report'),
     // billsList: getAssetJobSummary('billsList'),
   })

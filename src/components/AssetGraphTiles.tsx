@@ -1,11 +1,12 @@
 import { AssetName } from '../../assetDefinitions'
+import AllMembersAssetCard from './AllMembersAssetCard'
 import BillsAssetCard from './BillsAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
 import MembersCountAssetCard from './MembersCountAssetCard'
 import { Chamber } from '.prisma/client'
 import { JobState } from 'bullmq'
 import clsx from 'clsx'
-import { DependencyList, useEffect, useRef, useState } from 'react'
+import { DependencyList, useEffect, useRef } from 'react'
 
 export type AssetJobSummaryMap = Record<AssetName, AssetJobSummary>
 
@@ -37,32 +38,37 @@ export default function AssetGraphTiles({
     <div className="flex flex-col p-4 m-4 border rounded-md border-gray-800">
       <div className="text-2xl font-bold ">Jobs</div>
       <div className="grid grid-cols-3 grid-rows-4 gap-4">
-        <AssetGraphTile />
-        {/* <AssetGraphTile name="report" state={states?.['report']} /> */}
-        <AssetGraphTile />
-        <AssetGraphTile name="bioguides" state={states?.['bioguides']} />
-        <AssetGraphTile name="bills" state={states?.['bills']}>
-          {chamber != null && congress != null ? (
-            <BillsAssetCard chamber={chamber} congress={congress} />
-          ) : null}
-        </AssetGraphTile>
-        {/* <AssetGraphTile name="billsList" state={states?.['billsList']}> */}
-        {/* {chamber != null && congress != null ? (
-            <BillsListAssetCard chamber={chamber} congress={congress} />
-          ) : null} */}
-        {/* </AssetGraphTile> */}
-        <AssetGraphTile name="members" state={states?.['members']} />
-        <AssetGraphTile />
-        <AssetGraphTile />
-        <AssetGraphTile name="membersCount" state={states?.['membersCount']}>
-          <MembersCountAssetCard />
-        </AssetGraphTile>
         <AssetGraphTile name="billsCount" state={states?.['billsCount']}>
           {chamber != null && congress != null ? (
             <BillsCountAssetCard chamber={chamber} congress={congress} />
           ) : null}
         </AssetGraphTile>
         <AssetGraphTile />
+        <AssetGraphTile name="membersCount" state={states?.['membersCount']}>
+          <MembersCountAssetCard />
+        </AssetGraphTile>
+
+        <AssetGraphTile name="bills" state={states?.['bills']}>
+          {chamber != null && congress != null ? (
+            <BillsAssetCard chamber={chamber} congress={congress} />
+          ) : null}
+        </AssetGraphTile>
+        <AssetGraphTile />
+        <AssetGraphTile name="allMembers" state={states?.['allMembers']}>
+          <AllMembersAssetCard />
+        </AssetGraphTile>
+        <AssetGraphTile />
+        <AssetGraphTile />
+        <AssetGraphTile />
+        {/* <AssetGraphTile name="report" state={states?.['report']} /> */}
+        {/* <AssetGraphTile name="bioguides" state={states?.['bioguides']} /> */}
+
+        {/* <AssetGraphTile name="billsList" state={states?.['billsList']}> */}
+        {/* {chamber != null && congress != null ? (
+            <BillsListAssetCard chamber={chamber} congress={congress} />
+          ) : null} */}
+        {/* </AssetGraphTile> */}
+        {/* <AssetGraphTile name="members" state={states?.['members']} /> */}
       </div>
     </div>
   )

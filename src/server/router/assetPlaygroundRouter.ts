@@ -3,8 +3,10 @@ import {
   getAssetForName,
   getAssetNames,
 } from '../../../assetDefinitions'
+import { allMembersAsset } from '../../assets/allMembers.asset'
 import { JobQueueName, isQueueName } from '../../assets/assets.types'
 import {
+  allMembersAssetEmitValidator,
   billsAssetEmitValidator,
   billsCountAssetEmitValidator,
   membersCountAssetEmitValidator,
@@ -47,6 +49,9 @@ type BillsCountAssetJobProgressEvent = z.infer<
 type BillsAssetJobProgressEvent = z.infer<typeof billsAssetEmitValidator>
 type MembersCountAssetJobProgressEvent = z.infer<
   typeof membersCountAssetEmitValidator
+>
+type AllMembersAssetJobProgressEvent = z.infer<
+  typeof allMembersAssetEmitValidator
 >
 
 export const assetPlaygroundRouter = createRouter()
@@ -143,7 +148,7 @@ export const assetPlaygroundRouter = createRouter()
       return new trpc.Subscription<MembersCountAssetJobProgressEvent>(
         (emit) => {
           const queueEvents = ctx.queue.congressAPIAssetQueueEvents
-          const handledPorogress: QueueEventsListener['progress'] = async ({
+          const handleProgress: QueueEventsListener['progress'] = async ({
             data,
           }) => {
             // check type for membersCount
@@ -151,12 +156,31 @@ export const assetPlaygroundRouter = createRouter()
             if (!parsed.success) return
             emit.data(parsed.data)
           }
-          queueEvents.on('progress', handledPorogress)
+          queueEvents.on('progress', handleProgress)
           return () => {
-            queueEvents.off('progress', handledPorogress)
+            queueEvents.off('progress', handleProgress)
           }
         },
       )
+    },
+  })
+  .subscription('allMembers-asset-progress', {
+    resolve({ ctx }) {
+      return new trpc.Subscription<AllMembersAssetJobProgressEvent>((emit) => {
+        const queueEvents = ctx.queue.localAssetQueueEvents
+        const handleProgress: QueueEventsListener['progress'] = async ({
+          data,
+        }) => {
+          // check type for allMembers
+          const parsed = allMembersAssetEmitValidator.safeParse(data)
+          if (!parsed.success) return
+          emit.data(parsed.data)
+        }
+        queueEvents.on('progress', handleProgress)
+        return () => {
+          queueEvents.off('progress', handleProgress)
+        }
+      })
     },
   })
   // Asset metadata queries
@@ -190,9 +214,14 @@ export const assetPlaygroundRouter = createRouter()
       return await billsAsset.readMetadata?.(chamber, congress)
     },
   })
-  .query('get-members-count-asset-metadata', {
+  .query('get-membersCount-asset-metadata', {
     async resolve() {
       return await membersCountAsset.readMetadata?.()
+    },
+  })
+  .query('get-allMembers-asset-metadata', {
+    async resolve() {
+      return await allMembersAsset.readMetadata?.()
     },
   })
 

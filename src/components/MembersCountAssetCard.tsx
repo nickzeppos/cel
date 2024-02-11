@@ -11,7 +11,7 @@ export default function MembersCountAssetCard({}: Props) {
     fileExists: false,
   })
   const assetMetadataQuery = trpc.useQuery([
-    'asset-playground.get-members-count-asset-metadata',
+    'asset-playground.get-membersCount-asset-metadata',
   ])
   useEffect(() => {
     if (assetMetadataQuery.status === 'success') {

@@ -22,4 +22,15 @@ export const membersCountAssetEmitValidator = z.object({
   status: storedAssetStatusValidator,
 })
 
+export const pageStatusValidator = z.object({
+  status: storedAssetStatusValidator,
+  fileName: z.string(),
+  pageNumber: z.number(),
+})
+
+export const allMembersAssetEmitValidator = z.object({
+  type: z.literal('allMembers'),
+  pageStatuses: z.array(pageStatusValidator),
+})
+
 export type StoredAssetStatus = z.infer<typeof storedAssetStatusValidator>

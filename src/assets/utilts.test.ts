@@ -1,7 +1,9 @@
+import { CONGRESS_API_PAGE_SIZE_LIMIT } from '../../assetDefinitions'
 import { AllMember } from '../workers/validators'
 import {
   isValidJSON,
   makeRange,
+  pageNumberToOffset,
   safeParseJSON,
   servedIncludes1973,
   withRootCachePath,
@@ -96,5 +98,17 @@ describe('makeRange', () => {
   })
   it('should return empty array if first is greater than last', () => {
     expect(makeRange(3, 1)).toEqual([])
+  })
+})
+
+describe('pageNumberToOffset', () => {
+  it('should return the correct offset for a given page number and limit', () => {
+    expect(pageNumberToOffset(1, 20)).toBe(0)
+    expect(pageNumberToOffset(2, 20)).toBe(20)
+  })
+  it('should work with our constant page size limit', () => {
+    const limit = CONGRESS_API_PAGE_SIZE_LIMIT
+    expect(pageNumberToOffset(1, limit)).toBe(0)
+    expect(pageNumberToOffset(2, limit)).toBe(limit)
   })
 })
