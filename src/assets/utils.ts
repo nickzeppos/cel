@@ -12,27 +12,27 @@ export function makeRange(first: number, last: number): Array<number> {
   return Array.from({ length: last - first + 1 }, (_, i) => i + first)
 }
 
-export function servedIncludes1973(served: AllMember['served']): boolean {
-  if (served.Senate) {
-    if (
-      served.Senate.some(
-        (term) => term.start <= 1973 && (term.end == null || term.end >= 1973),
-      )
-    ) {
-      return true
-    }
-  }
-  if (served.House) {
-    if (
-      served.House.some(
-        (term) => term.start <= 1973 && (term.end == null || term.end >= 1973),
-      )
-    ) {
-      return true
-    }
-  }
-  return false
-}
+// export function servedIncludes1973(served: AllMember['served']): boolean {
+//   if (served.Senate) {
+//     if (
+//       served.Senate.some(
+//         (term) => term.start <= 1973 && (term.end == null || term.end >= 1973),
+//       )
+//     ) {
+//       return true
+//     }
+//   }
+//   if (served.House) {
+//     if (
+//       served.House.some(
+//         (term) => term.start <= 1973 && (term.end == null || term.end >= 1973),
+//       )
+//     ) {
+//       return true
+//     }
+//   }
+//   return false
+// }
 
 export function debug(key: string, message: string): void {
   console.debug(`[${key} | ${format(Date.now(), 'HH:mm:ss.SSS')}]: ${message}`)

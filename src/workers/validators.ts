@@ -41,26 +41,18 @@ export const allMemberValidator = z.object({
     .nullish(),
   district: z.number().int().optional(),
   name: z.string(),
-  party: z.string(),
-  served: z.object({
-    House: z
-      .array(
-        z.object({
-          end: z.number().int().optional(),
-          start: z.number().int(),
-        }),
-      )
-      .optional(),
-    Senate: z
-      .array(
-        z.object({
-          end: z.number().int().optional(),
-          start: z.number().int(),
-        }),
-      )
-      .optional(),
-  }),
+  partyName: z.string(),
   state: z.string(),
+  terms: z.object({
+    item: z.array(
+      z.object({
+        chamber: fullChamberNameValidator,
+        endYear: z.number().int().optional(),
+        startYear: z.number().int(),
+      }),
+    ),
+  }),
+  updateDate: z.string(),
   url: z.string().url(),
 })
 
