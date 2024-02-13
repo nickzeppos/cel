@@ -286,10 +286,6 @@ export const billsAsset: Asset<AssetData, AssetArgs, AssetDeps, AssetMeta> = {
         chamber,
         congress,
       )
-      emit({
-        type: 'bills',
-        billStatuses,
-      })
     },
 
   readMetadata: async (chamber, congress) => {
