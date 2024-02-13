@@ -167,7 +167,7 @@ export const assetPlaygroundRouter = createRouter()
   .subscription('allMembers-asset-progress', {
     resolve({ ctx }) {
       return new trpc.Subscription<AllMembersAssetJobProgressEvent>((emit) => {
-        const queueEvents = ctx.queue.localAssetQueueEvents
+        const queueEvents = ctx.queue.congressAPIAssetQueueEvents
         const handleProgress: QueueEventsListener['progress'] = async ({
           data,
         }) => {
