@@ -25,11 +25,12 @@ export default function AllMembersAssetCard({}: Props) {
     if (assetState.status == 'success') {
       setPageStatuses(assetState.data?.pageStatuses ?? [])
     }
-  })
+  }, [assetState.status])
   // set up subscription to update pae statuses
   trpc.useSubscription(['asset-playground.allMembers-asset-progress'], {
     onNext: (data) => {
-      setPageStatuses(data.pageStatuses)
+      const ps = data.pageStatuses
+      setPageStatuses(ps)
     },
   })
   const boundaryRef = useRef<HTMLDivElement>(null)
@@ -63,8 +64,10 @@ export default function AllMembersAssetCard({}: Props) {
         ref={boundaryRef}
       >
         <div className="flex flex-[2] items-end gap-2">
-          <div className="text-4xl text-neutral-200">{pageStatuses.length}</div>
-          <div className="text-sm text-neutral-500">pages of bill metadata</div>
+          <div className="text-4xl text-neutral-200">
+            {passCount} of {pageStatuses.length}
+          </div>
+          <div className="text-sm text-neutral-500">pages of members</div>
         </div>
         <div className="flex flex-1 w-full gap-[2px]">
           {pageStatuses.map(({ fileName, status }) => (
