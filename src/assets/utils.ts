@@ -1,10 +1,9 @@
-import { AllMember } from '../workers/validators'
 import { format } from 'date-fns'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 
 // consts
 const ROOT_CACHE_PATH = './data'
-
+const ROOT_RESOURCES_PATH = './resources'
 // utils
 
 // Range of integers, inclusive
@@ -113,6 +112,15 @@ export function withRootCachePath<T extends (...args: any[]) => string>(
   return (...args: Parameters<T>): string => {
     const path = makeFilePath(...args)
     return `${ROOT_CACHE_PATH}/${path}`
+  }
+}
+
+export function withRootResourcesPath<T extends (...args: any[]) => string>(
+  makeFilePath: T,
+): (...funcArgs: Parameters<T>) => string {
+  return (...args: Parameters<T>): string => {
+    const path = makeFilePath(...args)
+    return `${ROOT_RESOURCES_PATH}/${path}`
   }
 }
 

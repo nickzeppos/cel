@@ -401,9 +401,13 @@ export const memberResponseValidator = z.object({
   pagination: paginationValidator.optional(),
   request: requestValidator,
 })
+export const stepValidator = z.nativeEnum(Step)
 
-export const stepRegexesValidator = z.map(
-  z.nativeEnum(Step),
-  z.array(z.string()),
-)
-export type StepRegexes = z.infer<typeof stepRegexesValidator>
+export const rankingPhrasesValidator = z.object({
+  id: z.number(),
+  phrase: z.string(),
+  exception: z.number().int(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  regex: z.number().int(),
+})
