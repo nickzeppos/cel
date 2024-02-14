@@ -116,14 +116,19 @@ export interface CongressAPIAssetJobResponse {
 }
 
 export type CongressAPIAssetJobName = Exclude<AssetName, LocalAssetJobName>
-export interface LocalAssetJobData {
-  chamber?: Chamber
-  congress?: number
-}
+export type LocalAssetJobName = Extract<
+  AssetName,
+  'report' | 'stepRegexes' | 'rankingPhrases' | 'importantList'
+>
+
+export type LocalAssetJobData = [
+  Chamber | null | undefined, // chamber
+  number | null | undefined, // congress
+]
 export interface LocalAssetJobResponse {
   message: string
+  data: DataTypeOf<AnyAsset>
 }
-export type LocalAssetJobName = 'report'
 
 export const storedAssetStatusValidator = z.enum([
   'PENDING',

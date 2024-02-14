@@ -2,7 +2,10 @@ import { allMembersAsset } from './src/assets/allMembers.asset'
 import { AnyAsset, Asset } from './src/assets/assets.types'
 import { billsAsset } from './src/assets/bills.asset'
 import { billsCountAsset } from './src/assets/billsCount.asset'
+import { importantListAsset } from './src/assets/importantList.asset'
 import { membersCountAsset } from './src/assets/membersCount.asset'
+import { rankingPhrasesAsset } from './src/assets/rankingPhrases.asset'
+import { stepRegexesAsset } from './src/assets/stepRegexes.asset'
 import { debug, isNotNull, writeFileSyncWithDir } from './src/assets/utils'
 import { bioguidesAssetMetadataValidator } from './src/utils/validators'
 import { throttledFetchCongressAPI } from './src/workers/congressAPI'
@@ -192,6 +195,9 @@ const allAssets = {
   billsCount: billsCountAsset,
   bills: billsAsset,
   allMembers: allMembersAsset,
+  importantList: importantListAsset,
+  stepRegexes: stepRegexesAsset,
+  rankingPhrases: rankingPhrasesAsset,
   // bioguides: bioguidesAsset,
   // members: membersAsset,
   // billsList: billsListAsset,
