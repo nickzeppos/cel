@@ -28,14 +28,18 @@ const AssetPlayground: NextPage = () => {
   const [minBillNum, setMinBillNum] = useState<number | null>(1)
   const [maxBillNum, setMaxBillNum] = useState<number | null>(10)
   const [states, setStates] = useState<AssetJobSummaryMap>({
+    // congress.gov api assets
     bills: getAssetJobSummary('bills'),
     membersCount: getAssetJobSummary('membersCount'),
     billsCount: getAssetJobSummary('billsCount'),
     allMembers: getAssetJobSummary('allMembers'),
     // bioguides: getAssetJobSummary('bioguides'),
-    // members: getAssetJobSummary('members'),
     // report: getAssetJobSummary('report'),
-    // billsList: getAssetJobSummary('billsList'),
+
+    // local assets/resources
+    stepRegexes: getAssetJobSummary('stepRegexes'),
+    importantList: getAssetJobSummary('importantList'),
+    rankingPhrases: getAssetJobSummary('rankingPhrases'),
   })
   const materialize = trpc.useMutation(['asset-playground.materialize'], {
     onSuccess: (data) => {

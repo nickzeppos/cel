@@ -2,7 +2,10 @@ import { AssetName } from '../../assetDefinitions'
 import AllMembersAssetCard from './AllMembersAssetCard'
 import BillsAssetCard from './BillsAssetCard'
 import BillsCountAssetCard from './BillsCountAssetCard'
+import ImportantListAssetCard from './ImportantListAssetCard'
 import MembersCountAssetCard from './MembersCountAssetCard'
+import RankingPhrasesAssetCard from './RankingPhrasesAssetCard'
+import StepRegexesAssetCard from './StepRegexesAssetCard'
 import { Chamber } from '.prisma/client'
 import { JobState } from 'bullmq'
 import clsx from 'clsx'
@@ -36,8 +39,8 @@ export default function AssetGraphTiles({
 }: AssetGraphTilesProps) {
   return (
     <div className="flex flex-col p-4 m-4 border rounded-md border-gray-800">
-      <div className="text-2xl font-bold ">Jobs</div>
-      <div className="grid grid-cols-3 grid-rows-4 gap-4">
+      <div className="text-2xl font-bold mb-2">Assets</div>
+      <div className="grid grid-cols-3 grid-rows-3 gap-4">
         <AssetGraphTile name="billsCount" state={states?.['billsCount']}>
           {chamber != null && congress != null ? (
             <BillsCountAssetCard chamber={chamber} congress={congress} />
@@ -57,18 +60,23 @@ export default function AssetGraphTiles({
         <AssetGraphTile name="allMembers" state={states?.['allMembers']}>
           <AllMembersAssetCard />
         </AssetGraphTile>
-        <AssetGraphTile />
-        <AssetGraphTile />
-        <AssetGraphTile />
-        {/* <AssetGraphTile name="report" state={states?.['report']} /> */}
-        {/* <AssetGraphTile name="bioguides" state={states?.['bioguides']} /> */}
-
-        {/* <AssetGraphTile name="billsList" state={states?.['billsList']}> */}
-        {/* {chamber != null && congress != null ? (
-            <BillsListAssetCard chamber={chamber} congress={congress} />
-          ) : null} */}
-        {/* </AssetGraphTile> */}
-        {/* <AssetGraphTile name="members" state={states?.['members']} /> */}
+      </div>
+      <div className="text-2xl font-bold mb-2">Resources</div>
+      <div className="grid grid-cols-3 grid-rows-1 gap-4">
+        <AssetGraphTile name="importantList" state={states?.['importantList']}>
+          {chamber != null && congress != null && (
+            <ImportantListAssetCard chamber={chamber} congress={congress} />
+          )}
+        </AssetGraphTile>
+        <AssetGraphTile
+          name="rankingPhrases"
+          state={states?.['rankingPhrases']}
+        >
+          {chamber != null && <RankingPhrasesAssetCard chamber={chamber} />}
+        </AssetGraphTile>
+        <AssetGraphTile name="stepRegexes" state={states?.['stepRegexes']}>
+          {chamber != null && <StepRegexesAssetCard chamber={chamber} />}
+        </AssetGraphTile>
       </div>
     </div>
   )
