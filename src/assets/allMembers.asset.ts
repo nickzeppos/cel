@@ -13,11 +13,7 @@ import {
   allMemberValidator,
 } from '../workers/validators'
 import { Asset } from './assets.types'
-import {
-  StoredAssetStatus,
-  pageStatusValidator,
-  storedAssetStatusValidator,
-} from './assets.validators'
+import { StoredAssetStatus, pageStatusValidator } from './assets.validators'
 import { membersCountAsset } from './membersCount.asset'
 import {
   getWriteMeta,
