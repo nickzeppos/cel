@@ -404,10 +404,10 @@ export const memberResponseValidator = z.object({
 export const stepValidator = z.nativeEnum(Step)
 
 export const rankingPhrasesValidator = z.object({
-  id: z.number(),
+  id: z.string(),
   phrase: z.string(),
-  exception: z.number().int(),
+  exception: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
-  regex: z.number().int(),
+  regex: z.string(),
 })

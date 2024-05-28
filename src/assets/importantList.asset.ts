@@ -61,8 +61,11 @@ export const importantListAsset: Asset<
   queue: 'local-asset-queue',
   deps: [],
   policy: (chamber, congress) => async () => {
+    console.log('important list policy', chamber, congress)
     const filename = getFileName(chamber, congress)
+    console.log(`checking for ${filename}`)
     const exists = existsSync(filename)
+    console.log(`exists: ${exists}`)
     writeMeta(
       { fileExists: exists, lastChecked: Date.now() },
       chamber,
@@ -84,9 +87,10 @@ export const importantListAsset: Asset<
   },
   readMetadata: async (...args) => {
     try {
-      return metaValidator.parse(
+      const meta = metaValidator.parse(
         JSON.parse(readUtf8File(getMetaFileName(...args))),
       )
+      return meta
     } catch (e) {
       return null
     }

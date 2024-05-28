@@ -15,7 +15,10 @@ import { billsAsset } from '../../assets/bills.asset'
 import { billsCountAsset } from '../../assets/billsCount.asset'
 import { billsListAsset } from '../../assets/billsList.asset'
 import { materialize } from '../../assets/engine'
+import { importantListAsset } from '../../assets/importantList.asset'
 import { membersCountAsset } from '../../assets/membersCount.asset'
+import { rankingPhrasesAsset } from '../../assets/rankingPhrases.asset'
+import { stepRegexesAsset } from '../../assets/stepRegexes.asset'
 import {
   CongressAPIAssetJobData,
   CongressAPIAssetJobName,
@@ -67,7 +70,8 @@ export const assetPlaygroundRouter = createRouter()
     async resolve({ input }) {
       const { assetName, ...restOfInput } = input
       const args = Object.values(restOfInput).filter((x) => x != null)
-      return await materialize(getAssetForName(assetName), args)
+      await materialize(getAssetForName(assetName), args)
+      return
     },
   })
   // Job events subscription
@@ -222,6 +226,34 @@ export const assetPlaygroundRouter = createRouter()
   .query('get-allMembers-asset-metadata', {
     async resolve() {
       return await allMembersAsset.readMetadata?.()
+    },
+  })
+  .query('get-importantList-asset-metadata', {
+    input: z.object({
+      chamber: z.nativeEnum(Chamber),
+      congress: z.number().min(93).max(117),
+    }),
+    async resolve({ input }) {
+      const { chamber, congress } = input
+      return await importantListAsset.readMetadata?.(chamber, congress)
+    },
+  })
+  .query('get-rankingPhrases-asset-metadata', {
+    input: z.object({
+      chamber: z.nativeEnum(Chamber),
+    }),
+    async resolve({ input }) {
+      const { chamber } = input
+      return await rankingPhrasesAsset.readMetadata?.(chamber)
+    },
+  })
+  .query('get-stepRegexes-asset-metadata', {
+    input: z.object({
+      chamber: z.nativeEnum(Chamber),
+    }),
+    async resolve({ input }) {
+      const { chamber } = input
+      return await stepRegexesAsset.readMetadata?.(chamber)
     },
   })
 

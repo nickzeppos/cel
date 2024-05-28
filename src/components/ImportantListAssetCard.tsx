@@ -39,20 +39,22 @@ export default function ImportantListAssetCard({ chamber, congress }: Props) {
       </div>
     )
   } else {
-    ;<div className="flex flex-col items-center w-full">
-      <div
-        className={clsx(
-          assetMetadataQuery.data?.fileExists
-            ? 'text-green-500'
-            : 'text-red-500',
-          'text-4xl text-neutral-200',
-        )}
-      >
-        {assetMetadataQuery.data?.fileExists ? '✅' : '❌'}
+    return (
+      <div className="flex flex-col h-full gap-1 relative items-center justify-center w-full">
+        <div
+          className={clsx(
+            assetMetadataQuery.data?.fileExists
+              ? 'text-green-500'
+              : 'text-red-500',
+            'text-4xl text-neutral-200',
+          )}
+        >
+          {assetMetadataQuery.data?.fileExists ? '✅' : '❌'}
+        </div>
+        <div className="text-sm text-neutral-500">
+          Important Bills List for {congress} {chamber}
+        </div>
       </div>
-      <div className="text-sm text-neutral-500">
-        Important Bills List for {congress} {chamber}
-      </div>
-    </div>
+    )
   }
 }
