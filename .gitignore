@@ -47,3 +47,6 @@ yarn-error.log*
 # data
 /data
 /cache/data
+
+# resources meta files
+resources/**/*-meta.json
