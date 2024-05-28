@@ -46,7 +46,7 @@ TODO: Intro
   1. Does the file exist?  
   2. Is the file valid JSON?
   3. Does the file have the expected keys `bill`, `actions`, and `committee`?
-  4. Does the `actions` property have the proper count of actions, as specified by the `bill` property?
+  4. Does the `actions` property have the proper count of actions, as specified by the `bill.actions.count` property?
 
 *What is its unique metadata?* 
 - An array containing each bill number that fails the policy.
@@ -204,7 +204,7 @@ createRouter()
       })
     },
 ```
-- We can set up listeners to the subscription int he client, via `useSubscription`
+- We can set up listeners to the subscription in the client, via `useSubscription`
 ```ts
 // deprecated, but see, e.g., components/BillListAssetCard.tsx
 trpc.useSubscription('asset-progress', {
