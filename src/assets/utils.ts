@@ -115,6 +115,7 @@ export function withRootCachePath<T extends (...args: any[]) => string>(
   }
 }
 
+// same as above, but for resources
 export function withRootResourcesPath<T extends (...args: any[]) => string>(
   makeFilePath: T,
 ): (...funcArgs: Parameters<T>) => string {
