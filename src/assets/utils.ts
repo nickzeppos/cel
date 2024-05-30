@@ -88,14 +88,10 @@ export function getWriteMeta<M, A extends unknown[]>(
         `Unable to load metadata from ${filename}, using default value`,
       )
     }
-    // console.log('==============updates', updates)
-    // updates metadata
     meta = {
       ...meta,
       ...updates,
     }
-    // Object.assign(meta, updates)
-    // console.log('==============meta', meta)
     debug(logKey, `Writing meta ${filename}`)
     // writes new metadata file
     writeFileSyncWithDir(filename, JSON.stringify(meta))
@@ -103,9 +99,6 @@ export function getWriteMeta<M, A extends unknown[]>(
 }
 
 // higher order function for getting file names that ensures root cache path is prepended
-// extends to constrain T to functions that takes any number of arguments and returns a string
-// Parameters<T> to extract the type of the arguments of T, helping us infer the type of the returned
-// function based on the arguments of the original function, T
 export function withRootCachePath<T extends (...args: any[]) => string>(
   makeFilePath: T,
 ): (...funcArgs: Parameters<T>) => string {
@@ -115,7 +108,7 @@ export function withRootCachePath<T extends (...args: any[]) => string>(
   }
 }
 
-// same as above, but for resources
+// same as above, but for resources path
 export function withRootResourcesPath<T extends (...args: any[]) => string>(
   makeFilePath: T,
 ): (...funcArgs: Parameters<T>) => string {
