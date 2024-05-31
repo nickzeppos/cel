@@ -8,7 +8,8 @@ import { z } from "zod";
 export const serverSchema = z.object({
   DB_URL: z.string().url(),
   NODE_ENV: z.enum(["development", "test", "production"]),
-  CONGRESS_GOV_API_KEY: z.string(),
+  CONGRESS_GOV_API_KEY_1: z.string(),
+  CONGRESS_GOV_API_KEY_2: z.string(),
   CONGRESS_GOV_API_BASE_URL: z.string().url(),
   CURRENT_CONGRESS: z.string().length(3),
 });
