@@ -2,7 +2,9 @@ version: '3.9'
 services:
   cel-web:
     container_name: cel-web
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     environment:
       - DB_URL
       - CONGRESS_GOV_API_KEY_1
@@ -21,11 +23,6 @@ services:
     build:
       context: .
       dockerfile: ws.Dockerfile
-    environment:
-      - DB_URL
-      - CONGRESS_GOV_API_KEY_1
-      - CONGRESS_GOV_API_KEY_2
-      - CONGRESS_GOV_API_BASE_URL
     volumes:
       - .:/app
     command: yarn nodemon --watch src --ext .ts,.tsx,js,jsx --signal SIGTERM --exec "yarn tsx --tsconfig /app/tsconfig.ws.json /app/src/server/ws/index.ts"
