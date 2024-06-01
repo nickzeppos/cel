@@ -52,4 +52,4 @@ yarn-error.log*
 resources/**/*-meta.json
 
 # favicon
-/public/favicon.ico
+public/favicon.ico
