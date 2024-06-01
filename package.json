@@ -11,7 +11,8 @@
     "pmigrate": "prisma db push",
     "pstudio": "npx prisma studio",
     "fix-sharp": "npm_config_libc=musl yarn rebuild sharp",
-    "d": "docker-compose up",
+    "set-fav": "scripts/set-favicon.sh",
+    "d": "yarn set-fav && docker-compose up",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:throttle": "TEST=true THROTTLE_TIMEOUT=1000 jest src/assets/throttle.test.ts"
