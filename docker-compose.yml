@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   cel-web:
     container_name: cel-web
