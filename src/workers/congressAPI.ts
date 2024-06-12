@@ -1,11 +1,13 @@
 // import fetch from 'isomorphic-fetch'
 import { sleep } from '../utils/fp'
+import { deriveThrottleTimeout } from './utils'
 import IORedis from 'ioredis'
 import fetch, { Headers, Request, Response } from 'node-fetch'
+import { z } from 'zod'
 
-const API_KEY_1 = process.env.CONGRESS_GOV_API_KEY_1 ?? ''
-const API_KEY_2 = process.env.CONGRESS_GOV_API_KEY_2 ?? ''
-const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''
+const API_KEYS = process.env.CONGRESS_GOV_API_KEYS?.split(',')
+const API_BASE_URL = 'https://api.congress.gov/v3'
+
 const client = new IORedis({
   host: process.env.TEST ? 'localhost' : 'cel-cache',
   port: 6379,
@@ -17,11 +19,11 @@ const KEY = 'last-congress-api-call'
 
 // key manager
 const apiKeyManager = {
-  apiKeys: [API_KEY_1, API_KEY_2],
+  apiKeys: API_KEYS,
   switch: 0,
   getNextKey(): string {
     const nextKey = this.apiKeys[this.switch]
-    this.switch = this.switch == 0 ? 1 : 0
+    this.switch = (this.switch + 1) % this.apiKeys.length
     if (nextKey === undefined) throw new Error('No API keys available')
     return nextKey
   },
@@ -48,7 +50,7 @@ export function fetchCongressAPI(
   return fetch(req)
 }
 
-export const THROTTLE_TIMEOUT = 2500
+export const THROTTLE_TIMEOUT = deriveThrottleTimeout(API_KEYS)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const throttle = <R, T extends (...args: Array<any>) => Promise<R>>(
   func: T,

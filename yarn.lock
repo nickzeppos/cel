@@ -810,6 +810,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@heroku/socksv5@npm:^0.0.9":
+  version: 0.0.9
+  resolution: "@heroku/socksv5@npm:0.0.9"
+  dependencies:
+    ip-address: ^5.8.8
+  checksum: ffbfe9216fa3d4d903d7ae789c8ae387877f3361d522fa83ff5d9388458bbb440eda7e1b7b6a8503cc8813cb101ae6821870ba3ea874459c2e0b2ff0bddac16e
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.10.4":
   version: 0.10.7
   resolution: "@humanwhocodes/config-array@npm:0.10.7"
@@ -1750,11 +1759,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^18.11.18":
-  version: 18.19.33
-  resolution: "@types/node@npm:18.19.33"
+  version: 18.19.34
+  resolution: "@types/node@npm:18.19.34"
   dependencies:
     undici-types: ~5.26.4
-  checksum: b6db87d095bc541d64a410fa323a35c22c6113220b71b608bbe810b2397932d0f0a51c3c0f3ef90c20d8180a1502d950a7c5314b907e182d9cc10b36efd2a44e
+  checksum: ae6369baa1529ec3564da29611ec7eb8ccb219080d717292151b6b899820d25290243d01c9240f11a63d1a42e47198cd6310fab67b6d17bea723221fea07b644
   languageName: node
   linkType: hard
 
@@ -2819,7 +2828,7 @@ __metadata:
     redis: ^4.3.1
     rooks: ^7.4.0
     sharp: ^0.31.1
-    ssh2: ^1.15.0
+    ssh2-promise: ^1.0.3
     superjson: ^1.10.0
     tailwindcss: ^3.1.8
     ts-jest: ^29.0.5
@@ -4767,6 +4776,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ip-address@npm:^5.8.8":
+  version: 5.9.4
+  resolution: "ip-address@npm:5.9.4"
+  dependencies:
+    jsbn: 1.1.0
+    lodash: ^4.17.15
+    sprintf-js: 1.1.2
+  checksum: 2822dfefe6ff160ba6846bc03954ecc3d74d99db92431c7808e2eeb6f4c201caa9b44b4d5ee8b7164888bb1f40a74f0b6269c03c654cf065264dc973f62e4fa9
+  languageName: node
+  linkType: hard
+
 "ip@npm:^2.0.0":
   version: 2.0.0
   resolution: "ip@npm:2.0.0"
@@ -5659,6 +5679,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsbn@npm:1.1.0":
+  version: 1.1.0
+  resolution: "jsbn@npm:1.1.0"
+  checksum: 944f924f2bd67ad533b3850eee47603eed0f6ae425fd1ee8c760f477e8c34a05f144c1bd4f5a5dd1963141dc79a2c55f89ccc5ab77d039e7077f3ad196b64965
+  languageName: node
+  linkType: hard
+
 "jsesc@npm:^2.5.1":
   version: 2.5.2
   resolution: "jsesc@npm:2.5.2"
@@ -5864,7 +5891,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:^4.17.21":
+"lodash@npm:4.17.21, lodash@npm:^4.17.15, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -7860,6 +7887,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sprintf-js@npm:1.1.2":
+  version: 1.1.2
+  resolution: "sprintf-js@npm:1.1.2"
+  checksum: d4bb46464632b335e5faed381bd331157e0af64915a98ede833452663bc672823db49d7531c32d58798e85236581fb7342fd0270531ffc8f914e186187bf1c90
+  languageName: node
+  linkType: hard
+
 "sprintf-js@npm:~1.0.2":
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
@@ -7867,7 +7901,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ssh2@npm:^1.15.0":
+"ssh2-promise@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "ssh2-promise@npm:1.0.3"
+  dependencies:
+    "@heroku/socksv5": ^0.0.9
+    ssh2: ^1.10.0
+  checksum: a42b41619274b7981e27858c47aad49fc6da3481c509f35dbb9f3dbf1f6741060c28ba52ec2906fe646cba11769427b0e17f234bbcd14ba7a2c0d71a64ece9a6
+  languageName: node
+  linkType: hard
+
+"ssh2@npm:^1.10.0":
   version: 1.15.0
   resolution: "ssh2@npm:1.15.0"
   dependencies:

@@ -10,7 +10,7 @@ import fetch, { Headers, Request } from 'node-fetch'
 
 dotenv.config()
 const API_KEY = process.env.CONGRESS_GOV_API_KEY ?? ''
-const API_BASE_URL = process.env.CONGRESS_GOV_API_BASE_URL ?? ''
+const API_BASE_URL = 'https://api.congress.gov/v3'
 const URLS_PATH = 'bill-urls.txt'
 
 function getFirstLine(filePath: string): string {

@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2017", // or whichever version of ECMAScript you prefer
-    "module": "CommonJS",
-    "outDir": "dist-scripts", // or whichever directory you prefer
+    "module": "commonjs",
+    "outDir": ".cache-scripts", // or whichever directory you prefer
     "strict": true,
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/scripts/**/*"],
+  "include": ["./**/*.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }

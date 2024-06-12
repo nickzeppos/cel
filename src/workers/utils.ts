@@ -228,3 +228,7 @@ export const ChamberToEnum: Record<FullChamberName, Chamber> = {
   'House of Representatives': Chamber.HOUSE,
   Senate: Chamber.SENATE,
 }
+
+export function deriveThrottleTimeout(apiKeys: string[]) {
+  return 5000 / apiKeys.length
+}

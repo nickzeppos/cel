@@ -9,6 +9,7 @@
  *
  */
 // IMPORTS
+import { throttledFetchCongressAPI } from '../src/workers/congressAPI'
 import { BillType, CacheConfig } from './types'
 import { sleep } from './utils'
 import assert from 'assert'
@@ -20,28 +21,13 @@ import path, { basename } from 'path'
 // ENV + CONSTS
 const envPath = path.join(__dirname, '.env')
 dotenv.config({ path: envPath })
-const ROOT_CACHE_PATH = process.env.CACHE_PATH || './data/bill/'
 const CACHE_CONFIG_PATH =
   process.env.CACHE_CONFIG_PATH || './data/cache-config.json'
-const API_BASE_URL =
-  process.env.CONGRESS_GOV_API_BASE_URL ?? 'https://api.congress.gov/v3'
+const API_BASE_URL = 'https://api.congress.gov/v3'
 const CURRENT_CONGRESS = process.env.CURRENT_CONGRESS ?? '117'
 const FIRST_CONGRESS = process.env.FIRST_CONGRESS ?? '93'
 const MAX_RETRIES = 5
-
-// need keys!
-// TODO - - - Eventually only require one key. For now, since just Nick or Mike running, require both.
-assert(
-  process.env.CONGRESS_GOV_API_KEY_1,
-  `CONGRESS_GOV_API_KEY_1 must be set in ${envPath}`,
-)
-assert(
-  process.env.CONGRESS_GOV_API_KEY_2,
-  `CONGRESS_GOV_API_KEY_2 must be set in ${envPath}`,
-)
-
-const API_KEY_1 = process.env.CONGRESS_GOV_API_KEY_1
-const API_KEY_2 = process.env.CONGRESS_GOV_API_KEY_2
+const API_KEYS = process.env.CONGRESS_GOV_API_KEYS?.split(',')
 
 // console.log('-- ENV --')
 // console.log('ROOT_CACHE_PATH', ROOT_CACHE_PATH)
@@ -66,46 +52,9 @@ function makeCongressRange(first: string, last: string): Array<number> {
 }
 
 // key manager
-const apiKeyManager = {
-  apiKeys: [API_KEY_1, API_KEY_2],
-  switch: 0,
-  getNextKey(): string {
-    const key = this.apiKeys[this.switch]
-    this.switch = this.switch == 0 ? 1 : 0
-    assert(
-      key,
-      `apiKeyManager: key - switch mismatch. key: ${key}, switch: ${this.switch}`,
-    )
-    return key
-  },
-}
 
 // Fetcher
-async function fetchRouteWithKey(route: string): Promise<Response> {
-  const apiKey = apiKeyManager.getNextKey()
-  const req = new Request(route, {
-    method: 'get',
-    headers: new Headers({
-      accept: 'application/json',
-      'x-api-key': `${apiKey}`,
-    }),
-  })
-  for (let i = 0; i < MAX_RETRIES; i++) {
-    await sleep(2500) // enforce rate limit
-    try {
-      const res = await fetch(req)
-      return res
-    } catch (e) {
-      if (e instanceof Error) {
-        console.log(`fetchRouteWithKey: ${e.message}`)
-      } else {
-        console.log(`fetchRouteWithKey: ${e}`)
-      }
-      await sleep(5000) // sleep 5s between retries
-    }
-  }
-  throw new Error(`fetchRouteWithKey: failed to fetch ${route}`)
-}
+const fetchRouteWithKey = throttledFetchCongressAPI
 
 async function fetchBillCount(
   congress: number,
@@ -122,7 +71,6 @@ async function main() {
   const cacheConfigToWrite: CacheConfig = {
     header: {
       date: new Date(),
-      script: basename(__filename),
     },
     bills: [],
   }

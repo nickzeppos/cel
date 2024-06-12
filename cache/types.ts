@@ -1,22 +1,23 @@
 import { z } from 'zod'
 
-export type CacheConfig = {
-  header: {
-    date: Date
-    script: string
-  }
-  bills: Array<BillCongressConfig>
-}
-
-export type BillCongressConfig = {
-  congress: number
-  billType: BillType
-  count: number
-}
-
-// Zod stuff
 export const billTypeValidator = z.enum(['hr', 's'])
 export type BillType = z.infer<typeof billTypeValidator>
+
+export const cacheConfigValidator = z.object({
+  header: z.object({
+    script: z.string(),
+    date: z.string(),
+  }),
+  bills: z.array(
+    z.object({
+      congress: z.number(),
+      billType: billTypeValidator,
+      count: z.number(),
+    }),
+  ),
+})
+export type CacheConfig = z.infer<typeof cacheConfigValidator>
+
 export const sysArgsValidator = z
   .object({
     full: z.boolean().optional(),
@@ -59,3 +60,28 @@ export const sysArgsValidator = z
       message: 'If congress and billNumber are set, billType must be set',
     },
   )
+
+export type BillFileType = 'bill' | 'actions' | 'committees'
+export type BillFailures = {
+  billNumber: number
+  billType: BillType
+  fileType: BillFileType
+}
+export type CongressHealthReport = {
+  congress: number
+  healthy: boolean
+  ratio: number
+  failures: Array<BillFailures>
+}
+export type CacheHealthReport = {
+  header: {
+    runDate: Date
+    script: string
+    type: 'full' | 'current'
+  }
+  overallHealth: {
+    healthy: boolean
+    ratio: number
+  }
+  healthByCongress: Array<CongressHealthReport>
+}

@@ -15,8 +15,14 @@
  *  3. Failures. For each audit fail, log identying information for later fetching.
  */
 // IMPORTS
-import { BillType, CacheConfig } from './types'
-import { listDirsInCache, preReportRun } from './utils'
+import {
+  BillFailures,
+  BillType,
+  CacheConfig,
+  CacheHealthReport,
+  CongressHealthReport,
+} from './types'
+import { listDirsInCache, preAudit } from './utils'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 
 // ENV + CONSTS
@@ -25,32 +31,6 @@ const CACHE_HEALTH_REPORT_PATH =
   process.env.CACHE_HEALTH_REPORT_PATH || './cache-health-reports/'
 const CACHE_CONFIG_PATH =
   process.env.CACHE_CONFIG_PATH || './data/cache-config.json'
-
-// TYPES
-type BillFileType = 'bill' | 'actions' | 'committees'
-type BillFailures = {
-  billNumber: number
-  billType: BillType
-  fileType: BillFileType
-}
-type CongressHealthReport = {
-  congress: number
-  healthy: boolean
-  ratio: number
-  failures: Array<BillFailures>
-}
-type CacheHealthReport = {
-  header: {
-    runDate: Date
-    script: string
-    type: 'full' | 'current'
-  }
-  overallHealth: {
-    healthy: boolean
-    ratio: number
-  }
-  healthByCongress: Array<CongressHealthReport>
-}
 
 // auditors
 function auditBillFile(
@@ -271,7 +251,7 @@ const auditType = process.argv[2] || 'current' // default current
 function main() {
   console.log('-- MAIN')
   // If we don't have a cache directory
-  const status = preReportRun()
+  const status = preAudit()
   if (status === 400) {
     process.exit(1)
     // TODO - - - Logging
