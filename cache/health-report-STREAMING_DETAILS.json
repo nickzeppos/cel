@@ -1,0 +1,41 @@
+{
+  "header": {
+    "runDate": "2024-06-12T18:51:09.780Z",
+    "environment": "development",
+    "name": "STREAMING_DETAILS",
+    "description": "Same as brute force but using a readable stream for details report, checking performance difference.",
+    "runTime": 19.071
+  },
+  "congresses": [
+    {
+      "congress": 113,
+      "billType": "hr",
+      "billAuditFails": [],
+      "runTime": 4.788
+    },
+    {
+      "congress": 112,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 4.74
+    },
+    {
+      "congress": 94,
+      "billType": "hr",
+      "billAuditFails": [],
+      "runTime": 4.772
+    },
+    {
+      "congress": 110,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 4.771
+    },
+    {
+      "congress": 99,
+      "billType": "hr",
+      "billAuditFails": ["ALL_FAIL"],
+      "runTime": 0
+    }
+  ]
+}

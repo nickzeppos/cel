@@ -68,14 +68,14 @@ type CacheHealthReport = {
   }
   congresses: Array<CongressHealthReport>
 }
-const reportName = 'BASELINE_AUDIT'
+const reportName = 'STREAMING_ALL'
 const cacheHealthReport: CacheHealthReport = {
   header: {
     runDate: new Date(),
     environment: NODE_ENV,
     name: reportName,
     description:
-      'Brute forced with all read operations conducted individually with SFTP. No paralellization, no streaming, nothing. Just want a baseline',
+      'Same as brute force but using a readable stream for all i/o, checking performance difference. Also added early bad http check on first chunk.',
     runTime: 0,
   },
   congresses: [],

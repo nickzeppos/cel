@@ -1,9 +1,9 @@
 // utils for cel cache management
 // imports
-import { BillType } from './types'
 import dotenv from 'dotenv'
-import { existsSync, mkdirSync, readFileSync, readdirSync } from 'fs'
-import SFTP from 'ssh2-promise/lib/sftp'
+import { has } from 'fp-ts/lib/ReadonlyRecord'
+import { existsSync, mkdirSync, readdirSync } from 'fs'
+import SFTP from 'ssh2-promise/lib/BaseSFTP'
 
 // env + consts
 dotenv.config()
@@ -87,23 +87,46 @@ export namespace SSHfs {
       return false
     }
 
-    let json
-    // validity
-    try {
-      const f = await sftp.readFile(path, 'utf-8')
-      json = JSON.parse(f)
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        return false
-      }
-    }
+    return new Promise((resolve) => {
+      let buffer = ''
+      let httpCheck = false
 
-    // content
-    if (json['bill'] === undefined) {
-      return false
-    }
+      // open a stream
+      sftp.createReadStream(path).then((stream) => {
+        stream.on('data', (chunk) => {
+          buffer += chunk.toString()
 
-    return true
+          // check if the file is .json storing bad http request
+          // do this by verifying whether first token is '{'
+          if (!httpCheck) {
+            if (buffer[0] !== '{') {
+              resolve(false)
+            }
+            httpCheck = true
+          }
+        })
+        stream.on('error', (err) => {
+          console.error(err)
+          resolve(false)
+        })
+
+        stream.on('end', () => {
+          // try to parse and check for key
+          try {
+            const json = JSON.parse(buffer)
+            if (json['bill'] !== undefined) {
+              resolve(true)
+            }
+          } catch (e) {
+            // if syntax error, it's invalid JSON
+            if (!(e instanceof SyntaxError)) {
+              stream.destroy()
+              resolve(false)
+            }
+          }
+        })
+      })
+    })
   }
 
   export async function auditCommitteesFile(
@@ -115,23 +138,51 @@ export namespace SSHfs {
       return false
     }
 
-    let json
-    // validity
-    try {
-      const f = await sftp.readFile(path, 'utf-8')
-      json = JSON.parse(f)
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        return false
-      }
-    }
+    return new Promise((resolve) => {
+      let buffer = ''
+      let httpCheck = false
 
-    // content
-    if (json['committees'] === undefined) {
-      return false
-    }
+      // open a stream
+      sftp.createReadStream(path).then((stream) => {
+        stream.on('data', (chunk) => {
+          buffer += chunk.toString()
 
-    return true
+          // on first chunk, check if the file is .json storing bad http request
+          // do this by verifying whether first token is '{'
+          if (!httpCheck) {
+            if (buffer[0] !== '{') {
+              resolve(false)
+            }
+            httpCheck = true // only check once
+          }
+        })
+
+        // Traditionally this would correspond to ENOENT, but I've already handled that with
+        // fileExists() before streaming, so this is sort of unhandled behavior right now
+        stream.on('error', (err) => {
+          console.error(err)
+          resolve(false)
+        })
+
+        stream.on('end', () => {
+          // after we've streamed full file, check:
+          // (1) it's valid json
+          // (2) it has the expected key
+          try {
+            const json = JSON.parse(buffer)
+            if (json['committees'] !== undefined) {
+              resolve(true)
+            }
+          } catch (e) {
+            // if syntax error, it's invalid JSON
+            if (!(e instanceof SyntaxError)) {
+              stream.destroy()
+              resolve(false)
+            }
+          }
+        })
+      })
+    })
   }
 
   export async function auditActionsFile(
@@ -143,29 +194,52 @@ export namespace SSHfs {
       return false
     }
 
-    let json
-    // validity
-    try {
-      const f = await sftp.readFile(path, 'utf-8')
-      json = JSON.parse(f)
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        return false
-      }
-    }
+    let buffer = ''
+    let httpCheck = false
 
-    // content
-    if (json['actions'] === undefined) {
-      return false
-    }
+    return new Promise((resolve) => {
+      sftp.createReadStream(path).then((stream) => {
+        stream.on('data', (chunk) => {
+          buffer += chunk.toString()
 
-    // length
-    const count = json['pagination']['count']
-    const actions = json['actions']
-    if (count !== actions.length) {
-      return false
-    }
+          if (!httpCheck) {
+            if (buffer[0] !== '{') {
+              resolve(false)
+            }
+            httpCheck = true
+          }
+        })
 
-    return true
+        stream.on('error', (err) => {
+          console.error(err)
+          resolve(false)
+        })
+
+        stream.on('end', () => {
+          try {
+            const json = JSON.parse(buffer)
+            // chceck for expected token and expected actions array length
+            if (json['actions'] !== undefined) {
+              if (json['actions'].length === json['pagination']['count']) {
+                // if actions key and actions array length match count, it's valid
+                resolve(true)
+              } else {
+                // if actions array length doesn't match count, it's invalid
+                resolve(false)
+              }
+            } else {
+              // if no actions key, it's invalid
+              resolve(false)
+            }
+          } catch (e) {
+            // if syntax error, it's invalid JSON
+            if (!(e instanceof SyntaxError)) {
+              stream.destroy()
+              resolve(false)
+            }
+          }
+        })
+      })
+    })
   }
 }

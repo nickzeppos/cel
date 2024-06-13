@@ -1,0 +1,41 @@
+{
+  "header": {
+    "runDate": "2024-06-13T12:57:53.476Z",
+    "environment": "development",
+    "name": "STREAMING_ALL",
+    "description": "Same as brute force but using a readable stream for all i/o, checking performance difference. Also added early bad http check on first chunk.",
+    "runTime": 12.192
+  },
+  "congresses": [
+    {
+      "congress": 102,
+      "billType": "hr",
+      "billAuditFails": [],
+      "runTime": 4.048
+    },
+    {
+      "congress": 97,
+      "billType": "s",
+      "billAuditFails": ["ALL_FAIL"],
+      "runTime": 0
+    },
+    {
+      "congress": 104,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 4.04
+    },
+    {
+      "congress": 112,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 4.104
+    },
+    {
+      "congress": 95,
+      "billType": "hr",
+      "billAuditFails": ["ALL_FAIL"],
+      "runTime": 0
+    }
+  ]
+}
