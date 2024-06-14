@@ -1,5 +1,6 @@
 // utils for cel cache management
 // imports
+import { BillAudit, CongressHealthReport } from './audit-cache'
 import dotenv from 'dotenv'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import SFTP from 'ssh2-promise/lib/BaseSFTP'
@@ -42,6 +43,19 @@ export function preAudit(): 200 | 400 {
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// generic batcher
+export async function batch<T>(
+  asyncs: Array<() => Promise<T>>,
+  batchSize: number,
+): Promise<Array<T>> {
+  const results: Array<T> = []
+  for (let i = 0; i < asyncs.length; i += batchSize) {
+    const batch = asyncs.slice(i, i + batchSize).map((async) => async())
+    results.push(...(await Promise.all(batch)))
+  }
+  return results
 }
 
 // ssh file system methods, aliases
@@ -250,5 +264,47 @@ export namespace SSHfs {
         })
       })
     })
+  }
+  export async function auditChamber(
+    billRange: number[],
+    congress: number,
+    billType: 'hr' | 's',
+    baseCacePath: string,
+    sftp: SFTP,
+  ): Promise<CongressHealthReport> {
+    console.log(`Auditing ${billRange.length} bills in ${congress} ${billType}`)
+    const chamberPath = `${baseCacePath}/bill/${congress}/${billType}`
+    const congressHealthReport: CongressHealthReport = {
+      congress,
+      billType,
+      billAuditFails: [],
+      runTime: 0,
+    }
+    let runTime = Date.now()
+    let billAudits: Array<BillAudit> = []
+    for (const billNum of billRange) {
+      const billPath = `${chamberPath}/${billNum}`
+      console.log(`Auditing bill at ${billPath}`)
+
+      const [detailsAudit, committeesAudit, actionsAudit] = await Promise.all([
+        auditDetailsFile(`${billPath}.json`, sftp),
+        auditCommitteesFile(`${billPath}/committees.json`, sftp),
+        auditActionsFile(`${billPath}/actions.json`, sftp),
+      ])
+
+      if (detailsAudit && committeesAudit && actionsAudit) {
+        continue
+      } else {
+        billAudits.push({
+          billNumber: billNum,
+          details: detailsAudit,
+          committees: committeesAudit,
+          actions: actionsAudit,
+        })
+      }
+    }
+    congressHealthReport.billAuditFails = billAudits
+    congressHealthReport.runTime = (Date.now() - runTime) / 1000
+    return congressHealthReport
   }
 }

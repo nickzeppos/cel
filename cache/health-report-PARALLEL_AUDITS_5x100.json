@@ -1,0 +1,142 @@
+{
+  "header": {
+    "runDate": "2024-06-14T12:35:52.845Z",
+    "environment": "development",
+    "name": "PARALLEL_AUDITS_5x100",
+    "description": "Parallel audit with larger sample. Randomly samples 5 congresses, then 100 bills from each congress.",
+    "runTime": 134.924
+  },
+  "congresses": [
+    {
+      "congress": 105,
+      "billType": "hr",
+      "billAuditFails": [
+        {
+          "billNumber": 4326,
+          "details": true,
+          "committees": true,
+          "actions": false
+        },
+        {
+          "billNumber": 3878,
+          "details": true,
+          "committees": true,
+          "actions": false
+        },
+        {
+          "billNumber": 3630,
+          "details": true,
+          "committees": true,
+          "actions": false
+        }
+      ],
+      "runTime": 33.438
+    },
+    {
+      "congress": 108,
+      "billType": "hr",
+      "billAuditFails": [
+        {
+          "billNumber": 4324,
+          "details": true,
+          "committees": true,
+          "actions": false
+        },
+        {
+          "billNumber": 951,
+          "details": false,
+          "committees": false,
+          "actions": true
+        },
+        {
+          "billNumber": 2696,
+          "details": true,
+          "committees": true,
+          "actions": false
+        },
+        {
+          "billNumber": 777,
+          "details": false,
+          "committees": false,
+          "actions": true
+        },
+        {
+          "billNumber": 1510,
+          "details": false,
+          "committees": false,
+          "actions": true
+        },
+        {
+          "billNumber": 1652,
+          "details": false,
+          "committees": false,
+          "actions": true
+        },
+        {
+          "billNumber": 3884,
+          "details": true,
+          "committees": true,
+          "actions": false
+        },
+        {
+          "billNumber": 1819,
+          "details": false,
+          "committees": false,
+          "actions": true
+        }
+      ],
+      "runTime": 33.618
+    },
+    {
+      "congress": 113,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 33.813
+    },
+    {
+      "congress": 110,
+      "billType": "s",
+      "billAuditFails": [
+        {
+          "billNumber": 103,
+          "details": false,
+          "committees": false,
+          "actions": false
+        },
+        {
+          "billNumber": 43,
+          "details": false,
+          "committees": false,
+          "actions": false
+        },
+        {
+          "billNumber": 563,
+          "details": false,
+          "committees": true,
+          "actions": true
+        },
+        {
+          "billNumber": 7,
+          "details": false,
+          "committees": false,
+          "actions": false
+        },
+        {
+          "billNumber": 42,
+          "details": false,
+          "committees": false,
+          "actions": false
+        }
+      ],
+      "runTime": 34.055
+    },
+    {
+      "congress": 97,
+      "billType": "hr",
+      "billAuditFails": [
+        "ALL_FAIL"
+      ],
+      "runTime": 0
+    }
+  ]
+}
