@@ -1,18 +1,19 @@
 // Running this script will audit the cache of bills on the ec2 instance.
 // Steps:
-// 1. Based on $CURRENT_CONGRESS, and if necessary, amend the config file
-// 2. Based on $NODE_ENV, decide whether to SSH into EC2 (ssh if development).
-// 3. Audit cache and produce health report
-//
-// If necessary, SSH connection is established as follows:
-// 1. $SSH_PATH is mounted into Docker container.
-// -- Done in docker-compose.yml ``` volumes: - ${SSH_PATH}:/.ssh ```
-// -- We can consider doing this a different way (e.g., more .env vars, Docker secrets), but this is current implementation.
-// 2. ssh alias lep-dev, assumed to be in .ssh/config file, is used to connect to ec2 instance
+// 1. Based on $NODE_ENV, decide whether to SSH into EC2 (ssh if development). Note that non-ssh path is currently unimplemented.
+// 2. Audit the cache. Auditing currently happens as follows:
+//    2.1. With the $SSH_PATH, establish ssh connection and stfp client
+//    2.2. Read the cache config file to get some instructions for the audit
+//    2.3. For each congress, billType, and billNumber specified by the config, audit the corresponding files.
+//      2.3.1. Done primarily with three functions: STFPFn.auditDetailsFile(), STFPFN.auditCommitteesFile() and STFPFN.auditActionsFile()
+//      2.3.2. If the directory for the congress and billType does not exist, mark all bills as failed.
+//      2.3.3  NOTE: Processing between congresses and within each bill is done concurrently, unbatched. Processing within each congress, for each bill is done concurrently, batched.
+//      2.3.4. NOTE: BATCH_SIZE configurable; batch size of 100 exceeds allowable memory usage on ec2.
+//    2.4. Write the results to a file in the cache directory, report of type CacheHealthReport. We're currently only writing bills that fail the audit to the health report, as the property billAuditFails suggests.
 // imports
 import { makeRange } from '../src/assets/utils'
 import { BillType, CacheConfig, cacheConfigValidator } from './types'
-import { SSHfs } from './utils'
+import { STFPFn } from './utils'
 import dotenv from 'dotenv'
 import { writeFileSync } from 'fs'
 import SSH2Promise from 'ssh2-promise'
@@ -100,9 +101,6 @@ ssh
   .then(async (cacheConfig: CacheConfig) => {
     const congressAuditPromises: Array<Promise<CongressHealthReport>> = []
     const start = Date.now()
-    // const configSample: CacheConfig['bills'] = [
-    //   { congress: 93, billType: 'hr', count: 17690 },
-    // ]
     for (const { congress, billType, count } of cacheConfig.bills) {
       // Make path to chamber
       const chamberPath = `${BASE_CACHE_PATH}/bill/${congress}/${billType}`
@@ -110,7 +108,7 @@ ssh
       // Ensure dir for congress and billType exists
       let dirExists = true
       try {
-        dirExists = await SSHfs.directoryExists(sftp, chamberPath)
+        dirExists = await STFPFn.directoryExists(sftp, chamberPath)
       } catch (e) {
         console.error(`Error checking for directory ${chamberPath}`)
         console.error(e)
@@ -134,13 +132,9 @@ ssh
       // if dir does exist, make bill range
       const billRange = makeRange(1, count)
 
-      // SAMPLING WHILE TESTING
-      // randomly sample 5 bills
-      // const billSample = sample(billRange, 5)
-
-      // Add the promise to the array
+      // Add congress audit promise to array
       congressAuditPromises.push(
-        SSHfs.auditCongress(
+        STFPFn.auditCongress(
           billRange,
           congress,
           billType,

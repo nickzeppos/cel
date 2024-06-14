@@ -4,11 +4,13 @@ import { BillAudit, CongressHealthReport } from './audit-cache'
 import dotenv from 'dotenv'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import SFTP from 'ssh2-promise/lib/BaseSFTP'
+import { z } from 'zod'
 
 // env + consts
 dotenv.config()
 const CACHE_CONFIG_PATH = process.env.CACHE_CONFIG_PATH || './config.json'
 const ROOT_CACHE_PATH = ''
+const MAX_BATCH_SIZE = 10
 // functions
 // create a directory if it doesn't exist, by default recursively
 export function ensureDirectoryExists(path: string, recursive: boolean = true) {
@@ -46,11 +48,12 @@ export async function sleep(ms: number) {
 }
 
 // filter null and guarantee that the resulting array is type narrowed in the intuitive way.
-// i.e., arr: Array<string } null> = ["string", null] => arr.filter(isNotNullTypeGuard) => arr: Array<string> = ["string"}
+// i.e., arr: Array<string | null> = ["string", null] => arr.filter(isNotNullTypeGuard) => arr: Array<string> = ["string"}
 function isNotNullTypeGuard<T>(x: T | null): x is T {
   return x !== null
 }
 // generic batcher
+
 export async function batch<T>(
   // apparently this type of empty function that's used to call a function later
   // is called a "thunk", as in the past tense of "think"
@@ -61,6 +64,7 @@ export async function batch<T>(
   asyncs: Array<() => Promise<T | null>>,
   batchSize: number,
 ): Promise<Array<T>> {
+  z.number().min(1).max(MAX_BATCH_SIZE).parse(batchSize)
   const results: Array<T> = [] // initialize results array
   // for each batch, await all promises in batch
   for (let i = 0; i < asyncs.length; i += batchSize) {
@@ -72,10 +76,16 @@ export async function batch<T>(
   return results
 }
 
-// ssh file system methods, aliases
-// Configuration for SSH connection
+export function sample<T>(arr: Array<T>, n: number): Array<T> {
+  const res = []
+  for (let i = 0; i < n; i++) {
+    res.push(arr.splice(Math.floor(Math.random() * arr.length), 1)[0])
+  }
+  return res
+}
 
-export namespace SSHfs {
+// sftp file system methods + auditing functions
+export namespace STFPFn {
   export async function directoryExists(
     sftp: SFTP,
     path: string,
