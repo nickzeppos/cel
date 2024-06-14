@@ -12,7 +12,7 @@
 // imports
 import { makeRange } from '../src/assets/utils'
 import { BillType, CacheConfig, cacheConfigValidator } from './types'
-import { SSHfs, batch } from './utils'
+import { SSHfs } from './utils'
 import dotenv from 'dotenv'
 import { writeFileSync } from 'fs'
 import SSH2Promise from 'ssh2-promise'
@@ -68,14 +68,14 @@ type CacheHealthReport = {
   }
   congresses: Array<CongressHealthReport>
 }
-const reportName = 'PARALLEL_AUDITS_2.0_FULL_RUN'
+const reportName = 'BATCHING_10'
 const cacheHealthReport: CacheHealthReport = {
   header: {
     runDate: new Date(),
     environment: NODE_ENV,
     name: reportName,
     description:
-      'Parallelized at bill and chamber levels. No more sampling, no batching.',
+      'Working on improving things at the bill level. Batching by 10',
     runTime: 0,
   },
   congresses: [],
@@ -89,10 +89,6 @@ function sample<T>(arr: Array<T>, n: number): Array<T> {
   return res
 }
 
-// bill fails
-// 107-s-124 d, a, c
-// 102-s-133 a, c
-
 ssh
   // connect to ec2
   .connect()
@@ -104,6 +100,9 @@ ssh
   .then(async (cacheConfig: CacheConfig) => {
     const congressAuditPromises: Array<Promise<CongressHealthReport>> = []
     const start = Date.now()
+    // const configSample: CacheConfig['bills'] = [
+    //   { congress: 93, billType: 'hr', count: 17690 },
+    // ]
     for (const { congress, billType, count } of cacheConfig.bills) {
       // Make path to chamber
       const chamberPath = `${BASE_CACHE_PATH}/bill/${congress}/${billType}`
@@ -141,7 +140,7 @@ ssh
 
       // Add the promise to the array
       congressAuditPromises.push(
-        SSHfs.auditChamber(
+        SSHfs.auditCongress(
           billRange,
           congress,
           billType,

@@ -45,15 +45,29 @@ export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// filter null and guarantee that the resulting array is type narrowed in the intuitive way.
+// i.e., arr: Array<string } null> = ["string", null] => arr.filter(isNotNullTypeGuard) => arr: Array<string> = ["string"}
+function isNotNullTypeGuard<T>(x: T | null): x is T {
+  return x !== null
+}
 // generic batcher
 export async function batch<T>(
-  asyncs: Array<() => Promise<T>>,
+  // apparently this type of empty function that's used to call a function later
+  // is called a "thunk", as in the past tense of "think"
+  // https://en.wikipedia.org/wiki/Thunk
+  // I have to use a thunk here because promises are "eager", and I want to control
+  // when the async functions are called. That is, I want to batch them.  So, I have to
+  // pass in a function that returns a promise, not the promise itself. This is the "thunk"!
+  asyncs: Array<() => Promise<T | null>>,
   batchSize: number,
 ): Promise<Array<T>> {
-  const results: Array<T> = []
+  const results: Array<T> = [] // initialize results array
+  // for each batch, await all promises in batch
   for (let i = 0; i < asyncs.length; i += batchSize) {
-    const batch = asyncs.slice(i, i + batchSize).map((async) => async())
-    results.push(...(await Promise.all(batch)))
+    const batch = asyncs.slice(i, i + batchSize)
+    const batchResults = await Promise.all(batch.map((async) => async()))
+    const nonNullBatchResults = batchResults.filter(isNotNullTypeGuard) // This has to be used because filtering on null doesn't actually change the underlying type
+    results.push(...nonNullBatchResults)
   }
   return results
 }
@@ -265,7 +279,33 @@ export namespace SSHfs {
       })
     })
   }
-  export async function auditChamber(
+
+  export async function auditBill(
+    congress: number,
+    billType: 'hr' | 's',
+    billNumber: number,
+    baseCachePath: string,
+    sftp: SFTP,
+  ): Promise<BillAudit | null> {
+    const billPath = `${baseCachePath}/bill/${congress}/${billType}/${billNumber}`
+    console.log(`Auditing bill ${billPath}`)
+    const [detailsAudit, committeesAudit, actionsAudit] = await Promise.all([
+      auditDetailsFile(`${billPath}.json`, sftp),
+      auditCommitteesFile(`${billPath}/committees.json`, sftp),
+      auditActionsFile(`${billPath}/actions.json`, sftp),
+    ])
+    if (!detailsAudit || !committeesAudit || !actionsAudit) {
+      return {
+        billNumber,
+        details: detailsAudit,
+        committees: committeesAudit,
+        actions: actionsAudit,
+      }
+    } else {
+      return null
+    }
+  }
+  export async function auditCongress(
     billRange: number[],
     congress: number,
     billType: 'hr' | 's',
@@ -273,7 +313,6 @@ export namespace SSHfs {
     sftp: SFTP,
   ): Promise<CongressHealthReport> {
     console.log(`Auditing ${billRange.length} bills in ${congress} ${billType}`)
-    const chamberPath = `${baseCacePath}/bill/${congress}/${billType}`
     const congressHealthReport: CongressHealthReport = {
       congress,
       billType,
@@ -281,28 +320,16 @@ export namespace SSHfs {
       runTime: 0,
     }
     let runTime = Date.now()
-    let billAudits: Array<BillAudit> = []
-    for (const billNum of billRange) {
-      const billPath = `${chamberPath}/${billNum}`
-      console.log(`Auditing bill at ${billPath}`)
 
-      const [detailsAudit, committeesAudit, actionsAudit] = await Promise.all([
-        auditDetailsFile(`${billPath}.json`, sftp),
-        auditCommitteesFile(`${billPath}/committees.json`, sftp),
-        auditActionsFile(`${billPath}/actions.json`, sftp),
-      ])
-
-      if (detailsAudit && committeesAudit && actionsAudit) {
-        continue
-      } else {
-        billAudits.push({
-          billNumber: billNum,
-          details: detailsAudit,
-          committees: committeesAudit,
-          actions: actionsAudit,
-        })
-      }
+    const billAuditPromises: Array<() => Promise<BillAudit | null>> = []
+    for (const billNumber of billRange) {
+      billAuditPromises.push(() =>
+        auditBill(congress, billType, billNumber, baseCacePath, sftp),
+      )
     }
+
+    // batch process bill promises
+    const billAudits = await batch(billAuditPromises, 10)
     congressHealthReport.billAuditFails = billAudits
     congressHealthReport.runTime = (Date.now() - runTime) / 1000
     return congressHealthReport
