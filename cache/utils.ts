@@ -1,7 +1,6 @@
 // utils for cel cache management
 // imports
 import dotenv from 'dotenv'
-import { has } from 'fp-ts/lib/ReadonlyRecord'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import SFTP from 'ssh2-promise/lib/BaseSFTP'
 
@@ -52,7 +51,7 @@ export namespace SSHfs {
   export async function directoryExists(
     sftp: SFTP,
     path: string,
-  ): Promise<boolean | void> {
+  ): Promise<boolean> {
     try {
       const stats = await sftp.stat(path)
       return stats.isDirectory()
@@ -65,7 +64,7 @@ export namespace SSHfs {
     }
   }
 
-  export async function fileExists(sftp: SFTP, path: string) {
+  export async function fileExists(sftp: SFTP, path: string): Promise<boolean> {
     try {
       const stats = await sftp.stat(path)
       return stats.isFile()
@@ -100,27 +99,31 @@ export namespace SSHfs {
           // do this by verifying whether first token is '{'
           if (!httpCheck) {
             if (buffer[0] !== '{') {
+              stream.destroy()
               resolve(false)
+            } else {
+              httpCheck = true
             }
-            httpCheck = true
           }
         })
         stream.on('error', (err) => {
           console.error(err)
+          stream.destroy()
           resolve(false)
         })
 
-        stream.on('end', () => {
+        stream.on('close', () => {
           // try to parse and check for key
           try {
             const json = JSON.parse(buffer)
             if (json['bill'] !== undefined) {
               resolve(true)
+            } else {
+              resolve(false)
             }
           } catch (e) {
             // if syntax error, it's invalid JSON
-            if (!(e instanceof SyntaxError)) {
-              stream.destroy()
+            if (e instanceof SyntaxError) {
               resolve(false)
             }
           }
@@ -151,9 +154,11 @@ export namespace SSHfs {
           // do this by verifying whether first token is '{'
           if (!httpCheck) {
             if (buffer[0] !== '{') {
+              stream.destroy()
               resolve(false)
+            } else {
+              httpCheck = true // only check once
             }
-            httpCheck = true // only check once
           }
         })
 
@@ -161,10 +166,11 @@ export namespace SSHfs {
         // fileExists() before streaming, so this is sort of unhandled behavior right now
         stream.on('error', (err) => {
           console.error(err)
+          stream.destroy()
           resolve(false)
         })
 
-        stream.on('end', () => {
+        stream.on('close', () => {
           // after we've streamed full file, check:
           // (1) it's valid json
           // (2) it has the expected key
@@ -172,11 +178,12 @@ export namespace SSHfs {
             const json = JSON.parse(buffer)
             if (json['committees'] !== undefined) {
               resolve(true)
+            } else {
+              resolve(false)
             }
           } catch (e) {
             // if syntax error, it's invalid JSON
-            if (!(e instanceof SyntaxError)) {
-              stream.destroy()
+            if (e instanceof SyntaxError) {
               resolve(false)
             }
           }
@@ -204,18 +211,21 @@ export namespace SSHfs {
 
           if (!httpCheck) {
             if (buffer[0] !== '{') {
+              stream.destroy()
               resolve(false)
+            } else {
+              httpCheck = true
             }
-            httpCheck = true
           }
         })
 
         stream.on('error', (err) => {
           console.error(err)
+          stream.destroy()
           resolve(false)
         })
 
-        stream.on('end', () => {
+        stream.on('close', () => {
           try {
             const json = JSON.parse(buffer)
             // chceck for expected token and expected actions array length
@@ -233,8 +243,7 @@ export namespace SSHfs {
             }
           } catch (e) {
             // if syntax error, it's invalid JSON
-            if (!(e instanceof SyntaxError)) {
-              stream.destroy()
+            if (e instanceof SyntaxError) {
               resolve(false)
             }
           }

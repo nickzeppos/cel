@@ -1,0 +1,41 @@
+{
+  "header": {
+    "runDate": "2024-06-13T21:12:44.658Z",
+    "environment": "development",
+    "name": "PARALLEL_AUDITS",
+    "description": "Keeping readable streams + early http check. Moved to parallel audits at the bill level, e.g. Promise.all[auditDetails, auditCommittees, auditActions].",
+    "runTime": 8.705
+  },
+  "congresses": [
+    {
+      "congress": 109,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 1.737
+    },
+    {
+      "congress": 105,
+      "billType": "hr",
+      "billAuditFails": [],
+      "runTime": 1.722
+    },
+    {
+      "congress": 100,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 1.775
+    },
+    {
+      "congress": 102,
+      "billType": "hr",
+      "billAuditFails": [],
+      "runTime": 1.711
+    },
+    {
+      "congress": 102,
+      "billType": "s",
+      "billAuditFails": [],
+      "runTime": 1.76
+    }
+  ]
+}

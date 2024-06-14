@@ -68,14 +68,14 @@ type CacheHealthReport = {
   }
   congresses: Array<CongressHealthReport>
 }
-const reportName = 'STREAMING_ALL'
+const reportName = 'PARALLEL_AUDITS'
 const cacheHealthReport: CacheHealthReport = {
   header: {
     runDate: new Date(),
     environment: NODE_ENV,
     name: reportName,
     description:
-      'Same as brute force but using a readable stream for all i/o, checking performance difference. Also added early bad http check on first chunk.',
+      'Keeping readable streams + early http check. Moved to parallel audits at the bill level, e.g. Promise.all[auditDetails, auditCommittees, auditActions].',
     runTime: 0,
   },
   congresses: [],
@@ -89,13 +89,15 @@ function sample<T>(arr: Array<T>, n: number): Array<T> {
   return res
 }
 
+// bill fails
+// 107-s-124 d, a, c
+// 102-s-133 a, c
+
 ssh
   // connect to ec2
   .connect()
   .then(async () => {
     const configPath = `${BASE_CACHE_PATH}/cache-config.json`
-
-    // read cache config
     const config = JSON.parse(await sftp.readFile(configPath, 'utf8'))
     return cacheConfigValidator.parse(config)
   })
@@ -103,8 +105,8 @@ ssh
     // SAMPLING WHILE TESTING
     // randomly sample 5 entries from config.bills
     // log length
-
     const configSample = sample(cacheConfig.bills, 5)
+    // const configSample = [{ congress: 107, billType: 's', count: 1 }]
 
     for (const { congress, billType, count } of configSample) {
       const congressHealthReport: CongressHealthReport = {
@@ -118,7 +120,14 @@ ssh
       const chamberPath = `${BASE_CACHE_PATH}/bill/${congress}/${billType}`
 
       // Ensure dir for congress and billType exists
-      if ((await SSHfs.directoryExists(sftp, chamberPath)) === false) {
+      let dirExists = true
+      try {
+        dirExists = await SSHfs.directoryExists(sftp, chamberPath)
+      } catch (e) {
+        console.error(`Error checking for directory ${chamberPath}`)
+        console.error(e)
+      }
+      if (dirExists === false) {
         // dir doesn't exist, all fail
         console.log(`Directory ${chamberPath} does not exist`)
 
@@ -135,43 +144,40 @@ ssh
       // SAMPLING WHILE TESTING
       // randomly sample 5 bills
       const billSample = sample(billRange, 5)
+      // const billSample = [124]
 
       const startTime = Date.now()
 
       for (const billNum of billSample) {
         console.log(`Auditing ${congress} ${billType} ${billNum}`)
         const billPath = `${chamberPath}/${billNum}`
-        const detailsAudit = await SSHfs.auditDetailsFile(
-          `${billPath}.json`,
-          sftp,
-        )
-        const committeesAudit = await SSHfs.auditCommitteesFile(
-          `${billPath}/committees.json`,
-          sftp,
-        )
-        const actionsAudit = await SSHfs.auditActionsFile(
-          `${billPath}/actions.json`,
-          sftp,
+
+        const [detailsAudit, committeesAudit, actionsAudit] = await Promise.all(
+          [
+            SSHfs.auditDetailsFile(`${billPath}.json`, sftp),
+            SSHfs.auditCommitteesFile(`${billPath}/committees.json`, sftp),
+            SSHfs.auditActionsFile(`${billPath}/actions.json`, sftp),
+          ],
         )
 
         // if all true, then bill is good, we only push fails
         if (detailsAudit && committeesAudit && actionsAudit) {
           console.log(`Bill ${billNum} passed all checks, not pushing`)
           continue
+        } else {
+          const billAudit = {
+            billNumber: billNum,
+            details: detailsAudit,
+            committees: committeesAudit,
+            actions: actionsAudit,
+          }
+
+          congressHealthReport.billAuditFails.push(billAudit)
+
+          console.log(
+            `${detailsAudit}, Committees: ${committeesAudit}, Actions: ${actionsAudit}`,
+          )
         }
-
-        const billAudit = {
-          billNumber: billNum,
-          details: detailsAudit,
-          committees: committeesAudit,
-          actions: actionsAudit,
-        }
-
-        congressHealthReport.billAuditFails.push(billAudit)
-
-        console.log(
-          `${detailsAudit}, Committees: ${committeesAudit}, Actions: ${actionsAudit}`,
-        )
       }
 
       const runTime = (Date.now() - startTime) / 1000
@@ -187,52 +193,4 @@ ssh
       JSON.stringify(cacheHealthReport, null, 2),
     )
   })
-  .finally(() => {
-    ssh.close()
-  })
-
-// audit cache
-
-// produce cache health report
-
-// SYS ARG PARSING, USED TO DETERMINE SCOPE OF AUDIT (I.E., FULL VS. CONGRESS, ETC.)
-// import { sysArgsValidator } from './types'
-
-// const sysArgs = process.argv.slice(2)
-// let sysArgsObj = sysArgs.reduce((acc, arg) => {
-//   const [key, value] = arg.split('=')
-//   if (key !== undefined) {
-//     if (key === 'full') {
-//       return { ...acc, [key]: value === 'true' }
-//     } else {
-//       return { ...acc, [key]: value }
-//     }
-//   } else {
-//     return acc
-//   }
-// }, {})
-
-// // If no arguments are passed, default to full=true
-// if (Object.keys(sysArgsObj).length === 0) {
-//   sysArgsObj = { full: true }
-// }
-
-// const SysArgs = sysArgsValidator.parse(sysArgsObj)
-
-// // destructure
-// const { full = false, congress, billType, billNumber } = SysArgs
-
-// if (full) {
-//   // do full audit
-// } else if (congress) {
-//   if (billType && billNumber) {
-//     // do bill audit
-//   } else if (billType) {
-//     // do bill type audit
-//   } else {
-//     // do congress audit
-//   }
-// } else {
-//   // exit, but validator should have caught this
-//   process.exit(1)
-// }
+  .finally(() => ssh.close())
