@@ -1844,6 +1844,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ssh2-sftp-client@npm:^9.0.3":
+  version: 9.0.3
+  resolution: "@types/ssh2-sftp-client@npm:9.0.3"
+  dependencies:
+    "@types/ssh2": "*"
+  checksum: 895e3e7a6895b2c08eeb1db968c476b57fa216c04311957c008e85ae89e02bdae39055040fe081d5b68d37142eca82ed46f61416d8b8bb25e5f249b367110ab2
+  languageName: node
+  linkType: hard
+
 "@types/ssh2-streams@npm:^0.1.12":
   version: 0.1.12
   resolution: "@types/ssh2-streams@npm:0.1.12"
@@ -1853,7 +1862,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ssh2@npm:^1.15.0":
+"@types/ssh2@npm:*, @types/ssh2@npm:^1.15.0":
   version: 1.15.0
   resolution: "@types/ssh2@npm:1.15.0"
   dependencies:
@@ -2805,6 +2814,7 @@ __metadata:
     "@types/react-window": ^1.8.5
     "@types/sharp": ^0.31.0
     "@types/ssh2": ^1.15.0
+    "@types/ssh2-sftp-client": ^9.0.3
     "@types/ssh2-streams": ^0.1.12
     "@types/ws": 8.5.4
     "@typescript-eslint/eslint-plugin": ^5.33.0
@@ -2838,7 +2848,9 @@ __metadata:
     redis: ^4.3.1
     rooks: ^7.4.0
     sharp: ^0.31.1
+    ssh2: ^1.15.0
     ssh2-promise: ^1.0.3
+    ssh2-sftp-client: ^10.0.3
     superjson: ^1.10.0
     tailwindcss: ^3.1.8
     ts-jest: ^29.0.5
@@ -3062,6 +3074,18 @@ __metadata:
   version: 0.0.1
   resolution: "concat-map@npm:0.0.1"
   checksum: 902a9f5d8967a3e2faf138d5cb784b9979bad2e6db5357c5b21c568df4ebe62bcb15108af1b2253744844eb964fc023fbd9afbbbb6ddd0bcc204c6fb5b7bf3af
+  languageName: node
+  linkType: hard
+
+"concat-stream@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "concat-stream@npm:2.0.0"
+  dependencies:
+    buffer-from: ^1.0.0
+    inherits: ^2.0.3
+    readable-stream: ^3.0.2
+    typedarray: ^0.0.6
+  checksum: d7f75d48f0ecd356c1545d87e22f57b488172811b1181d96021c7c4b14ab8855f5313280263dca44bb06e5222f274d047da3e290a38841ef87b59719bde967c7
   languageName: node
   linkType: hard
 
@@ -7356,7 +7380,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^3.1.1, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
+"readable-stream@npm:^3.0.2, readable-stream@npm:^3.1.1, readable-stream@npm:^3.4.0, readable-stream@npm:^3.6.0":
   version: 3.6.2
   resolution: "readable-stream@npm:3.6.2"
   dependencies:
@@ -7921,7 +7945,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ssh2@npm:^1.10.0":
+"ssh2-sftp-client@npm:^10.0.3":
+  version: 10.0.3
+  resolution: "ssh2-sftp-client@npm:10.0.3"
+  dependencies:
+    concat-stream: ^2.0.0
+    promise-retry: ^2.0.1
+    ssh2: ^1.15.0
+  checksum: 060d1303c631764dc518c75fc8de960f0696277b8db3994643c5cef369862adcec6a779b53345bc86c5db0a2d21c4549bcf7e62d6a8357908345031c8ef3fb0c
+  languageName: node
+  linkType: hard
+
+"ssh2@npm:^1.10.0, ssh2@npm:^1.15.0":
   version: 1.15.0
   resolution: "ssh2@npm:1.15.0"
   dependencies:
@@ -8618,6 +8653,13 @@ __metadata:
     for-each: ^0.3.3
     is-typed-array: ^1.1.9
   checksum: 2228febc93c7feff142b8c96a58d4a0d7623ecde6c7a24b2b98eb3170e99f7c7eff8c114f9b283085cd59dcd2bd43aadf20e25bba4b034a53c5bb292f71f8956
+  languageName: node
+  linkType: hard
+
+"typedarray@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "typedarray@npm:0.0.6"
+  checksum: 33b39f3d0e8463985eeaeeacc3cb2e28bc3dfaf2a5ed219628c0b629d5d7b810b0eb2165f9f607c34871d5daa92ba1dc69f49051cf7d578b4cbd26c340b9d1b1
   languageName: node
   linkType: hard
 
