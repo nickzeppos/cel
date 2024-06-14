@@ -1,39 +1,17 @@
-# Cache Overview
+# Cache 
 
-## TODO
-
-### questions to answer
-
-- should `generate-cache-health-report.ts` auto generate a config file if none exists? currently it does not, just prompts to run `create-cache-config.ts`
-
-### actions to take
-- Switch output of `generate-health-report.ts` to a .txt file
-- Implement `consume-health-report-instructions.ts`
-- Specify shape of `meta.json`
-- Bundle everything up in a main() script
-- Event logging
 
 ## intro
+Cache folder is generally responsible for housing scripts, tools, types, etc., associated with the data cache we keep on the ec2 (lep-dev).  
 
-This document provides an overview of the `cache` folder. Two primary responsibilities: (1) housing the data itself (`cache/data`), maintaining the integrity of said cache.
+## Notes
+As of **6/14/24**, The cache only contains json corresponding to the /bill/ endpoint of the congress.gov api. Cache can be found at `home/${EC2_USER_NAME}/bill-jsons/data/bill`. 
 
-General flow is something like this:
-
+Cache file structure is as follows:
 ```
-(1) If no cache config, create config.
-(2) Generate health report and instructions based on config.
-(3) Consume health report instructions, update meta.
-```
-
-## fs
-
-The `/cache` folder contains TS files and a `data` subfolder. The data subfolder contains a config file (`cache-config.json`), metadata (`meta.json`), and structured data related to bills.
-
-```
- cache
- ├── CACHE_OVERVIEW.md
- ├── cache-health-reports
- ├── create-cache-config.ts
+../
+bill-jsons
+ ├──cache-config.json
  ├── data
  │   ├── bill
  │   │   └── {congressNumber}
@@ -42,39 +20,28 @@ The `/cache` folder contains TS files and a `data` subfolder. The data subfolder
  │   │           └── {billNumber}
  │   │               ├── committees.json
  │   │               └── actions.json
- │   ├── meta.json
- │   └── cache-config.json
- ├── generate-cache-health-report.ts
- ├── tsconfig.json
- └── utils.ts
 ```
+  
+Most recent script is `audit-cache.ts`, which audits the cache and generates a health 
+report. Conducts audits over ssh with an sftp client, so requires ssh access to ec2.
 
-## ts files
+Auditing process goes something like this:  
+1. set up ssh connection and sftp client, connect to ec2
+2. load `cache-config.json`, which specifies congresses, bill types, and bill counts
+3. for each congress, bill type, and bill number, audit associated files
+4. generate a health report, write to `./cache/health-report-${reportName}.json`.
+5. close ssh  
 
-### create-cache-config.ts
+Requires the following `.env` variables:
+```
+NODE_ENV=
+EC2_HOST_NAME=
+EC2_USER_NAME=
+SSH_KEY_PATH=
+```
+Note that `$SSH_KEY_PATH` is a path to your local key file, e.g. `~/.ssh/id_rsa`.  Script currently only works with `$NODE_ENV=development`. Will exit early if different value provided.
 
-- **Purpose:** Generates a config file for the cache.
-- **Functionality:** Creates `cache-config.json` in the `data` folder. This config file outlines the ideal state of the cache for maintaining its health.
 
-### generate-cache-health-report.ts
 
-- **Purpose:** Generates a health report for the cache.
-- **Functionality:** Utilizes `cache-config.json` to assess and report the current state of the cache.
 
-  Can generate reports based on the ideal cache state or the current state. Outputs a `.txt` file for consumption by a `consume-health-report-instructions.ts`
 
-  Will not generate report without a `cache-config.json` file; will prompt to run.
-
-### consume-health-report-instructions.ts
-
-- **Purpose:** Make cache healthy.
-- **Functionality** Consumes health report instructions and updates the cache accordingly.
-
-### utils.ts
-
-- **Purpose:** Utility functions for the cache.
-- **Functionality:** Contains functions for path manipulation, throttling, logging, etc.
-
-### types.ts
-
-- **Purpose:** Types for the cache.
