@@ -1,6 +1,7 @@
 // utils for cel cache management
 // imports
 import { BillAudit, CongressHealthReport } from './audit-cache'
+import { BillType } from './types'
 import dotenv from 'dotenv'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import SFTP from 'ssh2-promise/lib/BaseSFTP'
@@ -11,6 +12,7 @@ dotenv.config()
 const CACHE_CONFIG_PATH = process.env.CACHE_CONFIG_PATH || './config.json'
 const ROOT_CACHE_PATH = ''
 const MAX_BATCH_SIZE = 10
+const BASE_CONGRESS_API_URL = 'https://api.congress.gov/v3/bill/'
 // functions
 // create a directory if it doesn't exist, by default recursively
 export function ensureDirectoryExists(path: string, recursive: boolean = true) {
@@ -45,6 +47,18 @@ export function preAudit(): 200 | 400 {
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function makeAPIUrl(
+  congress: number,
+  billType: BillType,
+  billNumber: number,
+  endpoint: 'details' | 'committees' | 'actions',
+): string {
+  // only actions and committees correspond to actual endpoints,
+  // details is invented name for data from the base bill endpoint
+  const toAdd = endpoint === 'details' ? '' : `/${endpoint}`
+  return `${BASE_CONGRESS_API_URL}/${congress}/${billType}/${billNumber}${toAdd}`
 }
 
 // filter null and guarantee that the resulting array is type narrowed in the intuitive way.
