@@ -9,6 +9,10 @@
 // 3. Close the ssh connection
 //
 // Current run time is ~ 00:07:13 with concurrency = 250, auditKeys.length = 834162
+//
+// Audit history
+// 6-18-2024--10-15-57-AM.csv - 198366 failed audits
+//
 // imports
 import { AuditKey, BillKey, asyncMap1, asyncMap2 } from './asyncMap'
 import { CacheConfig, cacheConfigValidator } from './types'
