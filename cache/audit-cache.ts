@@ -108,6 +108,9 @@ ssh
 
     // console.log(auditKeys.length) -- 834162
 
+    // TODO: Not accounting for dir exists yet. So, when a congress dir doesn't exist, I still iterate through all of the bills for that congress, and the audit functions just exit on a fileExists().
+    // Could just automatically jump ahead if dir doesn't exist, since that means all of the audits will fail anyway.
+
     const concurrency = 250
     const failedAuditKeys = await asyncMap1(auditKeys, concurrency, sftp)
 
