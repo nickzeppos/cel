@@ -5,16 +5,16 @@
 //    2.1. With the $SSH_PATH, establish ssh connection and stfp client
 //    2.2. Read the cache config file to get some instructions for the audit
 //    2.3. For each congress, billType, and billNumber specified by the config, audit the corresponding files.
-//    2.4. For each failed audit, write the path and url to a csv file.
+//    2.4. For each failed audit, write url to .txt. File name is finish date of script.
 // 3. Close the ssh connection
 //
-// Current run time is ~ 00:07:13 with concurrency = 250, auditKeys.length = 834162
+// Current run time is ~ 7.5m with concurrency = 250, auditKeys.length = 834162
 //
 // Audit history
-// 6-18-2024--10-15-57-AM.csv - 198366 failed audits
+// 6-18-2024--10-36-50-AM.txt - 198366 failed audits
 //
 // imports
-import { AuditKey, BillKey, asyncMap1, asyncMap2 } from './asyncMap'
+import { AuditKey, BillKey, asyncMap1 } from './asyncMap'
 import { CacheConfig, cacheConfigValidator } from './types'
 import { STFPFn, makeAPIUrl } from './utils'
 import dotenv from 'dotenv'
@@ -111,16 +111,14 @@ ssh
     const concurrency = 250
     const failedAuditKeys = await asyncMap1(auditKeys, concurrency, sftp)
 
-    const reportKeys: Array<[string, string]> = failedAuditKeys.map(
-      ([path, _, url]) => [path, url],
-    )
+    const urls: Array<string> = failedAuditKeys.map(([_path, _, url]) => url)
     const finish = new Date(Date.now())
       .toLocaleString()
       .replace(/\/|,|:| /g, '-')
-    const instructionsPath = `./cache/instructions/${finish}.csv`
+    const instructionsPath = `./cache/instructions/${finish}.txt`
     const stream = createWriteStream(instructionsPath, 'utf-8')
-    for (const [path, url] of reportKeys) {
-      stream.write(`${path},${url}\n`)
+    for (const url of urls) {
+      stream.write(`${url}\n`)
     }
     stream.end()
   })
