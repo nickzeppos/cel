@@ -1,7 +1,6 @@
 // utils for cel cache management
 // imports
-import { BillAudit, CongressHealthReport } from './audit-cache'
-import { BillType } from './types'
+import { BillAudit, BillType, CongressHealthReport } from './types'
 import dotenv from 'dotenv'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import SFTP from 'ssh2-promise/lib/BaseSFTP'

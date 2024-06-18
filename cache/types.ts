@@ -67,12 +67,7 @@ export type BillFailures = {
   billType: BillType
   fileType: BillFileType
 }
-export type CongressHealthReport = {
-  congress: number
-  healthy: boolean
-  ratio: number
-  failures: Array<BillFailures>
-}
+
 export type CacheHealthReport = {
   header: {
     runDate: Date
@@ -84,4 +79,17 @@ export type CacheHealthReport = {
     ratio: number
   }
   healthByCongress: Array<CongressHealthReport>
+}
+
+export type BillAudit = {
+  billNumber: number
+  details: boolean
+  committees: boolean
+  actions: boolean
+}
+export type CongressHealthReport = {
+  congress: number
+  billType: BillType
+  billAuditFails: Array<BillAudit | 'ALL_FAIL'>
+  runTime: number
 }
