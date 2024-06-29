@@ -13,6 +13,8 @@
     "fix-sharp": "npm_config_libc=musl yarn rebuild sharp",
     "set-fav": "scripts/set-favicon.sh",
     "audit-cache": "ts-node cache/audit-cache.ts",
+    "repair-cache": "ts-node cache/repair-cache.ts",
+    "test-congress-api": "ts-node cache/test-congress-api.ts",
     "d": "yarn set-fav && docker-compose up",
     "test": "jest",
     "test:watch": "jest --watch",

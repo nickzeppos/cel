@@ -1,0 +1,132 @@
+[2024-06-28T15:20:28.900Z] -- -----------------------------------
+[2024-06-28T15:20:28.902Z] -- -----------------------------------
+[2024-06-28T15:20:28.902Z] -- Beginning test
+[2024-06-28T15:20:28.902Z] -- MULTIKEY TESTING
+[2024-06-28T15:20:28.902Z] -- Testing refill period for QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ, hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:20:28.902Z] -- Counting 5 refill periods
+[2024-06-28T15:20:28.902Z] -- Waiting 5000ms between requests
+[2024-06-28T15:20:28.902Z] -- Depleting by 10 initially
+[2024-06-28T15:20:28.903Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:20:29.303Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:20:29.628Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:20:29.987Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:20:30.334Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:20:30.692Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:20:31.012Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:20:31.363Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:20:31.690Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:20:32.034Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:20:32.364Z] -- Initial budget for QgDSl...: 4837
+[2024-06-28T15:20:32.365Z] -- Initial budget for hllkg...: 4905
+[2024-06-28T15:20:32.693Z] -- Remaining for QgDSl...: 4836
+[2024-06-28T15:20:38.025Z] -- Remaining for hllkg...: 4904
+[2024-06-28T15:20:43.398Z] -- Remaining for QgDSl...: 4836
+[2024-06-28T15:20:43.398Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:20:48.760Z] -- Remaining for hllkg...: 4903
+[2024-06-28T15:20:54.111Z] -- Remaining for QgDSl...: 4835
+[2024-06-28T15:20:59.458Z] -- Remaining for hllkg...: 4903
+[2024-06-28T15:20:59.458Z] -- Token replenish detected for hllkg...!
+[2024-06-28T15:21:04.834Z] -- Remaining for QgDSl...: 4835
+[2024-06-28T15:21:04.834Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:21:04.835Z] -- Average refill period: 21436ms
+[2024-06-28T15:21:10.190Z] -- Remaining for hllkg...: 4902
+[2024-06-28T15:21:15.537Z] -- Remaining for QgDSl...: 4834
+[2024-06-28T15:21:15.538Z] -- Average refill period: 21436ms
+[2024-06-28T15:21:20.879Z] -- Remaining for hllkg...: 4901
+[2024-06-28T15:21:26.205Z] -- Remaining for QgDSl...: 4833
+[2024-06-28T15:21:31.584Z] -- Remaining for hllkg...: 4900
+[2024-06-28T15:21:36.958Z] -- Remaining for QgDSl...: 4833
+[2024-06-28T15:21:36.958Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:21:36.958Z] -- Average refill period: 26780ms
+[2024-06-28T15:21:42.331Z] -- Remaining for hllkg...: 4900
+[2024-06-28T15:21:42.332Z] -- Token replenish detected for hllkg...!
+[2024-06-28T15:21:42.332Z] -- Average refill period: 42874ms
+[2024-06-28T15:21:47.683Z] -- Remaining for QgDSl...: 4832
+[2024-06-28T15:21:53.032Z] -- Remaining for hllkg...: 4899
+[2024-06-28T15:21:53.032Z] -- Average refill period: 42874ms
+[2024-06-28T15:21:58.377Z] -- Remaining for QgDSl...: 4831
+[2024-06-28T15:22:03.725Z] -- Remaining for hllkg...: 4898
+[2024-06-28T15:22:09.064Z] -- Remaining for QgDSl...: 4831
+[2024-06-28T15:22:09.064Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:22:09.064Z] -- Average refill period: 28555.333333333332ms
+[2024-06-28T15:22:14.403Z] -- Remaining for hllkg...: 4898
+[2024-06-28T15:22:14.403Z] -- Token replenish detected for hllkg...!
+[2024-06-28T15:22:14.403Z] -- Average refill period: 37472.5ms
+[2024-06-28T15:22:19.747Z] -- Remaining for QgDSl...: 4830
+[2024-06-28T15:22:25.083Z] -- Remaining for hllkg...: 4897
+[2024-06-28T15:22:30.455Z] -- Remaining for QgDSl...: 4829
+[2024-06-28T15:22:35.849Z] -- Remaining for hllkg...: 4896
+[2024-06-28T15:22:41.233Z] -- Remaining for QgDSl...: 4829
+[2024-06-28T15:22:41.233Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:22:41.233Z] -- Average refill period: 29458.75ms
+[2024-06-28T15:22:41.233Z] -- Reached 5 refill periods, ending test
+[2024-06-28T15:22:41.233Z] -- Finished testing
+[2024-06-28T15:22:41.233Z] -- -----------------------------------
+[2024-06-28T15:22:41.233Z] -- -----------------------------------
+[2024-06-28T15:37:46.634Z] -- -----------------------------------
+[2024-06-28T15:37:46.636Z] -- -----------------------------------
+[2024-06-28T15:37:46.636Z] -- Beginning test
+[2024-06-28T15:37:46.636Z] -- MULTIKEY TESTING
+[2024-06-28T15:37:46.637Z] -- Testing refill period for QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ, hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:37:46.637Z] -- Counting 5 refill periods
+[2024-06-28T15:37:46.637Z] -- Waiting 5000ms between requests
+[2024-06-28T15:37:46.637Z] -- Depleting by 10 initially
+[2024-06-28T15:37:46.637Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:37:47.034Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:37:47.414Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:37:47.757Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:37:48.096Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:37:48.420Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:37:48.790Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:37:49.147Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:37:49.497Z] -- fetching with QgDSlrALz1lH1bzkBEVkr4LNLlKbqcLd4TXBx6QJ
+[2024-06-28T15:37:49.829Z] -- fetching with hllkgOdJ36RMw1ArQFPTxDbeKKsfpFz1rrgpZJsz
+[2024-06-28T15:37:50.166Z] -- Initial budget for QgDSl...: 4818
+[2024-06-28T15:37:50.166Z] -- Initial budget for hllkg...: 4915
+[2024-06-28T15:37:50.517Z] -- Remaining for QgDSl...: 4817
+[2024-06-28T15:37:55.862Z] -- Remaining for hllkg...: 4914
+[2024-06-28T15:38:01.201Z] -- Remaining for QgDSl...: 4816
+[2024-06-28T15:38:06.543Z] -- Remaining for hllkg...: 4913
+[2024-06-28T15:38:11.867Z] -- Remaining for QgDSl...: 4816
+[2024-06-28T15:38:11.868Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:38:17.199Z] -- Remaining for hllkg...: 4912
+[2024-06-28T15:38:22.563Z] -- Remaining for QgDSl...: 4815
+[2024-06-28T15:38:27.901Z] -- Remaining for hllkg...: 4911
+[2024-06-28T15:38:33.250Z] -- Remaining for QgDSl...: 4814
+[2024-06-28T15:38:38.591Z] -- Remaining for hllkg...: 4911
+[2024-06-28T15:38:38.591Z] -- Token replenish detected for hllkg...!
+[2024-06-28T15:38:43.942Z] -- Remaining for QgDSl...: 4814
+[2024-06-28T15:38:43.942Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:38:43.943Z] -- Average refill period: 32075ms
+[2024-06-28T15:38:49.296Z] -- Remaining for hllkg...: 4910
+[2024-06-28T15:38:54.675Z] -- Remaining for QgDSl...: 4813
+[2024-06-28T15:38:54.676Z] -- Average refill period: 32075ms
+[2024-06-28T15:39:00.010Z] -- Remaining for hllkg...: 4909
+[2024-06-28T15:39:05.347Z] -- Remaining for QgDSl...: 4813
+[2024-06-28T15:39:05.347Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:39:05.347Z] -- Average refill period: 26739.5ms
+[2024-06-28T15:39:10.826Z] -- Remaining for hllkg...: 4909
+[2024-06-28T15:39:10.826Z] -- Token replenish detected for hllkg...!
+[2024-06-28T15:39:10.826Z] -- Average refill period: 32235ms
+[2024-06-28T15:39:16.299Z] -- Remaining for QgDSl...: 4812
+[2024-06-28T15:39:21.666Z] -- Remaining for hllkg...: 4908
+[2024-06-28T15:39:21.666Z] -- Average refill period: 32235ms
+[2024-06-28T15:39:27.009Z] -- Remaining for QgDSl...: 4811
+[2024-06-28T15:39:32.362Z] -- Remaining for hllkg...: 4907
+[2024-06-28T15:39:37.706Z] -- Remaining for QgDSl...: 4811
+[2024-06-28T15:39:37.706Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:39:37.706Z] -- Average refill period: 28612.666666666668ms
+[2024-06-28T15:39:43.064Z] -- Remaining for hllkg...: 4906
+[2024-06-28T15:39:48.423Z] -- Remaining for QgDSl...: 4810
+[2024-06-28T15:39:53.750Z] -- Remaining for hllkg...: 4906
+[2024-06-28T15:39:53.751Z] -- Token replenish detected for hllkg...!
+[2024-06-28T15:39:53.751Z] -- Average refill period: 37580ms
+[2024-06-28T15:39:59.109Z] -- Remaining for QgDSl...: 4809
+[2024-06-28T15:40:04.457Z] -- Remaining for hllkg...: 4905
+[2024-06-28T15:40:09.794Z] -- Remaining for QgDSl...: 4809
+[2024-06-28T15:40:09.794Z] -- Token replenish detected for QgDSl...!
+[2024-06-28T15:40:09.794Z] -- Average refill period: 29481.5ms
+[2024-06-28T15:40:09.794Z] -- Reached 5 refill periods, ending test
+[2024-06-28T15:40:09.794Z] -- Finished testing
+[2024-06-28T15:40:09.794Z] -- -----------------------------------
+[2024-06-28T15:40:09.794Z] -- -----------------------------------

@@ -1,9 +1,5 @@
-import { BillType } from './types'
+import { AuditKey } from './types'
 import SFTP from 'ssh2-promise/lib/sftp'
-
-export type AuditFunction = (filePath: string, c: SFTP) => Promise<boolean>
-export type BillKey = [number, BillType, number] // congress number, bill type, bill number
-export type AuditKey = [string, AuditFunction, string] // cache path, audit fn, endpoint
 
 async function process(
   auditKey: AuditKey,
@@ -53,6 +49,7 @@ export async function asyncMap1(
     queue.push(p)
 
     if (i > 0 && i % 25000 === 0) {
+      // periodic log
       const endTime = Date.now()
       console.log(
         `Batch ${i / 25000} processed in ${

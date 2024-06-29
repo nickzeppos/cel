@@ -1,5 +1,10 @@
 // utils for cel cache management
 // imports
+import {
+  billActionsResponseValidator,
+  billCommitteesResponseValidator,
+  billDetailResponseValidator,
+} from '../src/workers/validators'
 import { BillAudit, BillType, CongressHealthReport } from './types'
 import dotenv from 'dotenv'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
@@ -95,6 +100,83 @@ export function sample<T>(arr: Array<T>, n: number): Array<T> {
     res.push(arr.splice(Math.floor(Math.random() * arr.length), 1)[0])
   }
   return res
+}
+
+// file auditors
+export function auditDetailsFile(content: string) {
+  try {
+    const json = JSON.parse(content)
+    return json['bill'] !== undefined
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      return false
+    }
+    console.error(`Unexpected error type: ${e}`)
+    return false
+  }
+}
+
+export function auditCommitteesFile(content: string) {
+  try {
+    const json = JSON.parse(content)
+    return json['committees'] !== undefined
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      return false
+    }
+    console.error(`Unexpected error type: ${e}`)
+    return false
+  }
+}
+export function auditActionsFile(content: string) {
+  try {
+    const json = JSON.parse(content)
+    // chceck for expected token and expected actions array length
+    if (json['actions'] !== undefined) {
+      if (json['actions'].length === json['pagination']['count']) {
+        // if actions key and actions array length match count, it's valid
+        return true
+      } else {
+        // if actions array length doesn't match count, it's invalid
+        return false
+      }
+    } else {
+      // if no actions key, it's invalid
+      return false
+    }
+  } catch (e) {
+    // if syntax error, it's invalid JSON
+    if (e instanceof SyntaxError) {
+      return false
+    }
+    console.error(`Unexpected error type: ${e}`)
+    return false
+  }
+}
+
+// object auditors
+export function auditDetails(
+  data: z.infer<typeof billDetailResponseValidator>,
+): boolean {
+  // check for expected key
+  return data.bill !== undefined ? true : false
+}
+
+export function auditCommittees(
+  data: z.infer<typeof billCommitteesResponseValidator>,
+): boolean {
+  // check for expected key
+  return data.committees !== undefined ? true : false
+}
+
+export function auditActions(
+  data: z.infer<typeof billActionsResponseValidator>,
+): boolean {
+  // check for expected key and expected actions array length
+  const hasExpectedKey = data.actions !== undefined
+  const hasExpectedLength =
+    data.actions.length === data.pagination.count ? true : false
+  return hasExpectedKey && hasExpectedLength
 }
 
 // sftp file system methods + auditing functions

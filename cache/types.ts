@@ -1,3 +1,4 @@
+import SFTP from 'ssh2-promise/lib/BaseSFTP'
 import { z } from 'zod'
 
 export const billTypeValidator = z.enum(['hr', 's'])
@@ -93,3 +94,11 @@ export type CongressHealthReport = {
   billAuditFails: Array<BillAudit | 'ALL_FAIL'>
   runTime: number
 }
+
+export type AuditFunction = (filePath: string) => Boolean
+export type SFTPAuditFunction = (
+  filePath: string,
+  sftp: SFTP,
+) => Promise<Boolean>
+export type BillKey = [number, BillType, number] // congress number, bill type, bill number
+export type AuditKey = [string, SFTPAuditFunction | AuditFunction, string] // cache path, audit fn, endpoint

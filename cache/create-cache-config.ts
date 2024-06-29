@@ -11,12 +11,9 @@
 // IMPORTS
 import { throttledFetchCongressAPI } from '../src/workers/congressAPI'
 import { BillType, CacheConfig } from './types'
-import { sleep } from './utils'
-import assert from 'assert'
 import dotenv from 'dotenv'
 import { writeFileSync } from 'fs'
-import fetch, { Headers, Request, Response } from 'node-fetch'
-import path, { basename } from 'path'
+import path from 'path'
 
 // ENV + CONSTS
 const envPath = path.join(__dirname, '.env')

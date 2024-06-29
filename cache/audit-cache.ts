@@ -14,8 +14,14 @@
 // 6-18-2024--10-36-50-AM.txt - 198366 failed audits
 //
 // imports
-import { AuditKey, BillKey, asyncMap1 } from './asyncMap'
-import { CacheConfig, cacheConfigValidator } from './types'
+import { asyncMap1 } from './asyncMap'
+import {
+  AuditKey,
+  BillKey,
+  CacheConfig,
+  SFTPAuditFunction,
+  cacheConfigValidator,
+} from './types'
 import { STFPFn, makeAPIUrl } from './utils'
 import dotenv from 'dotenv'
 import { createWriteStream } from 'fs'

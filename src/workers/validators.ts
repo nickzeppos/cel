@@ -268,7 +268,7 @@ export const billActionsValidator = z.array(
 export const billActionsResponseValidator = z.object({
   actions: billActionsValidator,
   error: z.string().optional(),
-  pagination: paginationValidator.optional(),
+  pagination: paginationValidator,
   request: requestValidator,
 })
 
@@ -316,7 +316,7 @@ export const billCommitteesValidator = z.array(
 export const billCommitteesResponseValidator = z.object({
   committees: billCommitteesValidator,
   error: z.string().optional(),
-  pagination: paginationValidator.optional(),
+  pagination: paginationValidator,
   request: requestValidator,
 })
 
