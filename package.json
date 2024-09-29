@@ -96,7 +96,6 @@
   },
   "packageManager": "yarn@3.2.3",
   "resolutions": {
-    ".prisma": "link:node-modules/.prisma",
     "@types/react": "^18.0.21"
   }
 }
